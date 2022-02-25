@@ -1,9 +1,8 @@
-import time
-import sys
-import curses
-import curses.textpad
-import time
-import string
+# 
+# TODO - there is still more cleanup of this code to be done
+# TODO - the handling of the APPEND mode is poor
+# TODO - should display self.width characters in edit mode only need the blank on the end whan appending
+
 
 # insert a character into the self.content string at the given position
 # does not modify any properties
@@ -49,6 +48,9 @@ class StringBuffer:
 
         # the current cursor position in the buffer
         self.cpos_buffer = 0
+        # cursor position in the content string
+        self.cpos_content = 0
+
         # position of first display character in the self.content string
         self.start_display_string = 0
         # The string that will appear in the buffer window
@@ -56,6 +58,30 @@ class StringBuffer:
 
         for c in str:
             self.handle_character(c)
+
+    # tests the invariant between cpos_buffer, cpos_content and start_display_string
+    def invariant(self):
+        assert (self.start_display_string + self.cpos_buffer == self.cpos_content)
+
+    def incr_cpos_buffer(self, cpos):
+        if cpos < self.width - 1:
+            return cpos + 1
+        return cpos
+
+    def decr_cpos_buffer(self, cpos):
+        if cpos > 0:
+            return cpos - 1
+        return cpos
+
+    def incr_cpos_content(self, cpos):
+        if cpos >= len(self.content):
+            return cpos + 1
+        return cpos
+
+    def decr_cpos_content(self, cpos):
+        if cpos > 0:
+            return cpos - 1
+        return cpos
 
     # returns true if the content is larger than the buffer window in append mode
     def content_overflow_append(self):
@@ -101,9 +127,9 @@ class StringBuffer:
     def calc_display_string(self):
         if self.state == self.STATE_APPENDING:
             if self.content_overflow_append:
-                return (self.content + self.EOSPAD)[self.start_display_string, self.width - 1]
+                return (self.content + self.EOSPAD)[self.start_display_string: self.width - 1]
             else:
-                return (self.content + self.EOSPAD)[self.start_display_string, len(self.content + self.EOSPAD)]
+                return (self.content + self.EOSPAD)[self.start_display_string: len(self.content + self.EOSPAD)]
         else:
             if self.content_overflow_edit():
                 st = self.start_display_string
@@ -112,6 +138,13 @@ class StringBuffer:
             else:
                 return (self.content)[self.start_display_string: len(self.content)]
     
+    def calc_display_string_2(self):
+        if self.state == self.STATE_APPENDING:
+            start = self.cpos_content - self.cpos_buffer
+            last  = start + (self.width if len(self.content) >= self.width else len(self.content))
+            return (self.content + self.EOSPAD)[start: last] 
+        else:
+            pass
 
     # insert a character into the self.content string at the given position
     # does not modify any properties
@@ -135,28 +168,15 @@ class StringBuffer:
         
         if self.state == self.STATE_APPENDING:
             assert (self.cursor_pos_in_content() == len(self.content))
+            self.content += ch
             if self.content_overflow_append():
-                self.content += ch
-                self.start_display_string = len(self.content) - (self.width - 1)
-                self.display_string = self.content[len(self.content) - (self.width - 1): len(self.content)] + " "
                 self.cpos_buffer = self.width - 1
+                self.cpos_content = len(self.content)
             else:
-                self.content += ch
-                self.display_string = self.content + " "
-                self.start_display_string = 0
-                self.cpos_buffer = len(self.content) 
-            # self.content_append_character(ch)
-            # self.display_string = self.calc_append_display_string()
-            # if len(self.content) <= (self.width - 2):
-            #     self.content += ch
-            #     self.display_string = self.content + " "
-            #     self.start_display_string = 0
-            #     self.cpos_buffer = len(self.content) 
-            # else:
-            #     self.content += ch
-            #     self.start_display_string = len(self.content) - (self.width - 1)
-            #     self.display_string = self.content[len(self.content) - (self.width - 1): len(self.content)] + " "
-            #     self.cpos_buffer = self.width - 1
+                self.cpos_buffer = len(self.content + self.EOSPAD) - 1
+                self.cpos_content = len(self.content + self.EOSPAD) - 1 
+            self.start_display_string = self.cpos_content - self.cpos_buffer
+            self.display_string = self.content[self.start_display_string: len(self.content)] + self.EOSPAD
         else:
             pos = self.cursor_pos_in_content()
             self.content = self.content_insert_character(pos, ch)
@@ -166,16 +186,15 @@ class StringBuffer:
     # if there is one
     def handle_backspace(self):
         if self.state == self.STATE_APPENDING:
-            if len(self.content) <= (self.width - 1):
-                self.content = self.content[0: len(self.content) - 1]
-                self.start_display_string = 0
-                self.display_string = self.content + " "
-                self.cpos_buffer = len(self.content) 
-            else:
-                self.content = self.content[0: len(self.content) - 1]
-                self.start_display_string = len(self.content) - (self.width - 1)
-                self.display_string = self.content[len(self.content) - (self.width - 1): len(self.content)] + " "
+            self.content = self.content[0: len(self.content) - 1]
+            if self.content_overflow_append():
                 self.cpos_buffer = self.width - 1
+                self.cpos_content = len(self.content)
+            else:
+                self.cpos_buffer = len(self.content) 
+                self.cpos_content = len(self.content)
+            self.start_display_string = self.cpos_content - self.cpos_buffer
+            self.display_string = self.content[self.start_display_string: len(self.content)] + self.EOSPAD
         else:
             if not self.cursor_at_content_start():
                 del_pos = self.cursor_pos_in_content() - 1
@@ -214,18 +233,15 @@ class StringBuffer:
     def handle_left(self):
         if self.state == self.STATE_APPENDING:
             self.state = self.STATE_EDITING 
-        if self.cpos_buffer > 0 and self.cpos_buffer <= self.width - 1:
-            self.cpos_buffer -= 1
-        elif self.cpos_buffer == 0:
-            if self.start_display_string > 0:
-                self.start_display_string -= 1
-                end = self.start_display_string + self.width - 1
-                self.display_string = self.content[self.start_display_string : end] + " "
-            else:
-                pass
-        else:
-            pass
-    
+        self.cpos_buffer = (self.cpos_buffer - 1) if (self.cpos_buffer > 0) else 0
+        self.cpos_content = (self.cpos_content - 1) if (self.cpos_content > 0) else 0
+        self.start_display_string = self.cpos_content - self.cpos_buffer
+        leng = len(self.content)
+        max_stop = (self.start_display_string + (self.width) - 1)
+        stop_pos = leng if (leng <= max_stop) else max_stop
+        self.display_string = self.content[self.start_display_string: stop_pos] + self.EOSPAD
+
+   
     # handle right arrow key
     #   if in append mode do nothing
     #   if in edit mode
@@ -241,36 +257,12 @@ class StringBuffer:
     #               move the cursor position in the window 1 place right
     #               move the cursor position in the content string 1 place right  
     def handle_right(self):
-        if self.cpos_buffer >= 0 and self.cpos_buffer < (self.width - 1):
-            self.cpos_buffer += 1
-        elif self.cpos_buffer == self.width - 1:
-            # if self.start_display_string + self.width - 1 == len(self.content): # cannot move right any further
-            #     pass
-            if self.start_display_string < len(self.content) - 1 and (self.start_display_string + self.width - 1 != len(self.content)): # can move right
-                self.start_display_string += 1 
-                end = self.start_display_string + self.width - 1
-                self.display_string = self.content[self.start_display_string : end] + " "
-            else:
-                pass
-        else:
-            pass
+        self.cpos_buffer = (self.cpos_buffer + 1) if (self.cpos_buffer < (self.width - 1)) else self.width - 1
+        self.cpos_content = (self.cpos_content + 1) if (self.cpos_content < (len(self.content))) else len(self.content)
+        self.start_display_string = self.cpos_content - self.cpos_buffer
+        leng = len(self.content)
+        max_stop = (self.start_display_string + (self.width) - 1)
+        stop_pos = leng if (leng <= max_stop) else max_stop
+        self.display_string = self.content[self.start_display_string: stop_pos] + self.EOSPAD
         if self.cursor_after_content_end():
             self.state = self.STATE_APPENDING
-
-# 
-# tests an input string to see if it represents an editing character
-# 
-def is_edit_character(ch):
-    pass
-def is_edit_back(ch):
-    return (len(ch) == 1) and (ch[0] == 0x7f)
-
-def is_edit_del(ch):
-    return (ch == "KEY_DC")
-
-def is_edit_move_back(ch):
-    return (ch == "KEY_DC")
-
-def is_edit_move_forward(ch):
-    return (ch == "KEY_DC")
-
