@@ -1,9 +1,11 @@
 import sys
 import unittest
 
+print(sys.path)
+
 import string_buffer
 
-class TestStringBuffer(unittest.TestCase):
+class TestStringBufferAppend(unittest.TestCase):
 
     def test_append_mode(self):
         sb = string_buffer.StringBuffer("", 5)

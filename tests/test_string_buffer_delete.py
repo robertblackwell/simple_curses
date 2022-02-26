@@ -3,70 +3,105 @@ import unittest
 
 import string_buffer
 
-class TestStringBufferLeft(unittest.TestCase):
+class TestStringBufferDelete(unittest.TestCase):
 
-
-    def test_left_arrow(self):
+    def test_edit_delete(self):
         sb = string_buffer.StringBuffer("abcdefg", 5)
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "defg" + sb.EOSPAD)
+        self.assertEqual(sb.dstring, "defg" + sb.EOSPAD)
         self.assertEqual(sb.cpos_buffer, 4)
-        self.assertEqual(sb.state, sb.STATE_APPENDING)
-
         sb.handle_left()
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "defg" + sb.EOSPAD)
         self.assertEqual(sb.dstring, "defg")
         self.assertEqual(sb.cpos_buffer, 3)
-        self.assertEqual(sb.state, sb.STATE_EDITING)
-        
         sb.handle_left()
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "defg" + sb.EOSPAD)
         self.assertEqual(sb.dstring, "defg")
         self.assertEqual(sb.cpos_buffer, 2)
-        self.assertEqual(sb.state, sb.STATE_EDITING)
-        
         sb.handle_left()
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "defg" + sb.EOSPAD)
         self.assertEqual(sb.dstring, "defg")
         self.assertEqual(sb.cpos_buffer, 1)
-        self.assertEqual(sb.state, sb.STATE_EDITING)
-        
         sb.handle_left()
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "defg" + sb.EOSPAD)
         self.assertEqual(sb.dstring, "defg")
         self.assertEqual(sb.cpos_buffer, 0)
-        self.assertEqual(sb.state, sb.STATE_EDITING)
-        
         sb.handle_left()
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "cdef" + sb.EOSPAD)
         self.assertEqual(sb.dstring, "cdefg")
         self.assertEqual(sb.cpos_buffer, 0)
-        self.assertEqual(sb.state, sb.STATE_EDITING)
-        
         sb.handle_left()
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "bcde" + sb.EOSPAD)
         self.assertEqual(sb.dstring, "bcdef")
         self.assertEqual(sb.cpos_buffer, 0)
-        self.assertEqual(sb.state, sb.STATE_EDITING)
-        
+        sb.handle_left()
+        self.assertEqual(sb.content, "abcdefg")
+        self.assertEqual(sb.display_string, "abcd" + sb.EOSPAD)
+        self.assertEqual(sb.dstring, "abcde")
+        self.assertEqual(sb.cpos_buffer, 0)
         sb.handle_left()
         self.assertEqual(sb.content, "abcdefg")
         self.assertEqual(sb.display_string, "abcd" + sb.EOSPAD)
         self.assertEqual(sb.dstring, "abcde")
         self.assertEqual(sb.cpos_buffer, 0)
         self.assertEqual(sb.state, sb.STATE_EDITING)
-        
-        sb.handle_left()
-        self.assertEqual(sb.content, "abcdefg")
-        self.assertEqual(sb.display_string, "abcd" + sb.EOSPAD)
+
+        sb.handle_delete()
+        self.assertEqual(sb.content, "bcdefg")
+        self.assertEqual(sb.display_string, "bcde")
+        self.assertEqual(sb.dstring, "bcdef")
         self.assertEqual(sb.cpos_buffer, 0)
         self.assertEqual(sb.state, sb.STATE_EDITING)
+
+        sb.handle_delete()
+        self.assertEqual(sb.content, "cdefg")
+        self.assertEqual(sb.display_string, "cdef")
+        self.assertEqual(sb.dstring, "cdefg")
+        self.assertEqual(sb.cpos_buffer, 0)
+        self.assertEqual(sb.state, sb.STATE_EDITING)
+
+        sb.handle_delete()
+        self.assertEqual(sb.content, "defg")
+        self.assertEqual(sb.display_string, "defg")
+        self.assertEqual(sb.dstring, "defg")
+        self.assertEqual(sb.cpos_buffer, 0)
+        self.assertEqual(sb.state, sb.STATE_EDITING)
+
+        sb.handle_delete()
+        self.assertEqual(sb.content, "efg")
+        self.assertEqual(sb.display_string, "efg")
+        self.assertEqual(sb.dstring, "efg")
+        self.assertEqual(sb.cpos_buffer, 0)
+        self.assertEqual(sb.state, sb.STATE_EDITING)
+
+        sb.handle_delete()
+        self.assertEqual(sb.content, "fg")
+        self.assertEqual(sb.display_string, "fg")
+        self.assertEqual(sb.dstring, "fg")
+        self.assertEqual(sb.cpos_buffer, 0)
+        self.assertEqual(sb.state, sb.STATE_EDITING)
+
+        sb.handle_delete()
+        self.assertEqual(sb.content, "g")
+        self.assertEqual(sb.display_string, "g")
+        self.assertEqual(sb.dstring, "g")
+        self.assertEqual(sb.cpos_buffer, 0)
+        self.assertEqual(sb.state, sb.STATE_EDITING)
+
+        sb.handle_delete()
+        self.assertEqual(sb.content, "")
+        self.assertEqual(sb.display_string, "" + sb.EOSPAD)
+        self.assertEqual(sb.dstring, "" + sb.EOSPAD)
+        self.assertEqual(sb.cpos_buffer, 0)
+        self.assertEqual(sb.state, sb.STATE_APPENDING)
+
 
 
 if __name__ == '__main__':
