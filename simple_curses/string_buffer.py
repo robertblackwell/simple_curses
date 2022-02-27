@@ -54,7 +54,7 @@ class StringBuffer:
         self.start_display_string = 0
         # The string that will appear in the buffer window
         self.display_string = ""
-        self.dstring = ""
+        self.display_string = ""
 
         for c in str:
             self.handle_character(c)
@@ -119,22 +119,22 @@ class StringBuffer:
         # casae2 there will be zero unfilled slots at the end of the buffer
         case2 = start + (self.width - 1) <= len(self.content) - 1
         if case0 or case1:
-            # self.dstring = (self.content) [start: start + (self.width - 1)] + self.EOSPAD
+            # self.display_string = (self.content) [start: start + (self.width - 1)] + self.EOSPAD
             if start + self.width >= len(self.content):
                 if start + self.cpos_buffer >= len(self.content):
-                    self.dstring = (self.content) [start: start + len(self.content)] + self.EOSPAD
+                    self.display_string = (self.content) [start: start + len(self.content)] + self.EOSPAD
                 else:
-                    self.dstring = (self.content) [start: start + len(self.content)]
+                    self.display_string = (self.content) [start: start + len(self.content)]
             else:
-                self.dstring = (self.content) [start: start + self.width]
+                self.display_string = (self.content) [start: start + self.width]
         elif case2:
-                self.dstring = (self.content) [start: start + (self.width)]
+                self.display_string = (self.content) [start: start + (self.width)]
 
-        # if(self.display_string != self.dstring):
-        #     print("display string mismatch display_string: [{}] dstring: [{}] cpos_buffer: {}".format(self.display_string, self.dstring, self.cpos_buffer))
+        # if(self.display_string != self.display_string):
+        #     print("display string mismatch display_string: [{}] display_string: [{}] cpos_buffer: {}".format(self.display_string, self.display_string, self.cpos_buffer))
         #     print("_compute_display_string case0: {} case1 : {} case2 : {}".format(case0, case1, case2))
-        # if self.cpos_buffer > len(self.dstring) - 1:
-        #     print("_compute_display_string: no character under cursor dstring: [{}] len(dstring): {} cpos_buffer {}".format(self.dstring, len(self.dstring), self.cpos_buffer))
+        # if self.cpos_buffer > len(self.display_string) - 1:
+        #     print("_compute_display_string: no character under cursor display_string: [{}] len(display_string): {} cpos_buffer {}".format(self.display_string, len(self.display_string), self.cpos_buffer))
 
         # self.display_string = self.content[self.start_display_string: self._bufferend_to_contentpos()] + self.EOSPAD
 
@@ -166,15 +166,12 @@ class StringBuffer:
             else:
                 self.cpos_buffer = len(self.content + self.EOSPAD) - 1
                 self.cpos_content = len(self.content + self.EOSPAD) - 1 
-            # self.start_display_string = self.cpos_content - self.cpos_buffer
-            # self.display_string = self.content[self.start_display_string: self._bufferend_to_contentpos()] + self.EOSPAD
             self._compute_display_string()
         else:
             pos = self.cpos_content
             self.content = self._content_insert_character(pos, ch)
-            # self.start_display_string = self.cpos_content - self.cpos_buffer
-            # self.display_string = self.content[self.start_display_string:  self._bufferend_to_contentpos()]
             self._compute_display_string()
+
     # handle a backspace character. Delete the character on the left of the cursor
     def handle_backspace(self):
         if self.state == self.STATE_APPENDING:
@@ -186,8 +183,6 @@ class StringBuffer:
                 self.cpos_buffer = len(self.content) 
                 self.cpos_content = len(self.content)
 
-            # self.start_display_string = self.cpos_content - self.cpos_buffer
-            # self.display_string = self.content[self.start_display_string: self._bufferend_to_contentpos()] + self.EOSPAD
             self._compute_display_string()
         else:
             if not self._cursor_at_content_start():
@@ -197,9 +192,6 @@ class StringBuffer:
                 if self.cpos_buffer == self.cpos_content:
                     self._decr_cpos_buffer()
                 self._decr_cpos_content()
-
-                # self.start_display_string = self.cpos_content - self.cpos_buffer
-                # self.display_string = self.content[self.start_display_string: self._bufferend_to_contentpos()]
                 self._compute_display_string()
 
             if len(self.content) == 0:
@@ -218,11 +210,8 @@ class StringBuffer:
             self.content = self._content_remove_character(pos)
             if len(self.content) == 0:
                 self.state  = self.STATE_APPENDING
-                # self.display_string = self.content + self.EOSPAD
                 self._compute_display_string()
             else:
-                # self.start_display_string = self.cpos_content - self.cpos_buffer
-                # self.display_string = self.content[self.start_display_string: self._bufferend_to_contentpos()]
                 self._compute_display_string()
 
     
@@ -232,8 +221,6 @@ class StringBuffer:
             self.state = self.STATE_EDITING 
         self._decr_cpos_buffer()
         self._decr_cpos_content()
-        # self.start_display_string = self.cpos_content - self.cpos_buffer
-        # self.display_string = self.content[self.start_display_string: self._bufferend_to_contentpos()] + self.EOSPAD
         self._compute_display_string()
 
    
@@ -243,8 +230,6 @@ class StringBuffer:
             return
         self._incr_cpos_buffer()
         self._incr_cpos_content()
-        # self.start_display_string = self.cpos_content - self.cpos_buffer
-        # self.display_string = self.content[self.start_display_string: self._bufferend_to_contentpos()] + self.EOSPAD
         self._compute_display_string()
 
         if self._cursor_after_content_end():
