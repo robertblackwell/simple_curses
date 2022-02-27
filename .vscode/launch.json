@@ -54,13 +54,24 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "append test string buffer",
+            "name": "delete test string buffer",
             "type": "python",
             "request": "launch",
             "stopOnEntry" :true,
-            "program": "${workspaceFolder}/tests/test_string_buffer_append.py",
+            "program": "${workspaceFolder}/tests/test_string_buffer_delete.py",
             "cwd": "${workspaceFolder}/tests",
             "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "insert test string buffer",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/tests/test_string_buffer_insert.py",
+            "cwd": "${workspaceFolder}/tests",
+            // "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
             "args": [],
             "console": "integratedTerminal"
         },
@@ -83,28 +94,6 @@
             "program": "${workspaceFolder}/tests/test_string_buffer_right.py",
             "cwd": "${workspaceFolder}/tests",
             "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
-            "args": [],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "delete test string buffer",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry" :true,
-            "program": "${workspaceFolder}/tests/test_string_buffer_delete.py",
-            "cwd": "${workspaceFolder}/tests",
-            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
-            "args": [],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "insert test string buffer",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry" :true,
-            "program": "${workspaceFolder}/tests/test_string_buffer_insert.py",
-            "cwd": "${workspaceFolder}/tests",
-            // "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
             "args": [],
             "console": "integratedTerminal"
         },
