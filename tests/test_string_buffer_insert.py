@@ -28,13 +28,13 @@ class TestStringBufferInsert(unittest.TestCase):
         sb.handle_character("X")
         self.assertEqual(sb.content, "abcdXefg")
         self.assertEqual(sb.display_string, "dXefg")
-        self.assertEqual(sb.cpos_buffer, 1)
+        self.assertEqual(sb.cpos_buffer, 2)
         self.assertEqual(sb.state, sb.STATE_EDITING)
 
         sb.handle_character("Y")
-        self.assertEqual(sb.content, "abcdYXefg")
-        self.assertEqual(sb.display_string, "dYXef")
-        self.assertEqual(sb.cpos_buffer, 1)
+        self.assertEqual(sb.content, "abcdXYefg")
+        self.assertEqual(sb.display_string, "dXYef")
+        self.assertEqual(sb.cpos_buffer, 3)
         self.assertEqual(sb.state, sb.STATE_EDITING)
 
     def test_edit_insert_at_beginning(self):

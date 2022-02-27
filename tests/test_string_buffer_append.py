@@ -7,14 +7,14 @@ class TestStringBufferAppend(unittest.TestCase):
 
     def test_append_mode(self):
         sb = string_buffer.StringBuffer("", 5)
-        self.assertEqual(sb.content, "")
+        self.assertEqual(sb.content, "" + sb.EOSPAD)
         self.assertEqual(sb.display_string, "")
         self.assertEqual(sb.cpos_buffer, 0)
         self.assertEqual(sb.state, sb.STATE_APPENDING)
 
         sb.handle_character("a")
         self.assertEqual(sb.content, "a")
-        self.assertEqual(sb.display_string, "a ")
+        self.assertEqual(sb.display_string, "a"+sb.EOSPAD)
         self.assertEqual(sb.cpos_buffer, 1)
         self.assertEqual(sb.state, sb.STATE_APPENDING)
 

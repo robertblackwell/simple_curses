@@ -54,7 +54,7 @@ class StringBuffer:
         self.start_display_string = 0
         # The string that will appear in the buffer window
         self.display_string = ""
-        self.display_string = ""
+        self._compute_display_string()
 
         for c in str:
             self.handle_character(c)
@@ -169,6 +169,8 @@ class StringBuffer:
             self._compute_display_string()
         else:
             pos = self.cpos_content
+            self._incr_cpos_content()
+            self._incr_cpos_buffer()
             self.content = self._content_insert_character(pos, ch)
             self._compute_display_string()
 
