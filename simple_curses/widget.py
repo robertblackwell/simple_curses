@@ -1,11 +1,14 @@
 import time
 import sys
+from abc import ABC, abstractmethod, abstractproperty
 import curses
 import curses.textpad
 import time
 import string
 
 import string_buffer
+from colors import Colors
+import validator
 
 menu = ['Home', 'Store Lookup', 'MAC Lookup', 'MAC Clear',
         'Afterhours Wi-Fi Disable/Enable', 'Exit']
@@ -15,6 +18,33 @@ menu = ['Home', 'Store Lookup', 'MAC Lookup', 'MAC Clear',
 requiredHeight = 15
 requiredWidth = 60
 
+class WidgetBase(ABC):
+    @property
+    def form(self):
+        return self._form
+    @form.setter
+    def form(self, form):
+        self._form = form
+    
+    @property
+    def win(self):
+        return self._win
+    @win.setter
+    def win(self, w):
+        self._win = w
+
+    @abstractmethod
+    def accept_focus(self):
+        pass
+    @abstractmethod
+    def release_focus(self):
+        pass
+    @abstractmethod
+    def render(self):
+        pass
+    @abstractmethod
+    def handle_input(self, ch):
+        pass
 
 # 
 # tests an input string to see if it represents an editing character
@@ -33,23 +63,33 @@ def is_move_left(ch):
 def is_move_right(ch):
     return (ch == "KEY_SRIGHT")
 
+def is_return(ch):
+    return (ch == '\r')
+
+def is_linefeed(ch):
+    return (ch == '\n')
+
+def is_space(ch):
+    return (ch == " ")
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
 # A TextWidget is composed of a label and an value field
 class TextWidget:
-    def __init__(self, row, col, label, width, attributes, data):
+    def __init__(self, row, col, key, label, width, attributes, data):
+        self.id = key
         self.has_focus = False
         self.row = row
         self.col = col
         self.data = data
-        self.content = ""
-        self.content_position = 0
+        # self.content = ""
+        # self.content_position = 0
         self.label = label + ": "
         self.width = width
         self.height = 1
         self.attributes = attributes
         self.form = None
+        self.validator = validator.Text()
         tmp = width + len(self.label)
         # self.win = curses.newwin(1, width + len(self.label) + 2, row, col, )
         self.string_buffer = string_buffer.StringBuffer("", self.width)
@@ -62,6 +102,12 @@ class TextWidget:
         self.display_length = 0 # is width-1 if we are adding to the end of the string in which case the cursor is over the 'next' slot
                                 # if we are editing the string and the cursor is somewhere inside the content string then has the value width
     
+    def get_width(self):
+        return len(self.label) + self.width + 2
+
+    def get_height(self):
+        return 1
+
     # paint attributes for the content area so that it is visible to used
     def paint_content_area_background(self):
         tmp = self.width + len(self.label) - 1
@@ -98,6 +144,8 @@ class TextWidget:
     def focus_release(self):
         self.has_focus = False
 
+    def get_value(self):
+        return self.string_buffer.content
     # 
     # Called by inpput handling functions to signal to user that the last keysttroke was
     # invalid. Dont quite know what to do yet
@@ -127,229 +175,75 @@ class TextWidget:
         self.position_cursor()
         return did_handle_ch
 
-def is_next_control(ch):
-    return (ch == "KEY_RIGHT")
+class IntegerWidget(TextWidget):
+    def __init__(self, row, col, key, label, width, attributes, data):
+        super().__init__(row, col, key, label, width, attributes, data)
+        self.validator = validator.Integer()
 
-def is_prev_control(ch):
-    return (ch == "KEY_LEFT")
+class FloatWidget(TextWidget):
+    def __init__(self, row, col, key, label, width, attributes, data):
+        super().__init__(row, col, key, label, width, attributes, data)
+        self.validator = validator.Float()
 
-def is_function_key(ch):
-    tmp = ch[0:6]
-    return (tmp == "KEY_F(")
+class IPAddressWidget(TextWidget):
+    def __init__(self, row, col, key, label, width, attributes, data):
+        super().__init__(row, col, key, label, width, attributes, data)
+        self.validator = validator.IPAddress()
 
-def fn_key_match(k1, k2):
-    return (k1 == k2)
+class IPNetworkWidget(TextWidget):
+    def __init__(self, row, col, key, label, width, attributes, data):
+        super().__init__(row, col, key, label, width, attributes, data)
+        self.validator = validator.IPNetwork()
 
-def fn_key_description(k1):
-    s1 = k1.replace("KEY_F(", "")
-    s2 = s1.replace(")", "")
-    s3 = "F"+s2
-    return s3
 
 class MenuItem:
-    def __init__(self, name, fn_key, function):
-        self.name = name
-        self.fn_key = fn_key
+    def __init__(self, row, col, label, width, height, attributes, function, context):
+        self.label = label
         self.function = function
+        self.context = context
+        self.validator = None
         self.form = None
         self.win = None
-    def invoke(self, fn_key, context):
-        self.function(self.form, context)
-    
-    def render(self):
-        self.win.addstr(fn_key_description(self.fn_key)+"-", curses.color_pair(self.form.COLOR_GREEN_BLACK) + curses.A_BOLD)
-        self.win.addstr(self.name, curses.color_pair(self.form.COLOR_CYAN_BLACK) + curses.A_BOLD)
-
-
-class Form:
-    def __init__(self, stdscr, height, width, widgets, menus, context):
-        self.COLOR_REDBLACK = 1
-        self.COLOR_CYAN_BLACK = 2
-        self.COLOR_GREEN_BLACK = 3
-        self.COLOR_MAGENTA_BLACK = 4
-        self.COLOR_BLUE_WHITE = 5
-        self.COLOR_YELLOW_BLACK = 6
-        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
-        curses.init_pair(5, curses.COLOR_BLUE, curses.COLOR_WHITE)
-        curses.init_pair(6, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        self.has_focus = False
+        self.row = row
+        self.col = col
         self.height = height
         self.width = width
-        self.widgets = widgets
-        self.menus = menus
-        self.context = context
-        self.stdscr = stdscr
-        self.focus_index = 0
-        self.title = "This is a data entry form"
-        self.title_win = curses.newwin(5, self.width, 0, 0)
-        body_height = self.height -  5 - 3 - 3 + 2
-        body_start_row = 4
-        body_start_col = 0
-        self.body_win = curses.newwin(self.height - 5 - 3 - 3 + 2, self.width, 4, 0 )
-        self.menu_win = curses.newwin(3, self.width, self.height - 6, 0)
-        self.msg_win = curses.newwin(3, self.width, self.height - 4, 0 )
-        self.message_text = ""
-        body_height = 0
-        for w in self.widgets:
-            w.win = curses.newwin(1, width + len(w.label) + 2, body_start_row + w.row, body_start_col + w.col, )
-            w.form = self
-            w.has_focus = False
-        for m in self.menus:
-            m.form = self
-            m.win = self.menu_win
 
-    def msg_error(self, msg):
-        label = " ERROR: "
-        self.msg_win.clear()
-        self.msg_win.addstr(1, 1, label, curses.color_pair(1)+curses.A_STANDOUT )
-        self.msg_win.addstr(1, 1 + len(label), msg)
-        self.msg_win.noutrefresh()
-        curses.doupdate()
+    def get_width(self):
+        return self.width + 4 if self.width > 4 else 12
+    def get_height(self):
+        return 3
 
-    def msg_warn(self, msg):
-        label = " WARNING: "
-        self.msg_win.clear()
-        self.msg_win.addstr(1, 1, label )
-        self.msg_error.addstr(1, 1 + len(label), msg)
-        self.msg_win.noutrefresh()
-        curses.doupdate()
-
-    def msg_info(self, msg):
-        label = " INFO: "
-        self.msg_win.clear()
-        self.msg_win.addstr(1, 1 , label )
-        self.msg_win.addstr(1, 1 + len(label), msg)
-        self.msg_win.noutrefresh()
-        curses.doupdate()
-
-    def handle_menu(self, ch):
-        for itm in self.menus:
-            if fn_key_match(ch, itm.fn_key):
-                itm.invoke(self, self.context)
-    
-    def handle_input(self):
-        # here should render everything to ensure the latest version of the screen is being seen
-        # hen input is provided
-        ch = self.stdscr.getkey()
-        self.msg_info("handle_input ch: {} len(ch) {} hex: {}".format(ch, len(ch), ch.encode('utf8').hex()))
-        focus_widget = self.widgets[self.focus_index]
-        focus_widget.focus_accept()
-        if focus_widget.handle_input(ch):
-            return
-        else:
-            if is_next_control(ch):
-                old_focus_widget = self.widgets[self.focus_index]
-                self.focus_index = (self.focus_index + 1 + len(self.widgets)) % (len(self.widgets))
-                old_focus_widget.focus_release()
-                focus_widget = self.widgets[self.focus_index]
-                focus_widget.focus_accept()
-            elif is_prev_control(ch):
-                old_focus_widget = self.widgets[self.focus_index]
-                self.focus_index = (self.focus_index - 1 + len(self.widgets)) % (len(self.widgets))
-                old_focus_widget.focus_release()
-                focus_widget = self.widgets[self.focus_index]
-                focus_widget.focus_accept()
-            elif is_function_key(ch):
-                self.handle_menu(ch)
-
-    def make_boxes(self):
-        # self.stdscr.border(0,0,0,0,0,0,0)
-        self.title_win.border(0,0,0,0,0,0,0,0)
-        self.body_win.border(0,0,0,0, curses.ACS_LTEE, curses.ACS_RTEE,0,0)
-        self.menu_win.border(0,0,0,0, curses.ACS_LTEE, curses.ACS_RTEE, curses.ACS_LTEE, curses.ACS_RTEE)
-        self.msg_win.border(0,0,0,0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
-
-    def render_menus(self):
-        nbr_menuitems = len(self.menus)
-        cols_per_item = (self.width - 2) // nbr_menuitems
-        start = 1
-        for m in self.menus:
-            self.menu_win.move(1,start)
-            m.render()
-            start += cols_per_item
-        self.menu_win.noutrefresh()
-
-    def render_message(self):
+    def position_cursor(self):
         pass
-        self.msg_win.addstr(1,1, " Msg: ", curses.color_pair(self.COLOR_MAGENTA_BLACK) + curses.A_BOLD)
 
+    def focus_accept(self):
+        self.has_focus = True
+    
+    def focus_release(self):
+        self.has_focus = False
+
+    def handle_input(self, ch):
+        did_handle_ch = True
+        if is_return(ch) or is_space(ch) or is_linefeed(ch):
+            self.invoke()
+        else:
+            did_handle_ch = False
+
+        self.position_cursor()
+        return did_handle_ch
+
+    def invoke(self):
+        self.function(self.form, self.context)
+    
     def render(self):
-        self.make_boxes()
-        self.title_win.addstr(2, (self.width // 2) - (len(self.title) // 2), self.title, curses.A_BOLD + curses.color_pair(self.COLOR_YELLOW_BLACK))
-        self.menu_win.addstr(1,1, " Menu: ")
-        self.msg_win.addstr(1,1, " Msg: ", curses.color_pair(self.COLOR_MAGENTA_BLACK) + curses.A_BOLD)
-        self.title_win.noutrefresh()
-        self.body_win.noutrefresh()
-        self.menu_win.noutrefresh()
-        self.msg_win.noutrefresh()
+        if self.has_focus:
+            self.win.bkgd(" ", Colors.button_focus())
+            self.win.addstr(1, 1, self.label, Colors.button_focus())
+        else:
+            self.win.bkgd(" ", Colors.button_no_focus())
+            self.win.addstr(1, 1, self.label, Colors.button_no_focus())
 
-        for w in self.widgets:
-            w.render()
-
-        self.render_menus()
-        self.render_message()
-        # nbr_menuitems = len(self.menus)
-        # cols_per_item = (self.width - 2) // nbr_menuitems
-        # start = 1
-        # for m in self.menus:
-        #     self.menu_win.move(1,start)
-        #     m.render()
-        #     start += cols_per_item
-
-        # self.menu_win.noutrefresh()
-
-        curses.doupdate()
-        # self.stdscr.refresh()
-
-    def run(self):
-        self.widgets[self.focus_index].focus_accept()
-        self.render()
-        while True:
-            self.render()
-            self.handle_input()
-
-
-def testScreenSize(stdscr):
-    h, w = stdscr.getmaxyx()
-    if h < requiredHeight or w < requiredWidth:
-        raise Exception(
-            "SCreen is too small must be at least 15 high and 60 wide")
-
-
-def menuAction0(context):
-    x = context
-
-def menuAction1(context):
-    x = context
-
-def menuAction2(context):
-    x = context
-
-def menuAction3(context):
-    x = context
-
-
-
-# def main(stdscr):
-#     data = "dummy context"
-#     testScreenSize(stdscr)
-#     curses.curs_set(2)
-#     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-#     widgets = [ 
-#         TextWidget(2,2,"Widget 1st", 20,  "", data),
-#         TextWidget(4,2,"Widget 2nd", 20, "", data),
-#         TextWidget(6,2,"Widget 3rd", 20, "", data),
-#         TextWidget(8,2,"Widget 4th", 20, "", data),
-#     ]
-#     menus = [ 
-#         MenuItem("MFirst", "KEY_FN(1)", menuAction1),
-#         MenuItem("MSecond", "KEY_FN(2)", menuAction2),
-#         MenuItem("MTHird", "KEY_FN(3)", menuAction3)
-#     ]
-#     form = Form(stdscr, 20, 100, widgets, menus, data)
-#     form.run()
-
-# curses.wrapper(main)
+        self.win.noutrefresh()
 

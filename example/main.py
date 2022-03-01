@@ -21,7 +21,8 @@ if not project_dir in sys.path:
     sys.path.append(project_dir)
     sys.path.append(src_dir)
 
-from simple_curses.widget import Form, TextWidget, MenuItem
+from simple_curses.widget import TextWidget, IntegerWidget, FloatWidget, IPAddressWidget, IPNetworkWidget, MenuItem
+from simple_curses.form import Form
  
 def testScreenSize(stdscr):
     h, w = stdscr.getmaxyx()
@@ -34,7 +35,14 @@ def menuAction0(form, context):
     form.msg_info("menu action 0")
 
 def menuAction1(form, context):
-    form.msg_info("menu action 1")
+    v = form.get_values()
+    s = ""
+    if v is not None:
+        for k in v.keys():
+            s += "v[{}] = {}, ".format(k, v[k])
+
+    form.msg_info("menu action 1 {}". format(v))
+    
 
 def menuAction2(form, context):
     form.msg_info("menu action 2")
@@ -50,17 +58,17 @@ def main(stdscr):
     curses.curs_set(2)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     widgets = [ 
-        TextWidget(2,2,"Widget 1st", 20, "", data),
-        TextWidget(4,2,"Widget 2nd", 20, "", data),
-        TextWidget(6,2,"Widget 3rd", 20, "", data),
-        TextWidget(8,2,"Widget 4th", 20, "", data),
+        IPNetworkWidget( 2,2,"ipnet_01",     "IPNetwork ", 20, "", data),
+        IntegerWidget  ( 4,2,"int_val_01",   "Integer   ", 20, "", data),
+        FloatWidget    ( 6,2,"float_val_01", "Float     ", 20, "", data),
+        IPAddressWidget( 8,2,"ipaddr_01",    "IPAddr    ", 20, "", data),
+        TextWidget     (10,2,"text_01",      "Text      ", 20, "", data),
+
+        MenuItem(22, 2, "Validate", 13, 3, 0, menuAction1, "context for menu 1"),
+        MenuItem(22, 17, "Cancel", 7, 3, 0, menuAction2, "context for menu 2"),
+        MenuItem(22, 26, "Ok-Run", 7, 3, 0, menuAction3, "context for menu 3")
     ]
-    menus = [ 
-        MenuItem("MFirst", "KEY_F(1)", menuAction1),
-        MenuItem("MSecond", "KEY_F(2)", menuAction2),
-        MenuItem("MTHird", "KEY_F(3)", menuAction3)
-    ]
-    form = Form(stdscr, 30, 100, widgets, menus, data)
+    form = Form(stdscr, 30, 100, widgets, data)
     form.run()
 
 curses.wrapper(main)
