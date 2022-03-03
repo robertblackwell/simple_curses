@@ -7,8 +7,10 @@ import time
 import string
 
 import string_buffer
+import lines_buffer
 from colors import Colors
 import validator
+from utils import *
 
 menu = ['Home', 'Store Lookup', 'MAC Lookup', 'MAC Clear',
         'Afterhours Wi-Fi Disable/Enable', 'Exit']
@@ -46,47 +48,24 @@ class WidgetBase(ABC):
     def handle_input(self, ch):
         pass
 
-# 
-# tests an input string to see if it represents an editing character
-# 
-def is_edit_character(ch):
-    pass
-def is_edit_back(ch):
-    return (len(ch) == 1) and (ch[0] == '\x7f')
-
-def is_edit_del(ch):
-    return (ch == "KEY_DC")
-
-def is_move_left(ch):
-    return (ch == "KEY_SLEFT")
-
-def is_move_right(ch):
-    return (ch == "KEY_SRIGHT")
-
-def is_return(ch):
-    return (ch == '\r')
-
-def is_linefeed(ch):
-    return (ch == '\n')
-
-def is_space(ch):
-    return (ch == " ")
-
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
 # A TextWidget is composed of a label and an value field
 class TextWidget:
-    def __init__(self, row, col, key, label, width, attributes, data):
+    def __init__(self, relative_row, relative_col, key, label, width, attributes, data):
         self.id = key
         self.has_focus = False
-        self.row = row
-        self.col = col
+        self.row = relative_row
+        self.col = relative_col
         self.data = data
         # self.content = ""
         # self.content_position = 0
         self.label = label + ": "
         self.width = width
         self.height = 1
+        self.start_row = 0
+        self.start_col = 0
+
         self.attributes = attributes
         self.form = None
         self.validator = validator.Text()
@@ -102,6 +81,13 @@ class TextWidget:
         self.display_length = 0 # is width-1 if we are adding to the end of the string in which case the cursor is over the 'next' slot
                                 # if we are editing the string and the cursor is somewhere inside the content string then has the value width
     
+    def set_enclosing_window(self, win):
+        self.win = win
+
+    def set_form(self, form):
+        self.form = form
+
+
     def get_width(self):
         return len(self.label) + self.width + 2
 
@@ -197,7 +183,7 @@ class IPNetworkWidget(TextWidget):
 
 
 class MenuItem:
-    def __init__(self, row, col, label, width, height, attributes, function, context):
+    def __init__(self, relative_row, relative_col, label, width, height, attributes, function, context):
         self.label = label
         self.function = function
         self.context = context
@@ -205,10 +191,20 @@ class MenuItem:
         self.form = None
         self.win = None
         self.has_focus = False
-        self.row = row
-        self.col = col
+        self.row = relative_row
+        self.col = relative_col
         self.height = height
         self.width = width
+        self.start_row = 0
+        self.start_col = 0
+
+
+
+    def set_enclosing_window(self, win):
+        self.win = win
+
+    def set_form(self, form):
+        self.form = form
 
     def get_width(self):
         return self.width + 4 if self.width > 4 else 12

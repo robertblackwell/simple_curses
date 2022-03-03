@@ -32,6 +32,39 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "example scrolling",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/example/scroll_widget.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "menu main",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/example/menu.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "textbox example",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/example/textbox.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "test string buffer",
             "type": "python",
             "request": "launch",
@@ -125,6 +158,17 @@
             "request": "launch",
             "stopOnEntry" :true,
             "program": "${workspaceFolder}/tests/test_validator.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "lines buffer test string buffer",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/tests/test_lines_buffer.py",
             "cwd": "${workspaceFolder}/tests",
             "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
             "args": [],

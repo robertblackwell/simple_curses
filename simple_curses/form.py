@@ -34,13 +34,36 @@ class Form:
         self.stdscr = stdscr
         self.focus_index = 0
         self.title = "This is a data entry form"
-        self.title_win = curses.newwin(5, self.width, 0, 0)
+
+        self.title_start_row = 0
+        self.title_start_col = 0
         self.title_height = 5
+        self.title_width = self.width
+        self.title_win = curses.newwin(self.title_height, self.title_width, 0, 0)
+
         self.menu_height = 5
         self.msg_height = 5
-        self.body_height = self.height -  self.title_height - self.msg_height + 2
+
+
+        self.body_start_row = self.title_start_row + self.title_height
+        self.body_start_col = 0
+        self.body_width = self.width
+        self.body_height = self.height - self.title_height - self.msg_height + 2
+
+        self.menu_start_row = self.body_start_row + self.body_height - 1
+        self.menu_width = self.width
+        self.menu_height = 5
+
+        self.msg_start_row = self.menu_start_row + self.menu_height - 1
+        self.msg_width = self.width
+        self.msg_height = 5
+
+        self.menu_height = 5
+        self.msg_height = 5
+
         body_start_row = 4
         body_start_col = 0
+
         self.body_win = curses.newwin(self.body_height, self.width, self.title_height - 1, 0 )
         self.msg_win = curses.newwin(self.msg_height, self.width, body_start_row + self.body_height - 1, 0 )
         self.message_text = ""
@@ -49,12 +72,18 @@ class Form:
         for w in self.widgets:
             klass = w.__class__.__name__
             if klass == "MenuItem":
-                w.win = curses.newwin(w.get_height(), w.get_width(), w.row, col)
+                w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), w.row, col))
                 col += w.get_width() + 4
             else:
-                w.win = curses.newwin(w.get_height(), w.get_width(), body_start_row + w.row, body_start_col + w.col )
-            w.form = self
+                w.start_row = w.row + body_start_row
+                w.start_col = w.col + body_start_col
+                w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row, self.body_start_col + w.col ))
+            w.set_form(self)
             w.has_focus = False
+        zz = self.body_win.getparyx()
+        z2 = self.title_win.getparyx()
+        z3 = z2
+
 
     def msg_error(self, msg):
         label = " ERROR: "
