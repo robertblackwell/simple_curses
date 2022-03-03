@@ -68,7 +68,7 @@ def main(stdscr):
         MenuItem(22, 17, "Cancel", 7, 3, 0, menuAction2, "context for menu 2"),
         MenuItem(22, 26, "Ok-Run", 7, 3, 0, menuAction3, "context for menu 3")
     ]
-    form = Form(stdscr, 30, 100, widgets, data)
+    form = Form(stdscr, 70, 180, widgets, data)
     form.run()
 
 curses.wrapper(main)

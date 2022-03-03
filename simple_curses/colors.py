@@ -53,6 +53,18 @@ class Colors:
         return curses.color_pair(c.COLOR_RED_BLACK) +  curses.A_BLINK
     
     @classmethod
+    def msg_warn_attr(cls):
+        c: Colors = cls.instance()
+        return curses.color_pair(c.COLOR_CYAN_BLACK) +  curses.A_BLINK
+    
+    @classmethod
+    def msg_info_attr(cls):
+        c: Colors = cls.instance()
+        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BLINK
+    
+
+
+    @classmethod
     def title_attr(cls):
         c: Colors = cls.instance()
         return curses.color_pair(c.COLOR_BLACK_WHITE) +  curses.A_BOLD

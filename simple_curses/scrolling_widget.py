@@ -39,7 +39,7 @@ class ScrollingWidget:
         self.row = row
         self.col = col
         self.data = data
-        self.label = label
+        self.label = label + ": "
         self.width = width
         self.height = height
         self.start_row = 0
@@ -63,7 +63,7 @@ class ScrollingWidget:
         self.outter_win = win
         x = self.outter_win.getmaxyx()
         self.title_window = curses.newwin(1, self.width, self.start_row, self.start_col)
-        self.content_win = curses.newwin(self.height - 2,  self.width - 4, self.start_row + 1, self.start_col+ 2)
+        self.content_win = curses.newwin(self.height - 2,  self.width - 3, self.start_row + 1, self.start_col + 1)
 
     def set_form(self, form):
         self.form = form

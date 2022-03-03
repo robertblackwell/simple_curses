@@ -21,6 +21,7 @@ class DummyWidget:
         self.lines_view = None
         self.outter_win = None
         self.form = None
+        self.color_pair = None
 
     def set_enclosing_window(self, win):
         self.outter_win = win
@@ -42,7 +43,9 @@ class DummyWidget:
         return self.width
 
     def render(self):
-        self.outter_win.bkgd(" ", Colors.button_focus())
+        self.outter_win.bkgd(" ", self.color_pair)
+        for i in range(0, self.height):
+            self.outter_win.addstr(i, 1, "label: {} line : {}".format(self.label, i)[0:self.width - 1])
         self.outter_win.noutrefresh()
         curses.doupdate()
 
@@ -55,3 +58,12 @@ class DummyWidget:
         self.outter_win.noutrefresh()
         curses.doupdate()
 
+class DummyShortWidget(DummyWidget):
+    def __init__(self, key, label, width, height, attributes, data):
+        DummyWidget.__init__(self, key, label, width, height, attributes, data)
+
+    def render(self):
+        self.outter_win.bkgd(" ", self.color_pair)
+        self.outter_win.addstr(0, 1, self.label)
+        self.outter_win.noutrefresh()
+        curses.doupdate()

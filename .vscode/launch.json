@@ -43,6 +43,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "layout",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/example/layout_test.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "example scrolling",
             "type": "python",
             "request": "launch",

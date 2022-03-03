@@ -1,12 +1,18 @@
 import curses
+from linecache import lazycache
 
-from numpy import inner
-
+from layout import VerticalStack, HorizontalStack, WidgetPosition
+from dummy_windget import DummyWidget, DummyShortWidget
 
 def subwin_relative(win, row_count, col_count, relative_begin_y, relative_begin_x):
-    parent_top_left = win.getbegyx()
-    abs_y = parent_top_left[0] + relative_begin_y
-    abs_x = parent_top_left[1] + relative_begin_x 
+    win_top_left_abs = win.getbegyx()
+    p = win.getparyx()
+    max = win.getmaxyx()
+    max_y = max[0]
+    max_x = max[1]
+    abs_y = win_top_left_abs[0] + relative_begin_y
+    abs_x = win_top_left_abs[1] + relative_begin_x 
+
     swin = win.subwin(row_count, col_count, abs_y, abs_x)
     return swin
 
@@ -17,28 +23,21 @@ def addstr_middle(win, y, str, attr):
     tcol = (w - len(str)) // 2
     win.addstr(y, tcol, str, attr)
 
-class Form2:
-    def __init__(self, stdscr, widgets, context):
-        mx = stdscr.getmaxyx()
-        h = mx[0] - 2
-        w = mx[1] - 2
-        stdscr.bkgd(" ", curses.color_pair(5))
-        self.height = height
-        self.width = width
-        self.widgets = widgets
-        self.context = context
-        self.stdscr = stdscr
-        self.focus_index = 0
-        self.title = "This is a data entry form"
-
-        self.title_start_row = 0
-        self.title_start_col = 0
-        self.title_height = 5
-        self.title_width = self.width
-        self.outter_win = stdscr.subwin(self.height + 2, self.width + 2, 0, 0)
-        self.inner_win = self.outter_win.subwin(self.height, self.width, 1, 1)
-        self.title_win = curses.newwin(self.title_height, self.title_width, 0, 0)
-
+data = "context data"
+left_widgets = [ 
+    DummyWidget("ipnet_01",     "One     ", 30, 1, "", data),
+    DummyWidget("int_val_01",   "Two     ", 30, 3, "", data),
+    DummyWidget("float_val_01", "Three   ", 30, 4, "", data),
+    DummyWidget("ipaddr_01",    "Four    ", 30, 2, "", data),
+    DummyWidget("text_01",      "Five    ", 30, 1, "", data),
+]
+right_widgets = [
+    DummyShortWidget("ipnet_01",     "  One  ", 8, 5, "", data),
+    DummyShortWidget("int_val_01",   "  Two  ", 8, 5, "", data),
+    DummyShortWidget("float_val_01", " Three ", 8, 5, "", data),
+    DummyShortWidget("ipaddr_01",    "  Four ", 8, 5, "", data),
+    DummyShortWidget("text_01",      "  Five ", 8, 5, "", data),
+]
 
 def main(stdscr):
     curses.curs_set(2)
@@ -80,23 +79,21 @@ def main(stdscr):
 
     msg_height = 5
     menu_height = 5
-    body_height = h - msg_height - menu_height - 1 - 1
+    body_height = h - msg_height - menu_height
 
     title = "This Is A Title"
     # tcol = (120 + 2 - len(title)) // 2
     # mwin.addstr(0, tcol, title, curses.color_pair(6) + curses.A_BOLD)
 
     addstr_middle(mwin, 0, title, curses.color_pair(6) + curses.A_BOLD)
-    body_start = 0
-    win_body = subwin_relative(inner_win, body_height, w, body_start, 0)
+
+    win_body = subwin_relative(inner_win, body_height, w, 0, 0)
     win_body.bkgd(" ", curses.color_pair(2))
 
-    menu_start = body_start + body_height + 1
-    win_menu = subwin_relative(inner_win, menu_height, w, menu_start, 0)
+    win_menu = subwin_relative(inner_win, menu_height-1, w, body_height + 1, 0)
     win_menu.bkgd(" ", curses.color_pair(2))
 
-    msg_start = menu_start + menu_height + 1
-    win_msg = subwin_relative(inner_win, msg_height, w, msg_start, 0)
+    win_msg = subwin_relative(inner_win, msg_height-1, w, body_height + menu_height + 1, 0)
     win_msg.bkgd(" ", curses.color_pair(2))
 
     win_body_left = subwin_relative(win_body, body_height, (w // 2) - 1, 0, 0)
@@ -105,12 +102,32 @@ def main(stdscr):
     win_body_right = subwin_relative(win_body, body_height, (w // 2), 0, (w // 2))
     win_body_right.bkgd(" ", curses.color_pair(4))
 
+    layoutleft = VerticalStack(win_body_left.getbegyx(), win_body_left.getmaxyx(), left_widgets)
+    widget_positions = layoutleft.compute_layout()
 
-    for i in range(0, menu_height):
-        win_menu.addstr(i, 0, "line {}".format(i))
+    toggle = True
+    wp: WidgetPosition
+    for wp in widget_positions:
+        w: DummyWidget = wp.widget
+        w.set_enclosing_window(subwin_relative(win_body_left, w.get_height(), w.get_width(), wp.beg_y, wp.beg_x ))
+        w.color_pair = curses.color_pair(2) if toggle else curses.color_pair(6)
+        toggle = not toggle
 
-    for i in range(0, msg_height):
-        win_msg.addstr(i, 0, "line {}".format(i))
+    x1 = win_menu.getparyx()
+    x2 = win_menu.getbegyx()
+    x3 = win_menu.getmaxyx()
+
+    layoutright = HorizontalStack(win_menu.getmaxyx(), right_widgets)
+    right_widget_positions = layoutright.compute_layout()
+
+    wp2: WidgetPosition
+    for wp2 in right_widget_positions:
+        w: DummyWidget = wp2.widget
+        wtmp = subwin_relative(win_menu, w.get_height() - 1, w.get_width(), wp2.beg_y, wp2.beg_x )
+        w.set_enclosing_window(wtmp)
+        w.color_pair = curses.color_pair(3) if toggle else curses.color_pair(4)
+        toggle = not toggle
+
 
 
     stdscr.noutrefresh()
@@ -119,6 +136,10 @@ def main(stdscr):
     win_body.noutrefresh()
     win_body_left.noutrefresh()
     win_body_right.noutrefresh()
+    for w in left_widgets:
+        w.render()
+    for w in right_widgets:
+        w.render()
     curses.doupdate()
 
 
