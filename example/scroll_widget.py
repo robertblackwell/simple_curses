@@ -21,7 +21,8 @@ if not project_dir in sys.path:
     sys.path.append(project_dir)
     sys.path.append(src_dir)
 
-from simple_curses.widget import TextWidget, IntegerWidget, FloatWidget, IPAddressWidget, IPNetworkWidget, MenuItem
+from simple_curses.text_widget import TextWidget, IntegerWidget, FloatWidget, IPAddressWidget, IPNetworkWidget
+from simple_curses.menu import MenuItem
 from simple_curses.scrolling_widget import ScrollingWidget
 from simple_curses.form import Form
  

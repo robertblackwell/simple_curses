@@ -1,16 +1,9 @@
-import time
-import sys
-from abc import ABC, abstractmethod, abstractproperty
 import curses
 import curses.textpad
-import time
-\
-import string_buffer
 import lines_buffer
 from colors import Colors
-import validator
 from utils import *
-
+from simple_curses.widget_base import WidgetBase
 xlines = [
     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
     "1  02-1lkjhasdfhlakjsfhlajhflakdhjfldask",
@@ -32,7 +25,7 @@ xlines = [
     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
-class ScrollingWidget:
+class ScrollingWidget(WidgetBase):
     def __init__(self, row, col, key, label, width, height, attributes, data):
         self.id = key
         self.has_focus = False

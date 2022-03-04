@@ -1,6 +1,3 @@
-import time
-import sys
-from abc import ABC, abstractmethod, abstractproperty
 import curses
 import curses.textpad
 import time
@@ -12,54 +9,7 @@ from colors import Colors
 import validator
 from utils import *
 from form import Form
-
-menu = ['Home', 'Store Lookup', 'MAC Lookup', 'MAC Clear',
-        'Afterhours Wi-Fi Disable/Enable', 'Exit']
-
-
-
-requiredHeight = 15
-requiredWidth = 60
-
-class WidgetBase(ABC):
-    @property
-    def form(self):
-        return self._form
-    @form.setter
-    def form(self, form):
-        self._form = form
-    
-    @property
-    def win(self):
-        return self._win
-    @win.setter
-    def win(self, w):
-        self._win = w
-
-    @abstractmethod
-    def get_height(self) -> int:
-        pass
-    @abstractmethod
-    def get_width(self) -> int:
-        pass
-    @abstractmethod
-    def focus_accept(self) -> None:
-        pass
-    @abstractmethod
-    def focus_release(self) -> None:
-        pass
-    @abstractmethod
-    def render(self) -> None:
-        pass
-    @abstractmethod
-    def handle_input(self, ch) -> bool:
-        pass
-    @abstractmethod
-    def set_enclosing_window(self, win: curses.window) -> None:
-        pass
-    @abstractmethod
-    def set_form(self, form: Form) -> None:
-        pass
+from widget_base import WidgetBase
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
@@ -193,66 +143,4 @@ class IPNetworkWidget(TextWidget):
     def __init__(self, row, col, key, label, width, attributes, data):
         super().__init__(row, col, key, label, width, attributes, data)
         self.validator = validator.IPNetwork()
-
-
-class MenuItem:
-    def __init__(self, relative_row, relative_col, label, width, height, attributes, function, context):
-        self.label = label
-        self.function = function
-        self.context = context
-        self.validator = None
-        self.form = None
-        self.win = None
-        self.has_focus = False
-        self.row = relative_row
-        self.col = relative_col
-        self.height = height
-        self.width = width
-        self.start_row = 0
-        self.start_col = 0
-
-
-
-    def set_enclosing_window(self, win: curses.window) -> None:
-        self.win = win
-
-    def set_form(self, form: Form) -> None:
-        self.form = form
-
-    def get_width(self) -> int:
-        return self.width + 4 if self.width > 4 else 12
-    def get_height(self) -> int:
-        return 3
-
-    def position_cursor(self) -> None:
-        pass
-
-    def focus_accept(self) -> None:
-        self.has_focus = True
-    
-    def focus_release(self) -> None:
-        self.has_focus = False
-
-    def handle_input(self, ch) -> None:
-        did_handle_ch = True
-        if is_return(ch) or is_space(ch) or is_linefeed(ch):
-            self.invoke()
-        else:
-            did_handle_ch = False
-
-        self.position_cursor()
-        return did_handle_ch
-
-    def invoke(self) -> None:
-        self.function(self.form, self.context)
-    
-    def render(self) -> None:
-        if self.has_focus:
-            self.win.bkgd(" ", Colors.button_focus())
-            self.win.addstr(1, 1, self.label, Colors.button_focus())
-        else:
-            self.win.bkgd(" ", Colors.button_no_focus())
-            self.win.addstr(1, 1, self.label, Colors.button_no_focus())
-
-        self.win.noutrefresh()
 
