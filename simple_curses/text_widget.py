@@ -15,6 +15,10 @@ from widget_base import WidgetBase
 # A model upon which to base more complicated text controls
 # A TextWidget is composed of a label and an value field
 class TextWidget(WidgetBase):
+    @classmethod
+    def classmeth(cls):
+        print("hello")
+    
     def __init__(self, relative_row, relative_col, key, label, width, attributes, data):
         self.id = key
         self.has_focus = False

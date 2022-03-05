@@ -1,7 +1,5 @@
 import curses
 
-from numpy import inner
-
 
 def subwin_relative(win, row_count, col_count, relative_begin_y, relative_begin_x):
     parent_top_left = win.getbegyx()

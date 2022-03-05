@@ -12,9 +12,9 @@ class WidgetBase(ABC):
     def classmeth(cls):
         pass
 
-    @abstractmethod
-    def foobar(self):
-        pass
+    # @abstractmethod
+    # def foobar(self):
+    #     pass
 
     @abstractmethod
     def get_height(self) -> int:

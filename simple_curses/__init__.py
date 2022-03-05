@@ -1,3 +1,9 @@
 print("RB importing simple_curses package")
-import string_buffer
-import widget
+from . import string_buffer
+from . import widget_base
+from . import text_widget
+from . import scrolling_widget
+from . import string_buffer
+from . import menu
+from . import form
+from . import colors

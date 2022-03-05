@@ -2,13 +2,9 @@ import sys
 import os
 import curses
 
-menu = ['Home', 'Store Lookup', 'MAC Lookup', 'MAC Clear',
-        'Afterhours Wi-Fi Disable/Enable', 'Exit']
 
-
-
-requiredHeight = 15
-requiredWidth = 60
+requiredHeight = 30
+requiredWidth = 180
 
 
 # print(sys.path)
@@ -25,12 +21,13 @@ from simple_curses.text_widget import TextWidget, IntegerWidget, FloatWidget, IP
 from simple_curses.menu import MenuItem
 from simple_curses.scrolling_widget import ScrollingWidget
 from simple_curses.form import Form
+
  
 def testScreenSize(stdscr):
     h, w = stdscr.getmaxyx()
     if h < requiredHeight or w < requiredWidth:
         raise Exception(
-            "SCreen is too small must be at least 15 high and 60 wide")
+            "SCreen is too small must be at least {} high and {} wide currently is high: {} wide: {}".format(requiredHeight, requiredWidth, h, w))
 
 
 def menuAction0(form, context):
@@ -44,6 +41,7 @@ def menuAction1(form, context):
             s += "v[{}] = {}, ".format(k, v[k])
 
     form.msg_info("menu action 1 {}". format(v))
+    # run a command with elements of v as arguments
     
 
 def menuAction2(form, context):

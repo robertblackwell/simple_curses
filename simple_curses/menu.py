@@ -7,10 +7,12 @@ import time
 from colors import Colors
 from utils import *
 from form import Form
-from widget import WidgetBase
-
+from widget_base import WidgetBase
 
 class MenuItem(WidgetBase):
+    @classmethod
+    def classmeth(cls):
+        pass
     def __init__(self, relative_row, relative_col, label, width, height, attributes, function, context):
         self.label = label
         self.function = function

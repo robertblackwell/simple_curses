@@ -26,6 +26,11 @@ xlines = [
 ]
 
 class ScrollingWidget(WidgetBase):
+
+    @classmethod
+    def classmeth(cls):
+        pass
+
     def __init__(self, row, col, key, label, width, height, attributes, data):
         self.id = key
         self.has_focus = False
