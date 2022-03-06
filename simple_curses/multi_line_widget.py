@@ -44,14 +44,14 @@ class MultiLineWidget(WidgetBase):
         self.height = height
         self.start_row = 0
         self.start_col = 0
-        self.paste_flag = False
+        self.paste_mode = False
 
         self.attributes = attributes
         self.lines_view = None
         self.outter_win = None
         self.form = None
         tmp = width + len(self.label)
-        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.height - 3, self.width)
+        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.height - 2, self.width)
 
 
         # these properties are for manaing the display of the conttent string during
@@ -66,8 +66,8 @@ class MultiLineWidget(WidgetBase):
         x = self.outter_win.getmaxyx()
         self.title_window = curses.newwin(1, self.width, self.start_row, self.start_col)
         self.line_number_win = curses.newwin(self.height - 2, 3, self.start_row + 1, self.start_col + 1)
-        self.content_win = curses.newwin(self.height - 2,  self.width - 3, self.start_row + 1, self.start_col + 1 + 3)
-        self.info_win = curses.newwin(5, self.width, self.start_row + self.height - 2 + 1, self.start_col)
+        self.content_win = curses.newwin(self.height - 1,  self.width - 3, self.start_row + 1, self.start_col + 1 + 3)
+        self.info_win = curses.newwin(4, self.width, self.start_row + self.height - 2 + 1, self.start_col)
         # self.paste_menu_item =  MenuItem(self.start_row + 1, 1, "PasteOn", 13, 3, 0, self.menuAction1, "context for menu 1")
 
     def menuAction1(self):
@@ -82,7 +82,7 @@ class MultiLineWidget(WidgetBase):
 
     def focus_accept(self):
         self.has_focus = True
-        self.position_cursor()
+        # self.position_cursor()
 
     def focus_release(self):
         self.has_focus = False
@@ -94,8 +94,13 @@ class MultiLineWidget(WidgetBase):
     def get_width(self):
         return self.width
 
+
+
     def render(self):
-        self.outter_win.box()
+        # self.outter_win.box()
+        self.outter_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
+        self.info_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
+        # self.info_win.box()
         # self.outter_win.bkgd(" ", Colors.button_focus())
         
         # t_c = (self.width - len(self.label)) // 2
@@ -130,15 +135,15 @@ class MultiLineWidget(WidgetBase):
             ln_str = "{}".format(line_number)
             self.content_win.addstr(r, 0, txt, Colors.green_black())
             self.line_number_win.addstr(r, 0, ln_str, Colors.white_black())
-            if y_curs_buf == r:
+            if y_curs_buf == r and self.has_focus:
                 assert y_curs_buf == vstr.curs_y
                 assert x_curs_buf == vstr.curs_x
                 
-                self.content_win.addstr(r, x_curs_buf, cursor_ch, Colors.green_black() + curses.A_REVERSE)
+                self.content_win.addstr(r, x_curs_buf, cursor_ch, Colors.green_black() + curses.A_REVERSE + curses.A_STANDOUT)
             r += 1
 
-        self.info_win.bkgd(" ", Colors.button_focus())
-        self.info_win.addstr(1, 3, "Paste Mode: {} ".format(self.paste_flag))
+        self.info_win.bkgd(" ", Colors.green_black() + curses.A_BOLD)
+        self.info_win.addstr(1, 3, "Paste Mode: {} ".format(self.paste_mode))
         self.info_win.addstr(2, 3, "Cntrl-p toggles paste mode")
 
         # for line in lines:
@@ -161,12 +166,6 @@ class MultiLineWidget(WidgetBase):
         self.info_win.noutrefresh()
         curses.doupdate()
 
-    def toggle_paste_mode(self):
-        before = self.paste_flag
-        after = not self.paste_flag
-        self.paste_flag = after
-        self.form.msg_info("toggle_paste_mode from:{} to:{}".format(before, after))
-        self.mu_lines_buffer.set_paste_mode()
 
     def handle_input(self, ch):
         did_handle = True
@@ -175,37 +174,60 @@ class MultiLineWidget(WidgetBase):
         elif is_cntrl_p(ch):
             self.toggle_paste_mode()
         elif is_edit_back(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_backspace()
         elif (len(ch)  == 1) and (ch[0] in string.printable) and not ch == "\n":
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_character(ch)
         elif is_edit_del(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_delete()
         elif is_delete_line(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_delete_line()
         elif is_move_down(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_down()
         elif is_move_left(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_left()
         elif is_move_right(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_right()
         elif is_move_up(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_up()
         elif is_newline(ch):
+            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_newline()
         else:
             did_handle = False
 
-        self.position_cursor()
+        # self.position_cursor()
         return did_handle
 
-    def position_cursor(self):
-        return
-        y = self.mu_lines_buffer.cpos_y_buffer
-        x = self.mu_lines_buffer.cpos_x_buffer
-        line = self.mu_lines_buffer.content[self.cpos_y_content]
-        tmp = self.mu_lines_buffer.lines[self.mu_lines_buffer.cpos_lines]
-        text = "{}:{}".format(tmp[0], tmp[1])
-        self.content_win.addstr(cpos_buffer, 0, text, Colors.button_focus())
-        self.content_win.noutrefresh()
-        curses.doupdate()
+    def paste_mode_handle_input(self):
+        pass
+############################################################################################################ 
+# paste mode
+############################################################################################################ 
+    def toggle_paste_mode(self):
+        before = self.paste_mode
+        after = not self.paste_mode
+        self.set_paste_mode(after)
+        self.form.msg_info("toggle_paste_mode from:{} to:{}".format(before, after))
 
+    def set_paste_mode(self, on_off):
+        if on_off:
+            self.set_paste_mode_on()
+        else:
+            self.set_paste_mode_off()
+
+    def set_paste_mode_off(self):
+        self.paste_mode = False
+
+    def set_paste_mode_on(self):
+        self.paste_mode = True
+        self.mu_lines_buffer._cursor_set_at_end()
+        self.mu_lines_buffer.handle_newline()
+        self.paste_mode = True
