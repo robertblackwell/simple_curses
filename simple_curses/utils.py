@@ -15,6 +15,11 @@ import validator
 # 
 # tests an input string to see if it represents an editing character
 # 
+def is_addline(ch):
+    return False
+def is_cntrl_p(ch):
+    return (ch == "\x10")
+        
 def is_edit_character(ch):
     pass
 def is_edit_back(ch):
@@ -43,4 +48,10 @@ def is_linefeed(ch):
 
 def is_space(ch):
     return (ch == " ")
+
+def is_newline(ch):
+    return (ch == '\n')
+
+def is_delete_line(ch):
+    return False
 

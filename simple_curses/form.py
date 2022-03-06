@@ -125,7 +125,9 @@ class Form:
         # here should render everything to ensure the latest version of the screen is being seen
         # hen input is provided
         ch = self.stdscr.getkey()
-        self.msg_info("handle_input ch: {} len(ch) {} hex: {}".format(ch, len(ch), ch.encode('utf8').hex()))
+        chstr = ch if ch != '\n' else "NEWLINE"
+
+        self.msg_info("handle_input ch: {} len(ch) {} hex: {}".format(chstr, len(chstr), ch.encode('utf8').hex()))
         focus_widget = self.widgets[self.focus_index]
         focus_widget.focus_accept()
         if focus_widget.handle_input(ch):

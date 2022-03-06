@@ -1,4 +1,23 @@
 import ipaddress
+from typing import TypeVar, List
+
+T = TypeVar("T")
+
+class ArrayOf:
+    def __init__(self, validator:T):
+        self.validator = validator
+    
+    def validate(self, ar:List[str]):
+        result = []
+        for s in ar:
+            try:
+                r = self.validator.validate(s)
+                result.append(r)
+            except ValueError:
+                return None
+        return result
+    def error_message(self):
+        return "Invalid text string for array of {}".format(self.validator.error_message())
 
 class Text:
     def __init__(self):
