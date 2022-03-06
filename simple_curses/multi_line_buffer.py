@@ -42,20 +42,87 @@ def _list_split_at_line_pos(ar: List[str], line_index, char_index):
 def _list_delete_by_index(ar, index):
     del ar[index]
 
-class xMultiLineView:
-    def __init__(self):
-        self.y_first = 0
-        self.y_last = 0
-        self.x_first = 0
-        self.x_last = 0
-        self.x_cursor = 0
-        self.y_cursor = 0
+EOSPAD = " "
+
+class MultiLineView2:
+    def __init__(self, content_lines: List[str], y_begin, y_end, x_begin, x_end, curs_y_buf, curs_x_buf):
+        """
+        @param content_lines: List[str] - the complete list of content lines in the multiline buffer
+        @param y_begin: int             - the index into content_lines of the first display line
+        @param y_end  : int             - the index into content_lines of the last display line
+
+        @note: y_end - y_begin + 1 is the height of the display window
+
+        @param x_begin: int             - the index into a displayable line of the first displayable character
+                                          will be the left most visible character
+        @param x_end  : int             - the index into a displayable line of the right most displayable
+                                          character. This character will be in the right most position of the display window
+
+        @note: x_end - x_begin + 1 is the width  of the display window
+
+        @param curs_y_buf: int - line offset (zero based) in the display window (from y_begin) of the line comtaining the cursor
+
+        @note: y_begin + curs_y_buf may be one line beypnd the end of the content_lines. This indicates the cursor
+                is in the left most position on a non-existent line. This class must temporarily add a zero length line
+
+        @param curs_x_buf: int - character offset (zero based) in the cursor line (from x_begin) of the character under the cursor
+
+        @note x_begin + curs_x_buf may be off the end of the cursor line. This class must temporarily add a character onto the end of the line
+                for the cursor to sit on. 
+
+        @return - the following properties are the output:
+
+            MultiLineView.lines             all the lines to be displayed
+            MultiLineView.curs_y_buf        the offset in lines of the line containing the cursor
+            MultiLineView.curs_x_buf        the character offset in the cursor line of the cursor position - highlight this character
+                                            that is cursor is at lines[curs_y_buf][curs_x_buf]
+
+            MultiLineView.cursor_line_debug the cursor line with a X in the cursor position - just for easy debugging
+
+        """
+        self.width = x_end - x_begin + 1
+        self.height = y_end - y_begin + 1
+        assert (0 <= curs_y_buf) and (curs_y_buf <= self.height - 1)
+        assert (0 <= curs_x_buf) and (curs_x_buf <= self.width - 1)
+        self.lines = []
+        self.y_begin = y_begin
+        self.y_end = y_end
+        self.x_begin = x_begin
+        self.x_end = x_end
+        self.curs_y_buf = curs_y_buf
+        self.curs_x_buf = curs_x_buf
+        index = 0
+        for line in content_lines[y_begin: y_end + 1]:
+            self.lines.append(line[x_begin: x_end + 1])
+        assert (y_end <= len(content_lines))
+        if y_end == len(content_lines):
+            self.lines.append("")
+        self.lines[curs_y_buf] = self.make_display_line()
+        self.cursor_line_debug = self.make_cursor_line()
+
+    def make_display_line(self):
+        raw_line = self.lines[self.curs_y_buf]
+        if raw_line == "" and self.curs_x_buf > 0:
+            raise RuntimeError("raw line is empty and x_begin is not zero")
+        elif raw_line == "" and self.curs_x_buf == 0:
+            return " "
+        elif self.curs_x_buf == len(raw_line):
+            return raw_line + EOSPAD
+        elif self.curs_x_buf < len(raw_line):
+            return raw_line
+        else:
+            raise RuntimeError("make_display_line - invalid curs_x")
+
+    def make_cursor_line(self):
+        cline = self.lines[self.curs_y_buf]
+        if self.curs_x_buf == len(cline):
+            cline = cline + "X"
+        else:
+            cline = cline[0: self.curs_x_buf] + "X" + cline[self.curs_x_buf + 1: len(cline)]
+        return cline
+
 
 class MultiLineView:
-    @classmethod
-    def make(cls, content, y_begin, y_end, x_begin, x_end):
-        self.lines = content[y_begin, y_end+1]
-        pass
     def __init__(self, lines, one_based_line_numbers, curs_y: int, curs_x: int, curs_char: str):
         self.paste_mode = False
         self.lines: List[str] = lines
