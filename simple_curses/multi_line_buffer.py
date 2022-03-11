@@ -1,4 +1,3 @@
-from asyncore import socket_map
 from typing import List, Set, Dict, Tuple, Optional
 import string 
 
@@ -45,60 +44,89 @@ def _list_delete_by_index(ar, index):
 EOSPAD = " "
 
 class MultiLineView2:
-    def __init__(self, content_lines: List[str], y_begin, y_end, x_begin, x_end, curs_y_buf, curs_x_buf):
-        """
-        @param content_lines: List[str] - the complete list of content lines in the multiline buffer
-        @param y_begin: int             - the index into content_lines of the first display line
-        @param y_end  : int             - the index into content_lines of the last display line
+    def __init__(self, content_lines: List[str], cpos_y_content: int, cpos_x_content: int, view_height: int, view_width: int, cpos_y_buffer: int, cpos_x_buffer: int):
+        tmp = cpos_y_content - cpos_y_buffer
+        self.view_content_y_begin = tmp if tmp >= 0 else 0
+        if tmp >= 0:
+            self.view_content_y_begin = tmp
+            self.view_buffer_y_begin = 0
+        else:
+            self.view_content_y_begin = 0
+            self.view_buffer_y_begin = -tmp
 
-        @note: y_end - y_begin + 1 is the height of the display window
+        view_content_x_begin = 0
+        view_content_x_end = 0
+        self.content_lines = content_lines
+        self.view_height = view_height
+        self.view_width = view_width
+        self.cpos_y_content = cpos_y_content
+        self.cpos_y_buffer = cpos_y_buffer
+        self.cpos_x_content = cpos_x_content
+        self.cpos_x_buffer = cpos_x_buffer
+        # calculate self.view_content_y_end by enumerating cases
 
-        @param x_begin: int             - the index into a displayable line of the first displayable character
-                                          will be the left most visible character
-        @param x_end  : int             - the index into a displayable line of the right most displayable
-                                          character. This character will be in the right most position of the display window
+        if self.view_content_y_begin > 0 and self.view_content_y_begin + view_height - 1 < len(content_lines):
+            # case 1
+            # content is larger than buffer
+            # last line of content is on or past the last line of buffer
+            # y cursor is somewhere in buffer on a real conttent line 
+            self.view_content_y_end = self.view_content_y_begin + view_height - 1
+            self.view_buffer_y_end = view_height - 1
 
-        @note: x_end - x_begin + 1 is the width  of the display window
+        elif self.view_content_y_begin > 0 and  cpos_y_buffer == view_height - 1 and cpos_y_content == len(content_lines) and len(content_lines) >= view_height:
+            # case 2
+            # content is larger than buffer
+            # last line of content is on 2nd last line of buffer
+            # y cursor is on last line of buffer and on imaginery line of content at index len(content_lines)
+            self.view_content_y_end = len(content_lines) 
+            self.view_buffer_y_end = view_height - 1
 
-        @param curs_y_buf: int - line offset (zero based) in the display window (from y_begin) of the line comtaining the cursor
+        elif self.view_content_y_begin > 0 and cpos_y_buffer < view_height - 1 and self.view_content_y_begin + view_height - 1 == len(content_lines) and cpos_y_content < len(content_lines):
+            # case 3
+            # content is larger than buffer
+            # last line of content is on 2nd last line of buffer
+            # y_cursor is on a true content line
+            self.view_content_y_end = len(content_lines) - 1
+            self.view_buffer_y_end = view_height - 2
+            
+        elif self.view_content_y_begin == 0 and len(content_lines) < view_height and cpos_y_content < len(content_lines): # and cpos_y_buffer + (view_height - 1) - cpos_y_content == (view_height - 1):
+            # case 4 - 
+            # content is smaller than buffer
+            # last line of content is on last line of buffer
+            # y cursor is on a true content line sonewhere in the buffer
+            self.view_content_y_end = len(content_lines) - 1
+            self.view_buffer_y_end = view_height - 1
 
-        @note: y_begin + curs_y_buf may be one line beypnd the end of the content_lines. This indicates the cursor
-                is in the left most position on a non-existent line. This class must temporarily add a zero length line
+        elif self.view_content_y_begin == 0 and cpos_y_content == len(content_lines) and cpos_y_buffer == view_height - 1 and len(content_lines) <= view_height:
+            # case 5
+            # content is smaller than buffer
+            # last line of content is on 2nd last line of buffer
+            # y cursor is on last line of buffer and on imaginery line of content at index len(content_lines) 
+            self.view_content_y_end = len(content_lines)
+            self.view_buffer_y_end = view_height - 1
+            
+        elif self.view_content_y_begin == 0 and cpos_y_content < len(content_lines):
+            # case 6
+            # content is larger than buffer
+            # last line of content is on 2nd last line of buffer
+            # y_cursor is on a true content line
+            self.view_content_y_end = len(content_lines)
+            self.view_buffer_y_end = view_height - 2
+        else:
+            raise RuntimeError("{}Invlid case".format(self.__class__.__name__))
 
-        @param curs_x_buf: int - character offset (zero based) in the cursor line (from x_begin) of the character under the cursor
 
-        @note x_begin + curs_x_buf may be off the end of the cursor line. This class must temporarily add a character onto the end of the line
-                for the cursor to sit on. 
+    def make_debug(self):
+        buffer: List[str] = []
+        for j in range(0, self.view_height):
+            buffer.append("Z")
+        bindex = self.view_buffer_y_begin
+        for index in range(self.view_content_y_begin, self.view_content_y_end + 1):
+            line  = self.content_lines[index] if index < len(self.content_lines) else "W"
+            buffer[bindex] = line
+            bindex += 1
 
-        @return - the following properties are the output:
-
-            MultiLineView.lines             all the lines to be displayed
-            MultiLineView.curs_y_buf        the offset in lines of the line containing the cursor
-            MultiLineView.curs_x_buf        the character offset in the cursor line of the cursor position - highlight this character
-                                            that is cursor is at lines[curs_y_buf][curs_x_buf]
-
-            MultiLineView.cursor_line_debug the cursor line with a X in the cursor position - just for easy debugging
-
-        """
-        self.width = x_end - x_begin + 1
-        self.height = y_end - y_begin + 1
-        assert (0 <= curs_y_buf) and (curs_y_buf <= self.height - 1)
-        assert (0 <= curs_x_buf) and (curs_x_buf <= self.width - 1)
-        self.lines = []
-        self.y_begin = y_begin
-        self.y_end = y_end
-        self.x_begin = x_begin
-        self.x_end = x_end
-        self.curs_y_buf = curs_y_buf
-        self.curs_x_buf = curs_x_buf
-        index = 0
-        for line in content_lines[y_begin: y_end + 1]:
-            self.lines.append(line[x_begin: x_end + 1])
-        assert (y_end <= len(content_lines))
-        if y_end == len(content_lines):
-            self.lines.append("")
-        self.lines[curs_y_buf] = self.make_display_line()
-        self.cursor_line_debug = self.make_cursor_line()
+        return buffer
 
     def make_display_line(self):
         raw_line = self.lines[self.curs_y_buf]
@@ -183,8 +211,8 @@ class MultiLineBuffer:
 
         # specifies the portion of the self.content array that will be displayed in
         # the view window or buffer
-        self.view_y_begin = 0 # an index into self.content - the first view line
-        self.view_y_end = 0   # an index into self.content - the last view line
+        self.self.view_content_y_begin = 0 # an index into self.content - the first view line
+        self.self.view_content_y_end = 0   # an index into self.content - the last view line
         self.view_x_begin = 0 # an index into self.content[i] the first character to be displayed - 
         self.view_x_end = 0   # an index into all displayable lines of self.content - the last character to be displayed
 
@@ -353,11 +381,11 @@ class MultiLineBuffer:
     def _compute_y_view(self):
         """ computes the range of lines from self.content that will be displayed
         represents this range as self.view_begin_y and self.view_end_y 
-        the only place that updates self.view_y_begin and self.view_y_end"""
-        self.view_y_begin = self.cpos_y_content - self.cpos_y_buffer
+        the only place that updates self.self.view_content_y_begin and self.self.view_content_y_end"""
+        self.self.view_content_y_begin = self.cpos_y_content - self.cpos_y_buffer
         last = len(self.content) - 1
-        tmp = self.view_y_begin + self.view_height - 1
-        self.view_y_end = tmp if tmp < last and tmp >= 0 else last
+        tmp = self.self.view_content_y_begin + self.view_height - 1
+        self.self.view_content_y_end = tmp if tmp < last and tmp >= 0 else last
 
 
     def _compute_display_string(self):
@@ -405,7 +433,7 @@ class MultiLineBuffer:
         view_lines: List[str] = []
         view_line_numbers: List[int] = []
         self._compute_y_view()
-        for i in range(self.view_y_begin, self.view_y_end + 1):
+        for i in range(self.self.view_content_y_begin, self.self.view_content_y_end + 1):
             ln, s = self._compute_line_view(i)
             view_lines.append(s)
             view_line_numbers.append(ln)
