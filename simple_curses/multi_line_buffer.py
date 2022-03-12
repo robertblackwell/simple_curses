@@ -54,7 +54,8 @@ class MultiLineView2:
             self.view_content_y_begin = 0
             self.view_buffer_y_begin = -tmp
 
-        view_content_x_begin = 0
+        xtmp = cpos_x_content - cpos_x_buffer
+        self.view_content_x_begin = xtmp if xtmp > 0 else 0
         view_content_x_end = 0
         self.content_lines = content_lines
         self.view_height = view_height
@@ -211,8 +212,8 @@ class MultiLineBuffer:
 
         # specifies the portion of the self.content array that will be displayed in
         # the view window or buffer
-        self.self.view_content_y_begin = 0 # an index into self.content - the first view line
-        self.self.view_content_y_end = 0   # an index into self.content - the last view line
+        self.view_content_y_begin = 0 # an index into self.content - the first view line
+        self.view_content_y_end = 0   # an index into self.content - the last view line
         self.view_x_begin = 0 # an index into self.content[i] the first character to be displayed - 
         self.view_x_end = 0   # an index into all displayable lines of self.content - the last character to be displayed
 
@@ -381,11 +382,11 @@ class MultiLineBuffer:
     def _compute_y_view(self):
         """ computes the range of lines from self.content that will be displayed
         represents this range as self.view_begin_y and self.view_end_y 
-        the only place that updates self.self.view_content_y_begin and self.self.view_content_y_end"""
-        self.self.view_content_y_begin = self.cpos_y_content - self.cpos_y_buffer
+        the only place that updates self.view_content_y_begin and self.view_content_y_end"""
+        self.view_content_y_begin = self.cpos_y_content - self.cpos_y_buffer
         last = len(self.content) - 1
-        tmp = self.self.view_content_y_begin + self.view_height - 1
-        self.self.view_content_y_end = tmp if tmp < last and tmp >= 0 else last
+        tmp = self.view_content_y_begin + self.view_height - 1
+        self.view_content_y_end = tmp if tmp < last and tmp >= 0 else last
 
 
     def _compute_display_string(self):
@@ -433,7 +434,7 @@ class MultiLineBuffer:
         view_lines: List[str] = []
         view_line_numbers: List[int] = []
         self._compute_y_view()
-        for i in range(self.self.view_content_y_begin, self.self.view_content_y_end + 1):
+        for i in range(self.view_content_y_begin, self.view_content_y_end + 1):
             ln, s = self._compute_line_view(i)
             view_lines.append(s)
             view_line_numbers.append(ln)
