@@ -3,8 +3,6 @@ import unittest
 import curses
 import string
 
-from matplotlib.pyplot import text
-
 import multi_line_buffer
 
 lines = [
@@ -62,7 +60,7 @@ def handle_string(ml: multi_line_buffer.MultiLineBuffer, s: str):
             raise RuntimeError("invalid character in string for handle string")
 
 class TestMultiLinesHelpers(unittest.TestCase):
-    def xtest_multi_line_buffer_helpers(self):
+    def test_multi_line_buffer_helpers(self):
         lb: multi_line_buffer.MultiLineBuffer = multi_line_buffer.MultiLineBuffer(lines2, 5, 55)
         self.assertEqual(len(lb.content), 8)
         self.assertEqual(lb.cpos_y_content, 7)
@@ -72,12 +70,12 @@ class TestMultiLinesHelpers(unittest.TestCase):
         self.assertEqual(lb.cpos_x_buffer, 0)
         self.assertEqual(lb.cpos_x_content, 0)
         lb._cursor_set_after_end()
-        # v = lb.get_view()
-        self.assertEqual(len(lb.content), 8)
-        self.assertEqual(lb.cpos_y_content, 7)
+        v = lb.get_view()
+        self.assertEqual(len(lb.content), 9)
+        self.assertEqual(lb.cpos_y_content, 8)
         self.assertEqual(lb.cpos_y_buffer, 4)
-        self.assertEqual(lb.view_content_y_begin, 3)
-        self.assertEqual(lb.view_content_y_end, 7)
+        self.assertEqual(lb.view_content_y_begin, 4)
+        self.assertEqual(lb.view_content_y_end, 8)
         self.assertEqual(lb.cpos_x_buffer, 0)
         self.assertEqual(lb.cpos_x_content, 0)
 
