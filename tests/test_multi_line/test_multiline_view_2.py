@@ -275,7 +275,7 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
         self.assertEqual(mlv.view_content_y_begin, 0)
         self.assertEqual(mlv.view_content_y_end, 5)
         self.assertEqual(mlv.view_buffer_y_begin, 1)
-        self.assertEqual(mlv.view_buffer_y_end, 6)
+        self.assertEqual(mlv.view_buffer_y_end, 5)
 
     def test_multiline_view_5(self):
         height = 7

@@ -84,7 +84,125 @@ class TestMultiLinesBufferDelete(unittest.TestCase):
         # self.assertTrue(test_view(lines[0:6], lb))
 
         lb.handle_up()
+class TestMultiLineBufferDeleteKey(unittest.TestCase):
+    def test_delete_inside_line(self):
+        ar = lines[0:7].copy()
+        lb: multi_line_buffer.MultiLineBuffer = multi_line_buffer.MultiLineBuffer(ar, 5, 40)
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 0)
+        self.assertEqual(lb.cpos_x_content, 0)
+        # cursor is at at start of last line
+        for i in range(0,2):
+            lb.handle_right()
+        # cursor is no inside last line
+        lb.handle_delete()
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 2)
+        self.assertEqual(lb.cpos_x_content, 2)
 
+    def test_delete_start_of_line(self):
+        ar = lines[0:7].copy()
+        lb: multi_line_buffer.MultiLineBuffer = multi_line_buffer.MultiLineBuffer(ar, 5, 40)
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 0)
+        self.assertEqual(lb.cpos_x_content, 0)
+        # cursor is at at start of last line
+        lb.handle_up()
+        # cursor is now at start of second last line
+        lb.handle_delete()
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 5)
+        self.assertEqual(lb.cpos_y_buffer, 3)
+        self.assertEqual(lb.cpos_x_buffer, 0)
+        self.assertEqual(lb.cpos_x_content, 0)
+
+    def test_delete_end_of_line(self):
+        ar = lines[0:7].copy()
+        lb: multi_line_buffer.MultiLineBuffer = multi_line_buffer.MultiLineBuffer(ar, 5, 40)
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 0)
+        self.assertEqual(lb.cpos_x_content, 0)
+        # cursor is at at start of last line
+        lb.handle_up()
+        for i in range(0,40):
+            lb.handle_right()
+        # cursor is no at end of second last line
+        lb.handle_delete()
+        # should have combined second last and last lines
+        v3 = lb.get_view()
+        self.assertEqual(len(lb.content), 6)
+        self.assertEqual(lb.cpos_y_content, 5)
+        self.assertEqual(lb.cpos_y_buffer, 3)
+        self.assertEqual(lb.cpos_x_buffer, 37)
+        self.assertEqual(lb.cpos_x_content, 37)
+
+class TestMultiLineBufferBackspace(unittest.TestCase):
+    def test_backspace_inside_line(self):
+        ar = lines[0:7].copy()
+        lb: multi_line_buffer.MultiLineBuffer = multi_line_buffer.MultiLineBuffer(ar, 5, 40)
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 0)
+        self.assertEqual(lb.cpos_x_content, 0)
+        # cursor is at at start of last line
+        for i in range(0,2):
+            lb.handle_right()
+        # cursor is no inside last line
+        lb.handle_backspace()
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 1)
+        self.assertEqual(lb.cpos_x_content, 1)
+
+    def test_backspace_start_of_line(self):
+        ar = lines[0:7].copy()
+        lb: multi_line_buffer.MultiLineBuffer = multi_line_buffer.MultiLineBuffer(ar, 5, 40)
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 0)
+        self.assertEqual(lb.cpos_x_content, 0)
+        # cursor is at at start of last line
+        lb.handle_up()
+        # cursor is now at start of second last line
+        lb.handle_backspace()
+        self.assertEqual(len(lb.content), 6)
+        self.assertEqual(lb.cpos_y_content, 4)
+        self.assertEqual(lb.cpos_y_buffer, 2)
+        self.assertEqual(lb.cpos_x_buffer, 36)
+        self.assertEqual(lb.cpos_x_content, 36)
+
+    def test_backspace_end_of_line(self):
+        ar = lines[0:7].copy()
+        lb: multi_line_buffer.MultiLineBuffer = multi_line_buffer.MultiLineBuffer(ar, 5, 40)
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_x_buffer, 0)
+        self.assertEqual(lb.cpos_x_content, 0)
+        # cursor is at at start of last line
+        lb.handle_up()
+        for i in range(0,40):
+            lb.handle_right()
+        # cursor is no at end of second last line
+        lb.handle_backspace()
+        # should have combined second last and last lines
+        v3 = lb.get_view()
+        self.assertEqual(len(lb.content), 7)
+        self.assertEqual(lb.cpos_y_content, 5)
+        self.assertEqual(lb.cpos_y_buffer, 3)
+        self.assertEqual(lb.cpos_x_buffer, 36)
+        self.assertEqual(lb.cpos_x_content,36)
 
 if __name__ == '__main__':
    unittest.main()

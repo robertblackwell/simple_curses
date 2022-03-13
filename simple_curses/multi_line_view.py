@@ -25,7 +25,7 @@ class MultiLineView2:
         self.cpos_x_buffer = cpos_x_buffer
         # calculate self.view_content_y_end by enumerating cases
 
-        if self.view_content_y_begin > 0 and self.view_content_y_begin + view_height - 1 < len(content_lines):
+        if self.view_content_y_begin >= 0 and self.view_content_y_begin + view_height - 1 < len(content_lines):
             # case 1
             # content is larger than buffer
             # last line of content is on or past the last line of buffer
@@ -33,7 +33,7 @@ class MultiLineView2:
             self.view_content_y_end = self.view_content_y_begin + view_height - 1
             self.view_buffer_y_end = view_height - 1
 
-        elif self.view_content_y_begin > 0 and  cpos_y_buffer == view_height - 1 and cpos_y_content == len(content_lines) and len(content_lines) >= view_height:
+        elif self.view_content_y_begin >= 0 and  cpos_y_buffer == view_height - 1 and cpos_y_content == len(content_lines) and len(content_lines) >= view_height:
             # case 2
             # content is larger than buffer
             # last line of content is on 2nd last line of buffer
@@ -41,7 +41,7 @@ class MultiLineView2:
             self.view_content_y_end = len(content_lines) 
             self.view_buffer_y_end = view_height - 1
 
-        elif self.view_content_y_begin > 0 and cpos_y_buffer < view_height - 1 and self.view_content_y_begin + view_height - 1 == len(content_lines) and cpos_y_content < len(content_lines):
+        elif self.view_content_y_begin >= 0 and cpos_y_buffer < view_height - 1 and self.view_content_y_begin + view_height - 1 == len(content_lines) and cpos_y_content < len(content_lines):
             # case 3
             # content is larger than buffer
             # last line of content is on 2nd last line of buffer

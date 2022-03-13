@@ -1,3 +1,4 @@
+from hashlib import new
 from typing import List, Set, Dict, Tuple, Optional
 import string 
 from multi_line_view import MultiLineView2, MultiLineView 
@@ -42,6 +43,17 @@ def _list_delete_by_index(ar, index):
     del ar[index]
 
 EOSPAD = " "
+
+def join_lines(lines: List[str], index: int):
+    if index == 0:
+        raise RuntimeError("join_lines index must not be zero")
+    s_index = lines[index]
+    s_index_1 = lines[index - 1]
+    lines2 = lines[0: index - 1]
+    lines2.append(s_index_1 + s_index)
+    for lin in lines[index + 1: len(lines)]:
+        lines2.append(lin) 
+    return lines2
 
 # 
 # This class provides  
@@ -314,6 +326,16 @@ class MultiLineBuffer:
     #     char = self.display_string[self.cpos_x_content: self.cpos_x_content + 1]
     #     v = MultiLineView(view_lines, view_line_numbers, self.cpos_y_buffer, self.cpos_x_buffer, char)
     #     return v
+############################################################################################################ 
+# past mode setter and getter
+############################################################################################################
+    def set_paste_mode_on(self):
+        pass
+    def set_paste_mode_off(self):
+        pass
+############################################################################################################ 
+# get_view
+############################################################################################################ 
 
     def get_view(self):
         return MultiLineView2(
@@ -411,6 +433,7 @@ class MultiLineBuffer:
         # self.set_paste_mode_off()
 
     # handle a backspace character. Delete the character on the left of the cursor
+    # @TODO - does not join lines when backspace at start of a line
     def handle_backspace(self):
         if self.state == self.STATE_APPENDING:
             self.content[self.cpos_y_content] = self.content[self.cpos_y_content][0: len(self.content[self.cpos_y_content]) - 1]
@@ -431,6 +454,20 @@ class MultiLineBuffer:
                     self._decr_cpos_x_buffer()
                 self._decr_cpos_x_content()
                 self._compute_display_string()
+            else:
+                if self.cpos_y_content == 0:
+                    pass
+                else:
+                    # @TODO here
+                    x = self.cpos_y_buffer #dummy statement to ensure this brach is visibly executed
+                    s = self.content[self.cpos_y_content - 1]
+                    cpos_y_content = self.cpos_y_content
+                    self.content = join_lines(self.content, self.cpos_y_content)
+                    self.cpos_y_content = cpos_y_content - 1
+                    self._decr_cpos_y_buffer()
+                    self.cpos_x_content = len(s) - 1
+                    self.cpos_x_buffer = len(s) - 1
+                    pass
 
             if len(self.content[self.cpos_y_content]) == 0:
                 self.state = self.STATE_APPENDING
@@ -439,6 +476,13 @@ class MultiLineBuffer:
     # handle delete - character under cursor
     def handle_delete(self):
         if self.state == self.STATE_APPENDING:
+            # @TODO needs to delete the end of line and join with susequent line
+            s = self.content[self.cpos_y_content]
+            x = len(s)
+            if self.cpos_y_content < len(s):
+                ix = self.cpos_y_content
+                new_lines = join_lines(self.content, ix + 1)
+                self.content = new_lines
             return
         if (self.cpos_x_buffer == self.width - 1) and (self.cpos_x_content == len(self.content[self.cpos_y_content])):
             pass
