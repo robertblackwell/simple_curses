@@ -1,4 +1,4 @@
-from typing import List, Set, Dict, Tuple, Optional
+from typing import List, Set, Dict, Tuple, Optional, Union
 import string 
 
 
@@ -80,7 +80,7 @@ class MultiLineView2:
         self.debug_cursor_line = self.make_cursor_debug_line()
         self.debug_buffer = self.make_debug()
 
-        self.view_buffer = self.make_view_buffer()
+        self.view_buffer, self.line_numbers = self.make_view_buffer()
         self.make_char_under_cursor()
 
     def make_char_under_cursor(self):
@@ -104,16 +104,22 @@ class MultiLineView2:
         """make an array with the same number of rows as the view buffer
         and where the array contains exactly what the view buffer should show"""
         buffer: List[str] = []
+        line_numbers: List[Optional[str]] = []
         for j in range(0, self.view_height):
             buffer.append("")
+            line_numbers.append(None)
+
         bindex = self.view_buffer_y_begin
+        ln = self.view_content_y_begin
         for index in range(self.view_content_y_begin, self.view_content_y_end + 1):
             line  = self.content_lines[index]
             m = len(line) if len(line) < self.view_content_x_begin + self.view_width - 1 else self.view_content_x_begin + self.view_width - 1  
             buffer[bindex] = line[self.view_content_x_begin: m + 1]
+            line_numbers[bindex] = "{0:>3}".format(ln)
             bindex += 1
+            ln += 1
 
-        return buffer
+        return buffer, line_numbers
 
     def make_debug(self):
         buffer: List[str] = []

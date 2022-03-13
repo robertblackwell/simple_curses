@@ -97,8 +97,12 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
             "456789A12345",
             "456789A12345",
         ]
+        expected_line_numbers = [ 
+            "  9", " 10", " 11", " 12", " 13", " 14", " 15"
+        ]
         self.assertEqual(b, expected)
         self.assertEqual(buf, expected_buffer)
+        self.assertEqual(mlv.line_numbers, expected_line_numbers)
         self.assertEqual(mlv.char_under_cursor, "5")
         self.assertEqual(mlv.view_height, 7)
         self.assertEqual(mlv.view_content_y_begin, 9)
@@ -145,8 +149,12 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
             "11 123456789",
             " "            
         ]
+        expected_line_numbers = [ 
+            " 12", " 13", " 14", " 15", " 16", " 17", " 18"
+        ]
         self.assertEqual(b, expected)
         self.assertEqual(buf, expected_buffer)
+        self.assertEqual(mlv.line_numbers, expected_line_numbers)
         self.assertEqual(mlv.char_under_cursor, " ")
         self.assertEqual(mlv.view_height, 7)
         self.assertEqual(mlv.view_content_y_begin, 12)
@@ -198,8 +206,12 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
             "3456789A1234",
             ""
         ]
+        expected_line_numbers = [ 
+            " 12", " 13", " 14", " 15", " 16", " 17", " 18"
+        ]
         self.assertEqual(b, expected)
         self.assertEqual(buf, expected_buffer)
+        self.assertEqual(mlv.line_numbers, expected_line_numbers)
         self.assertEqual(mlv.char_under_cursor, "5")
         self.assertEqual(mlv.view_height, 7)
         self.assertEqual(mlv.view_content_y_begin, 12)
@@ -252,8 +264,12 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
             "9C123456789D",
             "9C123456789D",
         ]
+        expected_line_numbers = [ 
+            None, "  0", "  1", "  2", "  3", "  4", "  5",
+        ]
         self.assertEqual(b, expected)
         self.assertEqual(buf, expected_buffer)
+        self.assertEqual(mlv.line_numbers, expected_line_numbers)
         self.assertEqual(mlv.char_under_cursor, "3")
         self.assertEqual(mlv.view_height, 7)
         self.assertEqual(mlv.view_content_y_begin, 0)
@@ -306,8 +322,12 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
             "5 123456789A",
             " ",
         ]
+        expected_line_numbers = [ 
+            "  0", "  1", "  2", "  3", "  4", "  5", "  6"
+        ]
         self.assertEqual(b, expected)
         self.assertEqual(buf, expected_buffer)
+        self.assertEqual(mlv.line_numbers, expected_line_numbers)
         self.assertEqual(mlv.char_under_cursor, " ")
         self.assertEqual(mlv.view_height, 7)
         self.assertEqual(mlv.view_content_y_begin, 0)
@@ -360,8 +380,12 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
             "5 123456789A",
             "",
         ]
+        expected_line_numbers = [ 
+            "  0", "  1", "  2", "  3", "  4", "  5", "  6"
+        ]
         self.assertEqual(b, expected)
         self.assertEqual(buf, expected_buffer)
+        self.assertEqual(mlv.line_numbers, expected_line_numbers)
         self.assertEqual(mlv.char_under_cursor, "4")
         self.assertEqual(mlv.view_height, 7)
         self.assertEqual(mlv.view_content_y_begin, 0)

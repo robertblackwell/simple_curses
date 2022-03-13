@@ -83,10 +83,10 @@ class MultiLineBuffer:
 
         # specifies the portion of the self.content array that will be displayed in
         # the view window or buffer
-        self.view_content_y_begin = 0 # an index into self.content - the first view line
-        self.view_content_y_end = 0   # an index into self.content - the last view line
-        self.view_x_begin = 0 # an index into self.content[i] the first character to be displayed - 
-        self.view_x_end = 0   # an index into all displayable lines of self.content - the last character to be displayed
+        # self.view_content_y_begin = 0 # an index into self.content - the first view line
+        # self.view_content_y_end = 0   # an index into self.content - the last view line
+        # self.view_x_begin = 0 # an index into self.content[i] the first character to be displayed - 
+        # self.view_x_end = 0   # an index into all displayable lines of self.content - the last character to be displayed
 
         # The string that will appear in the buffer window
         self.display_string = ""
@@ -252,14 +252,14 @@ class MultiLineBuffer:
 # view creation function
 ############################################################################################################ 
 
-    def _compute_y_view(self):
-        """ computes the range of lines from self.content that will be displayed
-        represents this range as self.view_begin_y and self.view_end_y 
-        the only place that updates self.view_content_y_begin and self.view_content_y_end"""
-        self.view_content_y_begin = self.cpos_y_content - self.cpos_y_buffer
-        last = len(self.content) - 1
-        tmp = self.view_content_y_begin + self.view_height - 1
-        self.view_content_y_end = tmp if tmp < last and tmp >= 0 else last
+    # def _compute_y_view(self):
+    #     """ computes the range of lines from self.content that will be displayed
+    #     represents this range as self.view_begin_y and self.view_end_y 
+    #     the only place that updates self.view_content_y_begin and self.view_content_y_end"""
+    #     self.view_content_y_begin = self.cpos_y_content - self.cpos_y_buffer
+    #     last = len(self.content) - 1
+    #     tmp = self.view_content_y_begin + self.view_height - 1
+    #     self.view_content_y_end = tmp if tmp < last and tmp >= 0 else last
 
 
     def _compute_display_string(self):
@@ -293,27 +293,38 @@ class MultiLineBuffer:
 
     # computes the portion of a string (element of self.content) that will be displayed
     # assumption - the line is NOT the line holding the cursor
-    def _compute_line_view(self, i):
-        if i == self.cpos_y_content:
-            self._compute_display_string()
-            tmp = self.display_string
-            return i + 1, tmp
-        else:
-            tmp = self.content[i][self.view_x_begin: len(self.content[i])]
-            return i + 1, tmp
+    # def _compute_line_view(self, i):
+    #     if i == self.cpos_y_content:
+    #         self._compute_display_string()
+    #         tmp = self.display_string
+    #         return i + 1, tmp
+    #     else:
+    #         tmp = self.content[i][self.view_x_begin: len(self.content[i])]
+    #         return i + 1, tmp
 
 
-    def get_view(self) -> MultiLineView:
-        view_lines: List[str] = []
-        view_line_numbers: List[int] = []
-        self._compute_y_view()
-        for i in range(self.view_content_y_begin, self.view_content_y_end + 1):
-            ln, s = self._compute_line_view(i)
-            view_lines.append(s)
-            view_line_numbers.append(ln)
-        char = self.display_string[self.cpos_x_content: self.cpos_x_content + 1]
-        v = MultiLineView(view_lines, view_line_numbers, self.cpos_y_buffer, self.cpos_x_buffer, char)
-        return v
+    # def get_view(self) -> MultiLineView:
+    #     view_lines: List[str] = []
+    #     view_line_numbers: List[int] = []
+    #     # self._compute_y_view()
+    #     for i in range(self.view_content_y_begin, self.view_content_y_end + 1):
+    #         ln, s = self._compute_line_view(i)
+    #         view_lines.append(s)
+    #         view_line_numbers.append(ln)
+    #     char = self.display_string[self.cpos_x_content: self.cpos_x_content + 1]
+    #     v = MultiLineView(view_lines, view_line_numbers, self.cpos_y_buffer, self.cpos_x_buffer, char)
+    #     return v
+
+    def get_view(self):
+        return MultiLineView2(
+            content_lines=self.content, \
+            cpos_y_content=self.cpos_y_content, \
+            cpos_x_content=self.cpos_x_content, \
+            view_height=self.view_height, \
+            view_width=self.width, \
+            cpos_y_buffer=self.cpos_y_buffer, \
+            cpos_x_buffer=self.cpos_x_buffer, \
+                )
 
 ############################################################################################################ 
 # handlers for different character input
@@ -329,28 +340,28 @@ class MultiLineBuffer:
             self._incr_cpos_y_content()
             self._incr_cpos_y_buffer()
             self._cursor_x_set_to_zero()
-            self._compute_y_view()
+            # self._compute_y_view()
             pass
         else:
             self.content = _list_split_at_line_pos(self.content, self.cpos_y_content, self.cpos_x_content)
             self._incr_cpos_y_content()
             self._incr_cpos_y_buffer()
             self._cursor_x_set_to_zero()
-            self._compute_y_view()
+            # self._compute_y_view()
         # self.set_paste_mode_off()
 
     def handle_up(self):
         self._decr_cpos_y_content()
         self._decr_cpos_y_buffer()
         self._update_cursor_x()
-        self._compute_y_view()
+        # # self._compute_y_view()
         # self.set_paste_mode_off()
 
     def handle_down(self):
         self._incr_cpos_y_content()
         self._incr_cpos_y_buffer()
         self._update_cursor_x()
-        self._compute_y_view()
+        # self._compute_y_view()
         # self.set_paste_mode_off()
 
     def append_line(self, line):
@@ -364,7 +375,7 @@ class MultiLineBuffer:
             self._incr_cpos_y_buffer()
         self._cursor_x_set_to_zero()    
         # self.set_paste_mode_off()
-        self._compute_y_view()
+        # # self._compute_y_view()
 
 
     def handle_add_line(self, line):
@@ -429,7 +440,7 @@ class MultiLineBuffer:
     def handle_delete(self):
         if self.state == self.STATE_APPENDING:
             return
-        if (self.cpos_x_buffer == self.width - 1) and (self.view_x_begin + self.width) == len(self.content[self.cpos_y_content]):
+        if (self.cpos_x_buffer == self.width - 1) and (self.cpos_x_content == len(self.content[self.cpos_y_content])):
             pass
         else:
             self.set_paste_mode_off()
