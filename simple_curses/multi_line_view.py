@@ -1,7 +1,7 @@
 from typing import List, Set, Dict, Tuple, Optional, Union
-import string 
+import string
 
-
+EOSPAD = " "
 class MultiLineView2:
     def __init__(self, content_lines: List[str], cpos_y_content: int, cpos_x_content: int, view_height: int, view_width: int, cpos_y_buffer: int, cpos_x_buffer: int):
         tmp = cpos_y_content - cpos_y_buffer
@@ -41,7 +41,7 @@ class MultiLineView2:
             self.view_content_y_end = len(content_lines) 
             self.view_buffer_y_end = view_height - 1
 
-        elif self.view_content_y_begin >= 0 and cpos_y_buffer < view_height - 1 and self.view_content_y_begin + view_height - 1 == len(content_lines) and cpos_y_content < len(content_lines):
+        elif self.view_content_y_begin >= 0 and cpos_y_buffer < view_height - 1 and self.view_content_y_begin + view_height - 1 >= len(content_lines) and cpos_y_content < len(content_lines):
             # case 3
             # content is larger than buffer
             # last line of content is on 2nd last line of buffer
@@ -115,7 +115,7 @@ class MultiLineView2:
             line  = self.content_lines[index]
             m = len(line) if len(line) < self.view_content_x_begin + self.view_width - 1 else self.view_content_x_begin + self.view_width - 1  
             buffer[bindex] = line[self.view_content_x_begin: m + 1]
-            line_numbers[bindex] = "{0:>3}".format(ln)
+            line_numbers[bindex] = ln + 1 #make line numbers 1 based
             bindex += 1
             ln += 1
 
@@ -161,7 +161,7 @@ class MultiLineView2:
         return [cursor_line, cursor_line[self.view_content_x_begin: self.view_content_x_end+1], orig, ruler ]
 
 
-class MultiLineView:
+class XMultiLineView:
     def __init__(self, lines, one_based_line_numbers, curs_y: int, curs_x: int, curs_char: str):
         self.paste_mode = False
         self.lines: List[str] = lines

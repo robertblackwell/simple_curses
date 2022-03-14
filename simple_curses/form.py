@@ -7,10 +7,10 @@ import string_buffer
 from colors import Colors
 
 def is_next_control(ch):
-    return (ch == "KEY_RIGHT")
+    return (ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT)
 
 def is_prev_control(ch):
-    return (ch == "KEY_LEFT")
+    return (ch == "KEY_LEFT" or ch == curses.KEY_LEFT)
 
 def is_function_key(ch):
     tmp = ch[0:6]
@@ -95,7 +95,7 @@ class Form:
         count = 1
         r = 1
         index = len(self.messages) - 1
-        while index >= 0 and count < self.msg_height:
+        while index >= 0 and count < self.msg_height-1 and r < self.msg_height-1:
             str = "  {}:{}:{}".format(self.messages[index][0], self.messages[index][1], self.messages[index][2])
             if len(str) > self.msg_width - 5:
                 str = str[0:self.msg_width - 5]
@@ -124,10 +124,11 @@ class Form:
     def handle_input(self):
         # here should render everything to ensure the latest version of the screen is being seen
         # hen input is provided
-        ch = self.stdscr.getkey()
-        chstr = ch if ch != '\n' else "NEWLINE"
+        # ch = self.stdscr.getkey()
+        ch = self.stdscr.getch()
+        chstr = chr(ch) if ch <= 255 else hex(ch)
 
-        self.msg_info("handle_input ch: {} len(ch) {} hex: {}".format(chstr, len(chstr), ch.encode('utf8').hex()))
+        self.msg_info("handle_input ch: {} hex: {}".format(chstr, hex(ch)))
         focus_widget = self.widgets[self.focus_index]
         focus_widget.focus_accept()
         if focus_widget.handle_input(ch):
@@ -145,8 +146,8 @@ class Form:
                 old_focus_widget.focus_release()
                 focus_widget = self.widgets[self.focus_index]
                 focus_widget.focus_accept()
-            elif is_function_key(ch):
-                self.handle_menu(ch)
+            # elif is_function_key(ch):
+            #     self.handle_menu(ch)
 
     def box_form(self):
         self.stdscr.border(0,0,0,0,0,0,0)

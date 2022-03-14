@@ -6,6 +6,8 @@ from utils import *
 from simple_curses.widget_base import WidgetBase
 from multi_line_buffer import MultiLineBuffer
 from simple_curses.menu import MenuItem
+from simple_curses.form import Form
+
 xlines = [
     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
     "1  02-1lkjhasdfhlakjsfhlajhflakdhjfldask",
@@ -34,17 +36,18 @@ class MultiLineWidget(WidgetBase):
         pass
 
     def __init__(self, row, col, key, label, width, height, attributes, data):
-        self.id = key
-        self.has_focus = False
-        self.row = row
-        self.col = col
+        self.id: str = key
+        self.has_focus: bool = False
+        self.row: int = row
+        self.col: int = col
         self.data = data
-        self.label = label + ": "
-        self.width = width
-        self.height = height
-        self.start_row = 0
-        self.start_col = 0
-        self.paste_mode = False
+        self.label: str = label + ": "
+        self.width: int = width
+        self.line_number_width: int = 3
+        self.height: int = height
+        self.start_row: int = 0
+        self.start_col: int = 0
+        self.paste_mode: bool = False
 
         self.attributes = attributes
         self.lines_view = None
@@ -54,18 +57,11 @@ class MultiLineWidget(WidgetBase):
         self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.height - 2, self.width)
 
 
-        # these properties are for manaing the display of the conttent string during
-        # entry and editing
-        # self.display_content_start = 0
-        # self.display_content_position = 0 #current cursor position in the content
-        # self.display_cursor_position = 0 # always between 0 .. width - that is always visible
-        # self.display_length = 0 # is width-1 if we are adding to the end of the string in which case the cursor is over the 'next' slot
-
     def set_enclosing_window(self, win):
         self.outter_win = win
         x = self.outter_win.getmaxyx()
         self.title_window = curses.newwin(1, self.width, self.start_row, self.start_col)
-        self.line_number_win = curses.newwin(self.height - 2, 3, self.start_row + 1, self.start_col + 1)
+        self.line_number_win = curses.newwin(self.height - 2, self.line_number_width, self.start_row + 1, self.start_col + 1)
         self.content_win = curses.newwin(self.height - 1,  self.width - 3, self.start_row + 1, self.start_col + 1 + 3)
         self.info_win = curses.newwin(4, self.width, self.start_row + self.height - 2 + 1, self.start_col)
         # self.paste_menu_item =  MenuItem(self.start_row + 1, 1, "PasteOn", 13, 3, 0, self.menuAction1, "context for menu 1")
@@ -73,11 +69,10 @@ class MultiLineWidget(WidgetBase):
     def menuAction1(self):
         pass
 
-    def set_form(self, form):
+    def set_form(self, form: Form):
         self.form = form
 
-
-    def add_line(self, line):
+    def add_line(self, line: str):
         self.mu_lines_buffer.append_line(line)
 
     def focus_accept(self):
@@ -94,8 +89,6 @@ class MultiLineWidget(WidgetBase):
     def get_width(self):
         return self.width
 
-
-
     def render(self):
         # self.outter_win.box()
         self.outter_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
@@ -103,60 +96,24 @@ class MultiLineWidget(WidgetBase):
         # self.info_win.box()
         # self.outter_win.bkgd(" ", Colors.button_focus())
         
-        # t_c = (self.width - len(self.label)) // 2
-        # self.title_window.addstr(0, t_c, self.label, curses.A_BOLD)
-        # if self.has_focus:
-        #     self.content_win.bkgd(" ", Colors.button_no_focus())
-        #     self.content_win.addstr(0, 0, "ABCDEF")
-        # else:
-        #     self.content_win.bkgd(" ", Colors.button_no_focus())
-        #     self.content_win.addstr(0, 0, "ABCDEF")
 
-        # for rw in range(self.height):
-        y0 = self.mu_lines_buffer.view_y_begin
-        y1 = self.mu_lines_buffer.view_y_end + 1
-        x0 = self.mu_lines_buffer.view_x_begin
-        x1 = self.mu_lines_buffer.view_x_end + 1
-        y_curs = self.mu_lines_buffer.cpos_y_content
-        x_curs = self.mu_lines_buffer.cpos_x_content
-        cursor_ch = "X"
-        if x_curs <  len(self.mu_lines_buffer.content[y_curs]):
-            cursor_ch = self.mu_lines_buffer.content[y_curs][x_curs]
-        y_curs_buf = self.mu_lines_buffer.cpos_y_buffer
-        x_curs_buf = self.mu_lines_buffer.cpos_x_buffer
-
-        vstr = self.mu_lines_buffer.get_view()
+        view = self.mu_lines_buffer.get_view()
+        y0 = view.view_content_y_begin
+        y1 = view.view_content_y_end + 1
         r = 0
-        for ln in range(y0, y1):
-            s = self.mu_lines_buffer.content[ln][x0: x1]
-            s = vstr.lines[r]
-            txt = "{}".format(s)
-            line_number = vstr.one_based_line_numbers[r]
-            ln_str = "{}".format(line_number)
+        for y_content in range(y0, y1):
+            txt = view.view_buffer[r]
+            line_number = view.line_numbers[r]
+            ln_str = "{0:>2}".format(line_number)
             self.content_win.addstr(r, 0, txt, Colors.green_black())
             self.line_number_win.addstr(r, 0, ln_str, Colors.white_black())
-            if y_curs_buf == r and self.has_focus:
-                assert y_curs_buf == vstr.curs_y
-                assert x_curs_buf == vstr.curs_x
-                
-                self.content_win.addstr(r, x_curs_buf, cursor_ch, Colors.green_black() + curses.A_REVERSE + curses.A_STANDOUT)
+            if view.cpos_y_buffer == r and self.has_focus:
+                self.content_win.addstr(r, view.cpos_x_buffer, view.char_under_cursor, Colors.green_black() + curses.A_REVERSE + curses.A_STANDOUT)
             r += 1
 
         self.info_win.bkgd(" ", Colors.green_black() + curses.A_BOLD)
         self.info_win.addstr(1, 3, "Paste Mode: {} ".format(self.paste_mode))
         self.info_win.addstr(2, 3, "Cntrl-p toggles paste mode")
-
-        # for line in lines:
-        #     # txt = "{0:<4} {1:}".format(line[0], line[1])
-        #     txt = "{}".format(line[1])
-        #     if self.has_focus and r == self.mu_lines_buffer.cpos_view:
-        #         self.content_win.addstr(r, 0, txt, Colors.button_focus())
-        #     else:
-        #         self.content_win.addstr(r, 0, txt, Colors.button_no_focus())
-        #     r += 1
-
-
-
         # if self.has_focus:
         #     self.position_cursor()
         self.outter_win.noutrefresh()
@@ -176,9 +133,9 @@ class MultiLineWidget(WidgetBase):
         elif is_edit_back(ch):
             self.set_paste_mode_off()
             self.mu_lines_buffer.handle_backspace()
-        elif (len(ch)  == 1) and (ch[0] in string.printable) and not ch == "\n":
+        elif is_printable(ch)  and (not is_newline(ch)):
             self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_character(ch)
+            self.mu_lines_buffer.handle_character(chr(ch))
         elif is_edit_del(ch):
             self.set_paste_mode_off()
             self.mu_lines_buffer.handle_delete()

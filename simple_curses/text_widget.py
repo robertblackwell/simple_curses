@@ -110,10 +110,10 @@ class TextWidget(WidgetBase):
     # If the Widget handles the keystroke then it should return true
     # else should return false
     # 
-    def handle_input(self, ch: string) -> bool:
+    def handle_input(self, ch) -> bool:
         did_handle_ch = True
-        if (len(ch)  == 1) and (ch[0] in string.printable):
-            self.string_buffer.handle_character(ch)
+        if (ch  <= 255) and (chr(ch) in string.printable):
+            self.string_buffer.handle_character(chr(ch))
         elif is_edit_back(ch):
             self.string_buffer.handle_backspace()
         elif is_edit_del(ch):
