@@ -9,12 +9,12 @@ from colors import Colors
 import validator
 from utils import *
 from form import Form
-from widget_base import WidgetBase
+from widget_base import  EditableWidgetBase
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
 # A TextWidget is composed of a label and an value field
-class TextWidget(WidgetBase):
+class TextWidget(EditableWidgetBase):
     @classmethod
     def classmeth(cls):
         print("hello")
@@ -61,6 +61,9 @@ class TextWidget(WidgetBase):
     def get_height(self) -> int:
         return 1
 
+    def clear(self):
+        self.string_buffer.clear()
+    
     # paint attributes for the content area so that it is visible to used
     def paint_content_area_background(self) -> None:
         tmp = self.width + len(self.label) - 1

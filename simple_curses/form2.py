@@ -1,8 +1,5 @@
 import curses
 import curses.textpad
-import string
-
-import string_buffer
 from colors import Colors
 
 def is_next_control(ch):

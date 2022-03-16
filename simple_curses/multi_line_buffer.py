@@ -273,6 +273,15 @@ class MultiLineBuffer:
 ############################################################################################################ 
 # get_view
 ############################################################################################################ 
+    def clear(self):
+        self.content = [""]
+        self.cpos_x_buffer = 0
+        self.cpos_y_buffer = 0
+        self.cpos_x_content = 0
+        self.cpos_y_content = 0
+
+    def get_value(self):
+        return self.content
 
     def get_view(self):
         return MultiLineView2(

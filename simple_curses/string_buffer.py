@@ -63,6 +63,13 @@ class StringBuffer:
     def invariant(self):
         assert (self.start_display_string + self.cpos_buffer == self.cpos_content)
 
+    def clear(self):
+        self.cpos_content = 0
+        self.cpos_buffer = 0
+        self.display_string = ""
+        self.content = ""
+        self._compute_display_string()
+
     def _incr_cpos_buffer(self):
         self.cpos_buffer = self.cpos_buffer + 1 if self.cpos_buffer < self.width - 1 else self.cpos_buffer
 
