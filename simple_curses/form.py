@@ -5,23 +5,28 @@ from colors import Colors
 from widget_base import WidgetBase
 from message_widget import MessageWidget
 
+
 def is_next_control(ch):
-    return (ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT)
+    return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
+
 
 def is_prev_control(ch):
-    return (ch == "KEY_LEFT" or ch == curses.KEY_LEFT)
+    return ch == "KEY_LEFT" or ch == curses.KEY_LEFT
+
 
 def is_function_key(ch):
     tmp = ch[0:6]
-    return (tmp == "KEY_F(")
+    return tmp == "KEY_F("
+
 
 def fn_key_match(k1, k2):
-    return (k1 == k2)
+    return k1 == k2
+
 
 def fn_key_description(k1):
     s1 = k1.replace("KEY_F(", "")
     s2 = s1.replace(")", "")
-    s3 = "F"+s2
+    s3 = "F" + s2
     return s3
 
 
@@ -58,21 +63,21 @@ class Form:
         self.msg_start_row = self.menu_start_row + self.menu_height - 1
         self.msg_width = self.width
 
-        body_start_row = self.body_start_row #4
+        body_start_row = self.body_start_row  # 4
         body_start_col = 0
 
         curses.mousemask(curses.ALL_MOUSE_EVENTS + curses.REPORT_MOUSE_POSITION)
 
-        self.body_win = curses.newwin(self.body_height, self.width, self.body_start_row, 0 )
+        self.body_win = curses.newwin(self.body_height, self.width, self.body_start_row, 0)
         self.message_widget = MessageWidget(self.msg_start_row, 0, "", "", self.msg_width, self.msg_height, "", context)
-        self.message_widget.set_enclosing_window(curses.newwin(self.msg_height, self.msg_width, self.msg_start_row, 0 ))
+        self.message_widget.set_enclosing_window(curses.newwin(self.msg_height, self.msg_width, self.msg_start_row, 0))
         self.message_widget.set_form(self)
 
         self.menu_win = curses.newwin(self.menu_height, self.menu_width, self.menu_start_row, 0)
         # self.msg_win.bkgd(" ", Colors.button_focus())
         self.message_text = ""
         body_height = 0
-        col = body_start_col + 4  
+        col = body_start_col + 4
         for w in self.widgets:
             klass = w.__class__.__name__
             if klass == "MenuItem":
@@ -81,7 +86,8 @@ class Form:
             else:
                 w.start_row = w.row + body_start_row
                 w.start_col = w.col + body_start_col
-                w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row, self.body_start_col + w.col ))
+                w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row,
+                                                     self.body_start_col + w.col))
             w.set_form(self)
             w.has_focus = False
         zz = self.body_win.getparyx()
@@ -90,7 +96,7 @@ class Form:
 
     def msg_error(self, s: str):
         self.message_widget.msg_error(s)
-    
+
     def msg_warn(self, s):
         self.message_widget.msg_warn(s)
 
@@ -103,7 +109,6 @@ class Form:
         old_focus_widget.focus_release()
         focus_widget = self.widgets[self.focus_index]
         focus_widget.focus_accept()
-
 
     def mouse_in_widget(self, w, y, x):
         """Tests whether the mouse position y,x is inside the widget w"""
@@ -119,11 +124,11 @@ class Form:
                 break;
             if ch == curses.KEY_MOUSE:
                 dev_id, y, x, z, buttonevent = curses.getmouse()
-                self.message_widget.msg_info("handle_input.mouse event id:{} y:{} x:{} button:{}".format(dev_id, y, x, z, hex(buttonevent)))
+                self.message_widget.msg_info(
+                    "handle_input.mouse event id:{} y:{} x:{} button:{}".format(dev_id, y, x, z, hex(buttonevent)))
                 # for w in self.widgets:
                 #     if self.mouse_in_widget(w, y, x):
                 #         pass
-
 
             self.stdscr.timeout(100)
 
@@ -138,22 +143,22 @@ class Form:
                 continue
             else:
                 if is_next_control(ch):
-                    w_index = (self.focus_index + 1 + len(self.widgets)) % (len(self.widgets))  
+                    w_index = (self.focus_index + 1 + len(self.widgets)) % (len(self.widgets))
                     self.shift_focus_to(w_index)
                 elif is_prev_control(ch):
-                    w_index = (self.focus_index - 1 + len(self.widgets)) % (len(self.widgets))  
+                    w_index = (self.focus_index - 1 + len(self.widgets)) % (len(self.widgets))
                     self.shift_focus_to(w_index)
                 # elif is_function_key(ch):
                 #     self.handle_menu(ch)
 
     def box_form(self):
-        self.stdscr.border(0,0,0,0,0,0,0)
+        self.stdscr.border(0, 0, 0, 0, 0, 0, 0)
 
     def make_boxes(self):
         # self.stdscr.border(0,0,0,0,0,0,0)
-        self.title_win.border(0,0,0,0,0,0,curses.ACS_LTEE, curses.ACS_RTEE)
-        self.body_win.border(0,0," "," ", curses.ACS_VLINE, curses.ACS_VLINE,0,0)
-        self.menu_win.border(0,0,0,0, curses.ACS_LTEE, curses.ACS_RTEE, curses.ACS_LTEE, curses.ACS_RTEE)
+        self.title_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
+        self.body_win.border(0, 0, " ", " ", curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
+        self.menu_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, curses.ACS_LTEE, curses.ACS_RTEE)
         # self.msg_win.border(0,0,0,0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
 
     def render(self):
@@ -187,15 +192,15 @@ class Form:
             # b2 = hasattr(w, "id") 
             # b3 = hasattr(w, "get_value") 
             # b4 = callable(getattr(w.__class__, "get_value"))
-            if hasattr(w, "validator") and hasattr(w, "id") and hasattr(w, "get_value") and callable(getattr(w, "get_value")) :
+            if hasattr(w, "validator") and hasattr(w, "id") and hasattr(w, "get_value") and callable(
+                    getattr(w, "get_value")):
                 v = w.get_value()
-                tmp = w.validator.validate(v) 
+                tmp = w.validator.validate(v)
                 if tmp is not None:
                     result[w.id] = tmp
                     ok = ok and True
                 else:
                     ok = ok and False
-                    self.message_widget.msg_error(w.validator.error_message())    
+                    self.message_widget.msg_error(w.validator.error_message())
 
         return result if ok else None
-

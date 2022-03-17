@@ -3,13 +3,14 @@ import unittest
 import curses
 
 import string_buffer
-from colors import Colors, colors
-class TestStringBufferRight(unittest.TestCase):
+from colors import Colors
 
+
+class TestStringBufferRight(unittest.TestCase):
 
     def test_colors_01(self):
         print("testing colors")
-        x = colors().button_focus()
+        x = Colors.button_focus()
         sb = string_buffer.StringBuffer("abc", 5)
         self.assertEqual(sb.content, "abc")
         self.assertEqual(sb.display_string, "abc" + sb.EOSPAD)
@@ -19,5 +20,8 @@ class TestStringBufferRight(unittest.TestCase):
         sb.handle_left()
 
 
+stdscr = None
 if __name__ == '__main__':
+    global stdscr
+    stdscr = curses.initscr()
     curses.wrapper(unittest.main())

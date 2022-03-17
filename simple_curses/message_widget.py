@@ -15,13 +15,15 @@ class MessageWidget(WidgetBase):
     -   The row, col, height, width args to the constructor are the position and size of the enclosing box
     -   The message area starts at row+1, col+1 and has size height-2 width-2 
     """
-    
+
     @classmethod
     def classmeth(cls):
         pass
 
-
     def __init__(self, row, col, key, label, width, height, attributes, data):
+        self.form = None
+        self.content_win = None
+        self.win = None
         self.row = row
         self.col = col
         self.key = key
@@ -35,7 +37,7 @@ class MessageWidget(WidgetBase):
 
     def get_height(self):
         return self.height
-    
+
     def get_width(self):
         return self.width
 
@@ -81,18 +83,17 @@ class MessageWidget(WidgetBase):
 
     def render(self):
         self.win.clear()
-        self.win.border(0,0,0,0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
-        active_msgs = self.messages[len(self.messages) - self.height + 2 :len(self.messages)]
+        self.win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
+        active_msgs = self.messages[len(self.messages) - self.height + 2:len(self.messages)]
         r = 1
         for msg in active_msgs:
-            str = "  {0:>3}:{1}:{2}".format(msg[0], msg[1], msg[2])
-            if len(str) > self.width - 5:
-                str = str[0:self.width - 5]
+            astring = "  {0:>3}:{1}:{2}".format(msg[0], msg[1], msg[2])
+            if len(astring) > self.width - 5:
+                astring = astring[0:self.width - 5]
             else:
-                str.ljust(self.width - 5)
-            self.content_win.addstr(r - 1, 0, str, msg[3])
+                astring.ljust(self.width - 5)
+            self.content_win.addstr(r - 1, 0, astring, msg[3])
             r += 1
-        
+
         self.win.noutrefresh()
         curses.doupdate()
-

@@ -4,8 +4,10 @@ import curses.textpad
 
 class Colors:
     _instance = None
+
     def __init__(self):
         raise RuntimeError('Call instance() instead')
+
     @classmethod
     def instance(cls):
         if cls._instance is None:
@@ -25,19 +27,18 @@ class Colors:
         else:
             pass
         return cls._instance
-    
+
     def get(self, pair_nbr):
         tmp = curses.color_pair(pair_nbr)
         return tmp
 
-    
     def msg_info(self):
         pass
 
     @classmethod
     def button_focus(cls):
         return curses.color_pair(cls.instance().COLOR_BLUE_WHITE) + curses.A_BOLD + curses.A_REVERSE
-    
+
     @classmethod
     def button_no_focus(cls):
         return curses.color_pair(cls.instance().COLOR_BLACK_WHITE) + curses.A_BOLD
@@ -45,39 +46,38 @@ class Colors:
     @classmethod
     def msg_label_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BOLD
+        return curses.color_pair(c.COLOR_GREEN_BLACK) + curses.A_BOLD
 
     @classmethod
     def msg_error_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_RED_BLACK) +  curses.A_BOLD
-    
+        return curses.color_pair(c.COLOR_RED_BLACK) + curses.A_BOLD
+
     @classmethod
     def msg_warn_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_CYAN_BLACK) +  curses.A_BOLD
-    
+        return curses.color_pair(c.COLOR_CYAN_BLACK) + curses.A_BOLD
+
     @classmethod
     def msg_info_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BOLD
-    
+        return curses.color_pair(c.COLOR_GREEN_BLACK) + curses.A_BOLD
+
     @classmethod
     def green_black(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BOLD
+        return curses.color_pair(c.COLOR_GREEN_BLACK) + curses.A_BOLD
 
     @classmethod
     def white_black(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_WHITE_BLACK) +  curses.A_BOLD
+        return curses.color_pair(c.COLOR_WHITE_BLACK) + curses.A_BOLD
 
     @classmethod
     def title_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BOLD
+        return curses.color_pair(c.COLOR_GREEN_BLACK) + curses.A_BOLD
+
 
 def kolors():
     return Colors.instance()
-
-

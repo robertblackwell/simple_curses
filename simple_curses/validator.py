@@ -3,11 +3,12 @@ from typing import TypeVar, List
 
 T = TypeVar("T")
 
+
 class ArrayOf:
-    def __init__(self, validator:T):
+    def __init__(self, validator: T):
         self.validator = validator
-    
-    def validate(self, ar:List[str]):
+
+    def validate(self, ar: List[str]):
         result = []
         for s in ar:
             try:
@@ -16,8 +17,10 @@ class ArrayOf:
             except ValueError:
                 return None
         return result
+
     def error_message(self):
         return "Invalid text string for array of {}".format(self.validator.error_message())
+
 
 class Text:
     def __init__(self):
@@ -31,6 +34,7 @@ class Text:
 
     def error_message(self):
         return "Invalid text string"
+
 
 class Integer:
     def __init__(self):
@@ -46,6 +50,7 @@ class Integer:
     def error_message(self):
         return "Invalid integer"
 
+
 class Float:
     def __init__(self):
         pass
@@ -60,6 +65,7 @@ class Float:
     def error_message(self):
         return "Invalid floating point number"
 
+
 class IPAddress:
     def __init__(self):
         pass
@@ -73,6 +79,7 @@ class IPAddress:
 
     def error_message(self):
         return "Invalid ip address"
+
 
 class IPNetwork:
     def __init__(self):

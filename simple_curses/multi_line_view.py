@@ -2,8 +2,12 @@ from typing import List, Set, Dict, Tuple, Optional, Union
 import string
 
 EOSPAD = " "
+
+
 class MultiLineView2:
-    def __init__(self, content_lines: List[str], cpos_y_content: int, cpos_x_content: int, view_height: int, view_width: int, cpos_y_buffer: int, cpos_x_buffer: int):
+    def __init__(self, content_lines: List[str], cpos_y_content: int, cpos_x_content: int, view_height: int,
+                 view_width: int, cpos_y_buffer: int, cpos_x_buffer: int):
+        self.char_under_cursor = None
         tmp = cpos_y_content - cpos_y_buffer
         self.view_content_y_begin = tmp if tmp >= 0 else 0
         if tmp >= 0:
@@ -15,7 +19,7 @@ class MultiLineView2:
 
         xtmp = cpos_x_content - cpos_x_buffer
         self.view_content_x_begin = xtmp if xtmp > 0 else 0
-        view_content_x_end = 0
+        self.view_content_x_end = 0
         self.content_lines = content_lines
         self.view_height = view_height
         self.view_width = view_width
@@ -33,23 +37,26 @@ class MultiLineView2:
             self.view_content_y_end = self.view_content_y_begin + view_height - 1
             self.view_buffer_y_end = view_height - 1
 
-        elif self.view_content_y_begin >= 0 and  cpos_y_buffer == view_height - 1 and cpos_y_content == len(content_lines) and len(content_lines) >= view_height:
+        elif self.view_content_y_begin >= 0 and cpos_y_buffer == view_height - 1 and cpos_y_content == len(
+                content_lines) and len(content_lines) >= view_height:
             # case 2
             # content is larger than buffer
             # last line of content is on 2nd last line of buffer
             # y cursor is on last line of buffer and on imaginery line of content at index len(content_lines)
-            self.view_content_y_end = len(content_lines) 
+            self.view_content_y_end = len(content_lines)
             self.view_buffer_y_end = view_height - 1
 
-        elif self.view_content_y_begin >= 0 and cpos_y_buffer < view_height - 1 and self.view_content_y_begin + view_height - 1 >= len(content_lines) and cpos_y_content < len(content_lines):
+        elif self.view_content_y_begin >= 0 and cpos_y_buffer < view_height - 1 and self.view_content_y_begin + view_height - 1 >= len(
+                content_lines) and cpos_y_content < len(content_lines):
             # case 3
             # content is larger than buffer
             # last line of content is on 2nd last line of buffer
             # y_cursor is on a true content line
             self.view_content_y_end = len(content_lines) - 1
             self.view_buffer_y_end = view_height - 2
-            
-        elif self.view_content_y_begin == 0 and len(content_lines) < view_height and cpos_y_content < len(content_lines): # and cpos_y_buffer + (view_height - 1) - cpos_y_content == (view_height - 1):
+
+        elif self.view_content_y_begin == 0 and len(content_lines) < view_height and cpos_y_content < len(
+                content_lines):  # and cpos_y_buffer + (view_height - 1) - cpos_y_content == (view_height - 1):
             # case 4 - 
             # content is smaller than buffer
             # last line of content is on last line of buffer
@@ -57,14 +64,15 @@ class MultiLineView2:
             self.view_content_y_end = len(content_lines) - 1
             self.view_buffer_y_end = view_height - 1
 
-        elif self.view_content_y_begin == 0 and cpos_y_content == len(content_lines) and cpos_y_buffer == view_height - 1 and len(content_lines) <= view_height:
+        elif self.view_content_y_begin == 0 and cpos_y_content == len(
+                content_lines) and cpos_y_buffer == view_height - 1 and len(content_lines) <= view_height:
             # case 5
             # content is smaller than buffer
             # last line of content is on 2nd last line of buffer
             # y cursor is on last line of buffer and on imaginery line of content at index len(content_lines) 
             self.view_content_y_end = len(content_lines)
             self.view_buffer_y_end = view_height - 1
-            
+
         elif self.view_content_y_begin == 0 and cpos_y_content < len(content_lines):
             # case 6
             # content is larger than buffer
@@ -104,7 +112,7 @@ class MultiLineView2:
         """make an array with the same number of rows as the view buffer
         and where the array contains exactly what the view buffer should show"""
         buffer: List[str] = []
-        line_numbers: List[Optional[str]] = []
+        line_numbers = []
         for j in range(0, self.view_height):
             buffer.append("")
             line_numbers.append(None)
@@ -112,10 +120,11 @@ class MultiLineView2:
         bindex = self.view_buffer_y_begin
         ln = self.view_content_y_begin
         for index in range(self.view_content_y_begin, self.view_content_y_end + 1):
-            line  = self.content_lines[index]
-            m = len(line) if len(line) < self.view_content_x_begin + self.view_width - 1 else self.view_content_x_begin + self.view_width - 1  
+            line = self.content_lines[index]
+            m = len(line) if len(
+                line) < self.view_content_x_begin + self.view_width - 1 else self.view_content_x_begin + self.view_width - 1
             buffer[bindex] = line[self.view_content_x_begin: m + 1]
-            line_numbers[bindex] = ln + 1 #make line numbers 1 based
+            line_numbers[bindex] = ln + 1  # make line numbers 1 based
             bindex += 1
             ln += 1
 
@@ -127,7 +136,7 @@ class MultiLineView2:
             buffer.append("Z")
         bindex = self.view_buffer_y_begin
         for index in range(self.view_content_y_begin, self.view_content_y_end + 1):
-            line  = self.content_lines[index] if index < len(self.content_lines) else "W"
+            line = self.content_lines[index] if index < len(self.content_lines) else "W"
             buffer[bindex] = line
             bindex += 1
 
@@ -154,11 +163,12 @@ class MultiLineView2:
             cursor_line = cursor_line + "X"
             self.view_content_x_end = len(cursor_line) - 1
         else:
-            cursor_line = cursor_line[0: self.cpos_x_content] + "X" + cursor_line[self.cpos_x_content + 1: len(cursor_line)]
+            cursor_line = cursor_line[0: self.cpos_x_content] + "X" + cursor_line[
+                                                                      self.cpos_x_content + 1: len(cursor_line)]
             self.view_content_x_end = len(cursor_line) - 1
-        orig = self.content_lines[self.cpos_y_content] 
+        orig = self.content_lines[self.cpos_y_content]
         ruler = "0123456789A123456789B123456789C123456789D"
-        return [cursor_line, cursor_line[self.view_content_x_begin: self.view_content_x_end+1], orig, ruler ]
+        return [cursor_line, cursor_line[self.view_content_x_begin: self.view_content_x_end + 1], orig, ruler]
 
 
 class XMultiLineView:
@@ -168,11 +178,10 @@ class XMultiLineView:
         self.curs_y: int = curs_y
         self.curs_x: int = curs_x
         self.curs_char: str = curs_char
-        self.one_based_line_numbers =[]
+        self.one_based_line_numbers = []
         for item in one_based_line_numbers:
-            self.one_based_line_numbers.append(item) 
+            self.one_based_line_numbers.append(item)
         self.cursor_line_debug: str = self._mk_cursor_line()
-
 
     def _mk_cursor_line(self):
         cline = self.lines[self.curs_y]
@@ -181,4 +190,3 @@ class XMultiLineView:
         else:
             cline = cline[0: self.curs_x] + "X" + cline[self.curs_x + 1: len(cline)]
         return cline
-

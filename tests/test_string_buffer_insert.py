@@ -14,6 +14,7 @@ import unittest
 
 import string_buffer
 
+
 class TestStringBufferInsert(unittest.TestCase):
 
     def test_edit_insert(self):

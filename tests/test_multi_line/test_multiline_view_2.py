@@ -226,7 +226,7 @@ class TestMultiLineView_Debug_Y_Cases(unittest.TestCase):
         self.assertEqual(len(local_lines), 6)
         mlb: MultiLineBuffer = MultiLineBuffer(lines=local_lines, height=height, width=width)
         # put the cursor after the last character on the last line - the last line is not empty
-        mlb._cursor_set_at_end() 
+        mlb.cursor_set_at_end()
         # move the cursor up and into the line but dont shift the empty last line
         for i in range(0,2):
             mlb.handle_up()

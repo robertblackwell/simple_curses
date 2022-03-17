@@ -29,6 +29,7 @@ xlines = [
     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
+
 class MultiLineWidget(EditableWidgetBase):
 
     @classmethod
@@ -36,6 +37,10 @@ class MultiLineWidget(EditableWidgetBase):
         pass
 
     def __init__(self, row, col, key, label, width, height, attributes, data):
+        self.info_win = None
+        self.content_win = None
+        self.line_number_win = None
+        self.title_window = None
         self.id: str = key
         self.has_focus: bool = False
         self.row: int = row
@@ -56,7 +61,6 @@ class MultiLineWidget(EditableWidgetBase):
         tmp = width + len(self.label)
         self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.height - 3, self.width - 5)
 
-
     def set_enclosing_window(self, win):
         self.outter_win = win
         yp, xp = self.outter_win.getparyx()
@@ -64,14 +68,14 @@ class MultiLineWidget(EditableWidgetBase):
         y, x = self.outter_win.getbegyx()
         flg = False
         if flg:
-            self.title_window = self.outter_win.subwin(1, xm - 2, y+1, x+1)
+            self.title_window = self.outter_win.subwin(1, xm - 2, y + 1, x + 1)
             self.line_number_win = self.outter_win.subwin(ym - 3, self.line_number_width, y + 2, x + 1)
-            self.content_win = self.outter_win.subwin(ym - 3, xm - self.line_number_width, y + 2, x + self.line_number_width )
-            
+            self.content_win = self.outter_win.subwin(ym - 3, xm - self.line_number_width, y + 2,
+                                                      x + self.line_number_width)
+
             yp_title, xp_title = self.title_window.getparyx()
             ym_title, xm_title = self.title_window.getmaxyx()
             y_title, x_title = self.title_window.getbegyx()
-
 
             yp_line_number, xp_line_number = self.line_number_win.getparyx()
             ym_line_number, xm_line_number = self.line_number_win.getmaxyx()
@@ -80,16 +84,15 @@ class MultiLineWidget(EditableWidgetBase):
             yp_content, xp_content = self.content_win.getparyx()
             ym_content, xm_content = self.content_win.getmaxyx()
             yb_content, xb_content = self.content_win.getbegyx()
-            
+
             self.info_win = curses.newwin(4, self.width, self.start_row + self.height - 2 + 1, self.start_col)
         else:
             self.title_window = curses.newwin(1, self.width, self.start_row, self.start_col)
-            self.line_number_win = curses.newwin(self.height - 2, self.line_number_width, self.start_row + 1, self.start_col + 1)
-            self.content_win = curses.newwin(self.height - 1,  self.width - 3, self.start_row + 1, self.start_col + 1 + 3)
+            self.line_number_win = curses.newwin(self.height - 2, self.line_number_width, self.start_row + 1,
+                                                 self.start_col + 1)
+            self.content_win = curses.newwin(self.height - 1, self.width - 3, self.start_row + 1,
+                                             self.start_col + 1 + 3)
             self.info_win = curses.newwin(4, self.width, self.start_row + self.height - 2 + 1, self.start_col)
-
-    def menuAction1(self):
-        pass
 
     def set_form(self, form: Form):
         self.form = form
@@ -134,7 +137,7 @@ class MultiLineWidget(EditableWidgetBase):
 
     def render(self):
         self.outter_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
-        self.render_title()        
+        self.render_title()
 
         view = self.mu_lines_buffer.get_view()
         y0 = view.view_content_y_begin
@@ -149,7 +152,8 @@ class MultiLineWidget(EditableWidgetBase):
             self.content_win.addstr(r, 0, txt, Colors.green_black())
             self.line_number_win.addstr(r, 0, ln_str, Colors.white_black())
             if view.cpos_y_buffer == r and self.has_focus:
-                self.content_win.addstr(r, view.cpos_x_buffer, view.char_under_cursor, Colors.green_black() + curses.A_REVERSE + curses.A_STANDOUT)
+                self.content_win.addstr(r, view.cpos_x_buffer, view.char_under_cursor,
+                                        Colors.green_black() + curses.A_REVERSE + curses.A_STANDOUT)
             r += 1
 
         self.render_info()
@@ -160,7 +164,6 @@ class MultiLineWidget(EditableWidgetBase):
         self.info_win.noutrefresh()
         curses.doupdate()
 
-
     def handle_input(self, ch):
         did_handle = True
         if is_addline(ch):
@@ -170,7 +173,7 @@ class MultiLineWidget(EditableWidgetBase):
         elif is_edit_back(ch):
             self.set_paste_mode_off()
             self.mu_lines_buffer.handle_backspace()
-        elif is_printable(ch)  and (not is_newline(ch)):
+        elif is_printable(ch) and (not is_newline(ch)):
             self.set_paste_mode_off()
             self.mu_lines_buffer.handle_character(chr(ch))
         elif is_edit_del(ch):
@@ -202,9 +205,10 @@ class MultiLineWidget(EditableWidgetBase):
 
     def paste_mode_handle_input(self):
         pass
-############################################################################################################ 
-# paste mode
-############################################################################################################ 
+
+    ############################################################################################################
+    # paste mode
+    ############################################################################################################
     def toggle_paste_mode(self):
         before = self.paste_mode
         after = not self.paste_mode
@@ -222,6 +226,6 @@ class MultiLineWidget(EditableWidgetBase):
 
     def set_paste_mode_on(self):
         self.paste_mode = True
-        self.mu_lines_buffer._cursor_set_at_end()
+        self.mu_lines_buffer.cursor_set_at_end()
         self.mu_lines_buffer.handle_newline()
         self.paste_mode = True
