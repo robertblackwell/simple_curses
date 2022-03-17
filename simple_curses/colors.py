@@ -50,27 +50,27 @@ class Colors:
     @classmethod
     def msg_error_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_RED_BLACK) +  curses.A_BLINK
+        return curses.color_pair(c.COLOR_RED_BLACK) +  curses.A_BOLD
     
     @classmethod
     def msg_warn_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_CYAN_BLACK) +  curses.A_BLINK
+        return curses.color_pair(c.COLOR_CYAN_BLACK) +  curses.A_BOLD
     
     @classmethod
     def msg_info_attr(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BLINK
+        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BOLD
     
     @classmethod
     def green_black(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BLINK
+        return curses.color_pair(c.COLOR_GREEN_BLACK) +  curses.A_BOLD
 
     @classmethod
     def white_black(cls):
         c: Colors = cls.instance()
-        return curses.color_pair(c.COLOR_WHITE_BLACK) +  curses.A_BLINK
+        return curses.color_pair(c.COLOR_WHITE_BLACK) +  curses.A_BOLD
 
     @classmethod
     def title_attr(cls):
