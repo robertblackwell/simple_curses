@@ -48,7 +48,6 @@ class Form:
         self.inner_win = self.outter_win.subwin(self.height, self.width, 1, 1)
         self.title_win = curses.newwin(self.title_height, self.title_width, 0, 0)
 
-
         self.body_start_row = self.title_start_row + self.title_height
         self.body_start_col = 0
         self.body_width = self.width
