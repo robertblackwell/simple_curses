@@ -3,6 +3,7 @@ import unittest
 
 import string_buffer
 
+
 class TestStringBufferBackspace(unittest.TestCase):
 
     def test_edit_backspace(self):
@@ -20,7 +21,6 @@ class TestStringBufferBackspace(unittest.TestCase):
         self.assertEqual(sb.display_string, "defg")
         self.assertEqual(sb.cpos_buffer, 2)
         self.assertEqual(sb.state, sb.STATE_EDITING)
-
 
         sb.handle_backspace()
         self.assertEqual(sb.content, "abcdfg")

@@ -7,24 +7,26 @@
 # insert a character into the self.content string at the given position
 # does not modify any properties
 def _string_insert_character(str, pos, ch):
-    assert (pos >= 0 and pos <= len(str) and len(str) > 0)
+    assert (0 <= pos <= len(str) and len(str) > 0)
     s1 = str
     s21 = s1[0: pos] + ch
     s22 = s1[pos: len(s1)]
     return s21 + s22
 
+
 # delete a character from within the self.content string and return the new string
 # does not modify any properties
-def  _string_delete_character(str, pos):
-    assert (pos >= 0 and pos <= len(str) and len(str) > 0)
+def _string_delete_character(astring, pos):
+    assert (0 <= pos <= len(astring) and len(astring) > 0)
     if pos == 0:
-        return str[1: len(str)]
-    s1 = str
+        return astring[1: len(astring)]
+    s1 = astring
     s21 = s1[0: pos]
     s22 = s1[pos + 1: len(s1)]
     return s21 + s22
 
-# 
+
+#
 # This class provides  
 # -     fixed width buffer that acts as a display window or view into an arbitory length string,
 # -     together with the position of a cursor within that buffer window.
@@ -39,7 +41,8 @@ class StringBuffer:
     STATE_APPENDING = 1
     STATE_EDITING = 2
     EOSPAD = " "
-    def __init__(self, str, width):
+
+    def __init__(self, astring, width):
         self.state = self.STATE_APPENDING
         self.content = ""
 
@@ -56,7 +59,7 @@ class StringBuffer:
         self.display_string = ""
         self._compute_display_string()
 
-        for c in str:
+        for c in astring:
             self.handle_character(c)
 
     # tests the invariant between cpos_buffer, cpos_content and start_display_string
@@ -111,7 +114,7 @@ class StringBuffer:
     # the end position in the content string of the last+1 buffer chararcer
     def _bufferend_to_contentpos(self):
         leng = len(self.content)
-        max_stop = (self.start_display_string + (self.width) - 1)
+        max_stop = (self.start_display_string + self.width - 1)
         stop_pos = leng if (leng <= max_stop) else max_stop
         return stop_pos
         # self.display_string = self.content[self.start_display_string: stop_pos] + self.EOSPAD
@@ -129,13 +132,13 @@ class StringBuffer:
             # self.display_string = (self.content) [start: start + (self.width - 1)] + self.EOSPAD
             if start + self.width >= len(self.content):
                 if start + self.cpos_buffer >= len(self.content):
-                    self.display_string = (self.content) [start: start + len(self.content)] + self.EOSPAD
+                    self.display_string = self.content[start: start + len(self.content)] + self.EOSPAD
                 else:
-                    self.display_string = (self.content) [start: start + len(self.content)]
+                    self.display_string = self.content[start: start + len(self.content)]
             else:
-                self.display_string = (self.content) [start: start + self.width]
+                self.display_string = self.content[start: start + self.width]
         elif case2:
-                self.display_string = (self.content) [start: start + (self.width)]
+            self.display_string = self.content[start: start + self.width]
 
         # if(self.display_string != self.display_string):
         #     print("display string mismatch display_string: [{}] display_string: [{}] cpos_buffer: {}".format(self.display_string, self.display_string, self.cpos_buffer))
@@ -151,19 +154,19 @@ class StringBuffer:
         if self.state == self.STATE_APPENDING:
             assert False, "content insert character only for edit mode"
 
-        assert (pos >= 0 and pos <= len(self.content) and len(self.content) > 0)
+        assert (0 <= pos <= len(self.content) and len(self.content) > 0)
         return _string_insert_character(self.content, pos, ch)
-    
+
     # delete a character from within the self.content string and return the new string
     # does not modify any properties
-    def  _content_remove_character(self, pos):
+    def _content_remove_character(self, pos):
         if self.state == self.STATE_APPENDING:
             assert False, "content remove character only for edit mode"
         return _string_delete_character(self.content, pos)
 
     # handle a new non editing and non navigation character. Add to the buffer and update state variables
     def handle_character(self, ch):
-        
+
         if self.state == self.STATE_APPENDING:
             assert (self.cpos_content == len(self.content))
             self.content += ch
@@ -172,7 +175,7 @@ class StringBuffer:
                 self.cpos_content = len(self.content)
             else:
                 self.cpos_buffer = len(self.content + self.EOSPAD) - 1
-                self.cpos_content = len(self.content + self.EOSPAD) - 1 
+                self.cpos_content = len(self.content + self.EOSPAD) - 1
             self._compute_display_string()
         else:
             pos = self.cpos_content
@@ -189,7 +192,7 @@ class StringBuffer:
                 self.cpos_buffer = self.width - 1
                 self.cpos_content = len(self.content)
             else:
-                self.cpos_buffer = len(self.content) 
+                self.cpos_buffer = len(self.content)
                 self.cpos_content = len(self.content)
 
             self._compute_display_string()
@@ -218,21 +221,19 @@ class StringBuffer:
             pos = self.cpos_content
             self.content = self._content_remove_character(pos)
             if len(self.content) == 0:
-                self.state  = self.STATE_APPENDING
+                self.state = self.STATE_APPENDING
                 self._compute_display_string()
             else:
                 self._compute_display_string()
 
-    
-    # handle left arrow - 
+    # handle left arrow -
     def handle_left(self):
         if self.state == self.STATE_APPENDING:
-            self.state = self.STATE_EDITING 
+            self.state = self.STATE_EDITING
         self._decr_cpos_buffer()
         self._decr_cpos_content()
         self._compute_display_string()
 
-   
     # handle right arrow key
     def handle_right(self):
         if self.state == self.STATE_APPENDING:

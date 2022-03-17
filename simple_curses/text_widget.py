@@ -1,15 +1,9 @@
-import curses
 import curses.textpad
-import time
-import string
 
-import string_buffer
-import lines_buffer
-from colors import Colors
-import validator
-from utils import *
 from form import Form
-from widget_base import  EditableWidgetBase
+from utils import *
+from widget_base import EditableWidgetBase
+
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
@@ -18,8 +12,9 @@ class TextWidget(EditableWidgetBase):
     @classmethod
     def classmeth(cls):
         print("hello")
-    
+
     def __init__(self, relative_row, relative_col, key, label, width, attributes, data):
+        self.win = None
         self.id = key
         self.has_focus = False
         self.row = relative_row
@@ -43,17 +38,16 @@ class TextWidget(EditableWidgetBase):
         # these properties are for manaing the display of the conttent string during
         # entry and editing
         self.display_content_start = 0
-        self.display_content_position = 0 #current cursor position in the content
-        self.display_cursor_position = 0 # always between 0 .. width - that is always visible
-        self.display_length = 0 # is width-1 if we are adding to the end of the string in which case the cursor is over the 'next' slot
-                                # if we are editing the string and the cursor is somewhere inside the content string then has the value width
-    
+        self.display_content_position = 0  # current cursor position in the content
+        self.display_cursor_position = 0  # always between 0 .. width - that is always visible
+        self.display_length = 0  # is width-1 if we are adding to the end of the string in which case the cursor is over the 'next' slot
+        # if we are editing the string and the cursor is somewhere inside the content string then has the value width
+
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
 
     def set_form(self, form: Form) -> None:
         self.form = form
-
 
     def get_width(self) -> int:
         return len(self.label) + self.width + 2
@@ -63,7 +57,7 @@ class TextWidget(EditableWidgetBase):
 
     def clear(self):
         self.string_buffer.clear()
-    
+
     # paint attributes for the content area so that it is visible to used
     def paint_content_area_background(self) -> None:
         tmp = self.width + len(self.label) - 1
@@ -81,15 +75,17 @@ class TextWidget(EditableWidgetBase):
         if self.has_focus:
             self.position_cursor()
         self.win.noutrefresh()
-    
+
     # 
     # Positions the cursor to the current active position and makes sure it blinks.
     # The current active position is usually 1 space past the end of the currently input text
     # 
     def position_cursor(self) -> None:
         ch_under_cursor = self.string_buffer.display_string[self.string_buffer.cpos_buffer]
-        self.win.addnstr(0, len(self.label) + self.string_buffer.cpos_buffer, ch_under_cursor, 1, curses.A_REVERSE + curses.A_BLINK)
+        self.win.addnstr(0, len(self.label) + self.string_buffer.cpos_buffer, ch_under_cursor, 1,
+                         curses.A_REVERSE + curses.A_BLINK)
         self.win.noutrefresh()
+
     # 
     # called by the Form instance to give this control focus
     # 
@@ -102,12 +98,14 @@ class TextWidget(EditableWidgetBase):
 
     def get_value(self) -> string:
         return self.string_buffer.content
+
     # 
     # Called by inpput handling functions to signal to user that the last keysttroke was
     # invalid. Dont quite know what to do yet
     # 
     def invalid_input(self):
         pass
+
     # When a Widget has the focus every keystroke (with some small exceptions)
     # get passed to this function.
     # If the Widget handles the keystroke then it should return true
@@ -115,7 +113,7 @@ class TextWidget(EditableWidgetBase):
     # 
     def handle_input(self, ch) -> bool:
         did_handle_ch = True
-        if (ch  <= 255) and (chr(ch) in string.printable):
+        if (ch <= 255) and (chr(ch) in string.printable):
             self.string_buffer.handle_character(chr(ch))
         elif is_edit_back(ch):
             self.string_buffer.handle_backspace()
@@ -131,23 +129,26 @@ class TextWidget(EditableWidgetBase):
         self.position_cursor()
         return did_handle_ch
 
+
 class IntegerWidget(TextWidget):
     def __init__(self, row, col, key, label, width, attributes, data):
         super().__init__(row, col, key, label, width, attributes, data)
         self.validator = validator.Integer()
+
 
 class FloatWidget(TextWidget):
     def __init__(self, row, col, key, label, width, attributes, data):
         super().__init__(row, col, key, label, width, attributes, data)
         self.validator = validator.Float()
 
+
 class IPAddressWidget(TextWidget):
     def __init__(self, row, col, key, label, width, attributes, data):
         super().__init__(row, col, key, label, width, attributes, data)
         self.validator = validator.IPAddress()
 
+
 class IPNetworkWidget(TextWidget):
     def __init__(self, row, col, key, label, width, attributes, data):
         super().__init__(row, col, key, label, width, attributes, data)
         self.validator = validator.IPNetwork()
-

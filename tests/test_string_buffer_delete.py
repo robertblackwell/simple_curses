@@ -3,6 +3,7 @@ import unittest
 
 import string_buffer
 
+
 class TestStringBufferDelete(unittest.TestCase):
 
     def test_edit_delete(self):
@@ -85,7 +86,6 @@ class TestStringBufferDelete(unittest.TestCase):
         self.assertEqual(sb.display_string, "" + sb.EOSPAD)
         self.assertEqual(sb.cpos_buffer, 0)
         self.assertEqual(sb.state, sb.STATE_APPENDING)
-
 
 
 if __name__ == '__main__':

@@ -3,8 +3,8 @@ import unittest
 
 import string_buffer
 
-class TestStringBufferRight(unittest.TestCase):
 
+class TestStringBufferRight(unittest.TestCase):
 
     def test_right_arrow_01(self):
         sb = string_buffer.StringBuffer("abc", 5)
@@ -43,7 +43,6 @@ class TestStringBufferRight(unittest.TestCase):
         self.assertEqual(sb.display_string, "abc" + sb.EOSPAD)
         self.assertEqual(sb.cpos_buffer, 3)
         self.assertEqual(sb.state, sb.STATE_APPENDING)
-
 
     def test_right_arrow_02(self):
         sb = string_buffer.StringBuffer("abcdefg", 5)

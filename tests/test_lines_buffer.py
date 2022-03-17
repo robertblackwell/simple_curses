@@ -25,8 +25,8 @@ lines = [
     "11 1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
-class TestLinesBuffer(unittest.TestCase):
 
+class TestLinesBuffer(unittest.TestCase):
 
     def test_lines_buffer_01(self):
         lb: lines_buffer.LinesBuffer = lines_buffer.LinesBuffer(lines, 100, 5)
@@ -65,6 +65,7 @@ class TestLinesBuffer(unittest.TestCase):
         lb.handle_up()
         self.assertEqual(lb.first_line, 0)
         self.assertEqual(lb.last_line, 5)
+
 
 if __name__ == '__main__':
     unittest.main()
