@@ -1,44 +1,44 @@
 import curses.textpad
-
+from typing import List
 from form import Form
 from utils import *
 from widget_base import EditableWidgetBase
 
 
 # A widget that is either ON or OFF
-class TogglWidget(EditableWidgetBase):
+class ToggleWidget(EditableWidgetBase):
     @classmethod
     def classmeth(cls):
         print("hello")
 
-    def __init__(self, relative_row, relative_col, key, label, width, attributes, data):
+    def __init__(self, relative_row, relative_col, key, label, width, attributes, data, values: List[str], initial_value):
+
+        def calc_width(svalues: List[str]):
+            w = 0
+            for v in svalues:
+                w = len(v) if len(v) > w else w
+            return w
+
         self.win = None
         self.id = key
         self.has_focus = False
         self.row = relative_row
         self.col = relative_col
         self.data = data
-        self.content = False
+        self.content = values
+        self.initial_value = initial_value
+        try:
+            self.current_index = values.index(initial_value)
+        except ValueError:
+            raise ValueError("initial_value {} is not list of possible values {}".format(initial_value, ", ".join(values)))
         self.label = label + ": "
-        self.width = width
+        self.width = calc_width(values)
         self.height = 1
         self.start_row = 0
         self.start_col = 0
 
         self.attributes = attributes
         self.form = None
-        # self.validator = validator.Toggle()
-        # tmp = width + len(self.label)
-        # self.win = curses.newwin(1, width + len(self.label) + 2, row, col, )
-        # self.string_buffer = string_buffer.StringBuffer("", self.width)
-
-        # these properties are for manaing the display of the conttent string during
-        # entry and editing
-        # self.display_content_start = 0
-        # self.display_content_position = 0  # current cursor position in the content
-        # self.display_cursor_position = 0  # always between 0 .. width - that is always visible
-        # self.display_length = 0  # is width-1 if we are adding to the end of the string in which case the cursor is over the 'next' slot
-        # # if we are editing the string and the cursor is somewhere inside the content string then has the value width
 
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
@@ -68,10 +68,12 @@ class TogglWidget(EditableWidgetBase):
     def render(self) -> None:
         self.paint_content_area_background()
         self.win.addstr(0, 0, self.label, curses.A_BOLD)
-        display = "X" if self.content else " "
-        self.win.addstr(0, len(self.label), display)
+        display = self.content[self.current_index]
         if self.has_focus:
-            self.position_cursor()
+            self.win.addstr(0, len(self.label), display, curses.A_REVERSE)
+        else:
+            self.win.addstr(0, len(self.label), display)
+
         self.win.noutrefresh()
 
     # 
@@ -79,7 +81,7 @@ class TogglWidget(EditableWidgetBase):
     # The current active position is usually 1 space past the end of the currently input text
     # 
     def position_cursor(self) -> None:
-        ch_under_cursor = "X" if self.content else " "
+        ch_under_cursor = "Y" if self.content else "N"
         self.win.addnstr(0, len(self.label), ch_under_cursor, 1,
                          curses.A_REVERSE + curses.A_BOLD)
         self.win.noutrefresh()
@@ -94,8 +96,8 @@ class TogglWidget(EditableWidgetBase):
     def focus_release(self) -> None:
         self.has_focus = False
 
-    def get_value(self) -> string:
-        return self.string_buffer.content
+    def get_value(self) -> bool:
+        return self.content
 
     # 
     # Called by inpput handling functions to signal to user that the last keysttroke was
@@ -112,41 +114,9 @@ class TogglWidget(EditableWidgetBase):
     def handle_input(self, ch) -> bool:
         did_handle_ch = True
         if (ch <= 255) and (chr(ch) in ["\n", "\r", " "]):
-            self.string_buffer.handle_character(chr(ch))
-        elif is_edit_back(ch):
-            self.string_buffer.handle_backspace()
-        elif is_edit_del(ch):
-            self.string_buffer.handle_delete()
-        elif is_move_left(ch):
-            self.string_buffer.handle_left()
-        elif is_move_right(ch):
-            self.string_buffer.handle_right()
+            self.current_index = (self.current_index + 1) % 2
         else:
             did_handle_ch = False
 
         self.position_cursor()
         return did_handle_ch
-
-
-class IntegerWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
-        self.validator = validator.Integer()
-
-
-class FloatWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
-        self.validator = validator.Float()
-
-
-class IPAddressWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
-        self.validator = validator.IPAddress()
-
-
-class IPNetworkWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
-        self.validator = validator.IPNetwork()

@@ -1,8 +1,7 @@
 import curses
 import curses.textpad
 from colors import Colors
-from widget_base import WidgetBase, EditableWidgetBase
-
+from widget_base import WidgetBase
 
 class MessageWidget(WidgetBase):
     """This widget provides a box into which messsages can be written.

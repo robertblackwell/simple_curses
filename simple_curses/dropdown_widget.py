@@ -1,3 +1,4 @@
+from typing import List
 import curses
 import curses.textpad
 import lines_buffer
@@ -5,7 +6,7 @@ from colors import Colors
 from utils import *
 from simple_curses.widget_base import EditableWidgetBase
 from multi_line_buffer import MultiLineBuffer
-# from simple_curses.menu import MenuItem
+from simple_curses.menu import MenuItem
 from simple_curses.form import Form
 
 xlines = [
@@ -29,14 +30,19 @@ xlines = [
     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
+def calc_width(svalues: List[str]):
+    w = 0
+    for v in svalues:
+        w = len(v) if len(v) > w else w
+    return w
 
-class MultiLineWidget(EditableWidgetBase):
+class DropdownWidget(EditableWidgetBase):
 
     @classmethod
     def classmeth(cls):
         pass
 
-    def __init__(self, row, col, key, label, width, height, attributes, data):
+    def __init__(self, row, col, key, label, width, height, attributes, data, selections: List[str], initial_value):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -47,7 +53,8 @@ class MultiLineWidget(EditableWidgetBase):
         self.col: int = col
         self.data = data
         self.label: str = label + ": "
-        self.width: int = width
+        self.width: int = calc_width(selections)
+        self.current_selection_index = selections.index(initial_value)
         self.line_number_width: int = 3
         self.height: int = height
         self.start_row: int = 0
@@ -166,37 +173,37 @@ class MultiLineWidget(EditableWidgetBase):
 
     def handle_input(self, ch):
         did_handle = True
-        if is_addline(ch):
-            self.mu_lines_buffer.handle_add_line()
-        elif is_cntrl_p(ch):
-            self.toggle_paste_mode()
-        elif is_edit_back(ch):
-            self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_backspace()
-        elif is_printable(ch) and (not is_newline(ch)):
-            self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_character(chr(ch))
-        elif is_edit_del(ch):
-            self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_delete()
-        elif is_delete_line(ch):
-            self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_delete_line()
-        elif is_move_down(ch):
+        # if is_addline(ch):
+        #     self.mu_lines_buffer.handle_add_line()
+        # elif is_cntrl_p(ch):
+        #     self.toggle_paste_mode()
+        # elif is_edit_back(ch):
+        #     self.set_paste_mode_off()
+        #     self.mu_lines_buffer.handle_backspace()
+        # elif is_printable(ch) and (not is_newline(ch)):
+        #     self.set_paste_mode_off()
+        #     self.mu_lines_buffer.handle_character(chr(ch))
+        # elif is_edit_del(ch):
+        #     self.set_paste_mode_off()
+        #     self.mu_lines_buffer.handle_delete()
+        # elif is_delete_line(ch):
+        #     self.set_paste_mode_off()
+        #     self.mu_lines_buffer.handle_delete_line()
+        if is_move_down(ch):
             self.set_paste_mode_off()
             self.mu_lines_buffer.handle_down()
-        elif is_move_left(ch):
-            self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_left()
-        elif is_move_right(ch):
-            self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_right()
+        # elif is_move_left(ch):
+        #     self.set_paste_mode_off()
+        #     self.mu_lines_buffer.handle_left()
+        # elif is_move_right(ch):
+        #     self.set_paste_mode_off()
+        #     self.mu_lines_buffer.handle_right()
         elif is_move_up(ch):
             self.set_paste_mode_off()
             self.mu_lines_buffer.handle_up()
-        elif is_newline(ch):
-            self.set_paste_mode_off()
-            self.mu_lines_buffer.handle_newline()
+        # elif is_newline(ch):
+        #     self.set_paste_mode_off()
+        #     self.mu_lines_buffer.handle_newline()
         else:
             did_handle = False
 

@@ -4,10 +4,9 @@ from abc import ABC, abstractmethod, abstractproperty
 import curses
 import curses.textpad
 import time
-from colors import Colors
-from utils import *
-from form import Form
-from widget_base import WidgetBase
+from simple_curses.colors import Colors
+from simple_curses.utils import *
+from simple_curses.widget_base import WidgetBase
 
 class MenuItem(WidgetBase):
     @classmethod
@@ -32,8 +31,8 @@ class MenuItem(WidgetBase):
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
 
-    def set_form(self, form: Form) -> None:
-        self.form = form
+    def set_form(self, aform) -> None:
+        self.form = aform
 
     def get_width(self) -> int:
         return self.width + 4 if self.width > 4 else 12

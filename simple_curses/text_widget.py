@@ -3,7 +3,7 @@ import curses.textpad
 from form import Form
 from utils import *
 from widget_base import EditableWidgetBase
-
+import validator
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
@@ -153,8 +153,8 @@ class IPNetworkWidget(TextWidget):
         super().__init__(row, col, key, label, width, attributes, data)
         self.validator = validator.IPNetwork()
 
+
 class TimeOfDayWidget(TextWidget):
     def __init__(self, row, col, key, label, width, attributes, data):
         super().__init__(row, col, key, label, width, attributes, data)
-        self.validator = validator.TimeOfDay()
-
+        self.validator = validator.TimeOfDay24()

@@ -1,9 +1,12 @@
+from turtle import right
+from typing import List
 import curses
 import curses.textpad
 
-from colors import Colors
+from simple_curses.colors import Colors
+import simple_curses.menu as M
+from simple_curses.message_widget import MessageWidget
 from widget_base import WidgetBase
-from message_widget import MessageWidget
 
 
 def is_next_control(ch):
@@ -29,12 +32,72 @@ def fn_key_description(k1):
     s3 = "F" + s2
     return s3
 
+class Rectangle:
+    def __init__(self, nbr_rows, nbr_cols, y_beg, x_beg ):
+        self.nbr_rows = nbr_rows
+        self.nbr_cols = nbr_cols
+        self.y_begin = y_beg
+        self.x_begin = x_beg
+
+class VStack:
+    def __init__(self, win: curses.window, widgets: List[WidgetBase]):
+        
+        pass
+class ViewBodyLeft:
+    pass
+
+class ViewBodyRight:
+    pass
+
+class ViewBody:
+    pass
+
+class ViewMenu:
+    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
+        self.outter_win = menu_win
+        self.height, self.width = menu_win.getmaxyx()
+        ybeg, xbeg = menu_win.getbegyx()
+        max_item_width = 0
+        total_width = 0
+        item_width = None
+        for m in menu_items:
+            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
+            total_width += m.get_width() + 4
+        if (max_item_width + 2) * len(menu_items) < self.width:
+            item_width = max_item_width + 2 
+        else: 
+            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
+        xpos = xbeg + self.width - item_width
+        rectangles = []
+        for m in reversed(menu_items):
+            r = Rectangle(3, item_width - 2, ybeg + 1, xpos) #leave a space between the menu items
+            rectangles.append(r)
+            xpos += -item_width
+            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
+            m.set_enclosing_window(tmp_win)
+            m.set_form(form)
+            m.has_focus = False
+
+
+class View:
+    pass
 
 class Form:
-    def __init__(self, stdscr, height, width, widgets, context, input_timeout_ms=2):
+    def __init__(
+        self, 
+        stdscr, 
+        height, 
+        width, 
+        left_widgets, right_widgets, menu_widgets,
+        context, 
+        input_timeout_ms=2
+        ):
         self.height = height
         self.width = width
-        self.widgets = widgets
+        self.left_widgets = left_widgets
+        self.right_widgets = right_widgets
+        self.menu_widgets = menu_widgets
+        self.widgets = left_widgets + right_widgets + menu_widgets
         self.context = context
         self.stdscr = stdscr
         self.focus_index = 0
@@ -78,18 +141,36 @@ class Form:
         self.message_text = ""
         body_height = 0
         col = body_start_col + 4
+        c = 1
+        self.menu_items = []
+        self.non_menu_widgets = []
         for w in self.widgets:
             klass = w.__class__.__name__
             if klass == "MenuItem":
-                w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), w.row, col + 1))
-                col += w.get_width() + 4
+                self.menu_items.append(w)
+                w.set_form(self)
+                w.has_focus = False
+                # # this is a horizonal stack of the menu items - would like it to be right justified
+                # ymnu, xmnu = self.menu_win.getbegyx()
+                # ymm, xmm = self.menu_win.getmaxyx()
+                # # w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.msg_start_row + 1, col + 1))
+                # tmp_win = self.menu_win.subwin(3, 10, ymnu+1, xmnu + col)
+                # w.set_enclosing_window(tmp_win)
+                # col += w.get_width() + 4
+                # c += w.get_width() + 4
             else:
-                w.start_row = w.row + body_start_row
-                w.start_col = w.col + body_start_col
-                w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row,
-                                                     self.body_start_col + w.col))
-            w.set_form(self)
-            w.has_focus = False
+                self.non_menu_widgets.append(w)
+                w.set_form(self)
+                w.has_focus = False
+
+        for w in self.non_menu_widgets:
+            w.start_row = w.row + body_start_row
+            w.start_col = w.col + body_start_col
+            w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row,
+                                                    self.body_start_col + w.col))
+
+        self.view_menu = ViewMenu(self, self.stdscr, self.menu_win, self.menu_items)
+
         zz = self.body_win.getparyx()
         z2 = self.title_win.getparyx()
         z3 = z2
@@ -155,11 +236,9 @@ class Form:
         self.stdscr.border(0, 0, 0, 0, 0, 0, 0)
 
     def make_boxes(self):
-        # self.stdscr.border(0,0,0,0,0,0,0)
         self.title_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
         self.body_win.border(0, 0, " ", " ", curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
         self.menu_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, curses.ACS_LTEE, curses.ACS_RTEE)
-        # self.msg_win.border(0,0,0,0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
 
     def render(self):
         self.make_boxes()
@@ -167,11 +246,9 @@ class Form:
         self.title_win.noutrefresh()
         self.body_win.noutrefresh()
         self.menu_win.noutrefresh()
-        # self.msg_win.noutrefresh()
 
         for w in self.widgets:
             w.render()
-
         self.message_widget.render()
 
         curses.doupdate()
