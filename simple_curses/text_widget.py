@@ -152,3 +152,9 @@ class IPNetworkWidget(TextWidget):
     def __init__(self, row, col, key, label, width, attributes, data):
         super().__init__(row, col, key, label, width, attributes, data)
         self.validator = validator.IPNetwork()
+
+class TimeOfDayWidget(TextWidget):
+    def __init__(self, row, col, key, label, width, attributes, data):
+        super().__init__(row, col, key, label, width, attributes, data)
+        self.validator = validator.TimeOfDay()
+

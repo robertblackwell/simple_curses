@@ -17,7 +17,7 @@ if not project_dir in sys.path:
     sys.path.append(project_dir)
     sys.path.append(src_dir)
 
-from simple_curses.text_widget import TextWidget, IntegerWidget, FloatWidget, IPAddressWidget, IPNetworkWidget
+from simple_curses.text_widget import TextWidget, IntegerWidget, FloatWidget, IPAddressWidget, IPNetworkWidget, TimeOfDayWidget
 from simple_curses.menu import MenuItem
 from simple_curses.multi_line_widget import MultiLineWidget
 from simple_curses.form import Form
@@ -59,13 +59,14 @@ def main(stdscr):
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     widgets = [ 
 
-        IPNetworkWidget( 2,2,"ipnet_01",     "IPNetwork ", 20, "", data),
-        IntegerWidget  ( 4,2,"int_val_01",   "Integer   ", 20, "", data),
-        FloatWidget    ( 6,2,"float_val_01", "Float     ", 20, "", data),
-        IPAddressWidget( 8,2,"ipaddr_01",    "IPAddr    ", 20, "", data),
-        TextWidget     (10,2,"text_01",      "Text      ", 20, "", data),
+        IPNetworkWidget( 2,2,"ipnet_01",     "IPNetwork         ", 20, "", data),
+        IntegerWidget  ( 4,2,"int_val_01",   "Integer           ", 20, "", data),
+        FloatWidget    ( 6,2,"float_val_01", "Float             ", 20, "", data),
+        IPAddressWidget( 8,2,"ipaddr_01",    "IPAddr            ", 20, "", data),
+        TimeOfDayWidget(10,2, "tod_01",      "Time Of Day (24h) ", 20, "", data),
+        TextWidget     (12,2,"text_01",      "Text              ", 20, "", data),
 
-        MultiLineWidget(2, 40, "sc_01", "IP Networks", 55, 10, "", data),
+        MultiLineWidget(2, 90, "sc_01", "IP Networks", 55, 10, "", data),
 
         MenuItem(22, 2, "Validate", 13, 3, 0, menuAction1, "context for menu 1"),
         MenuItem(22, 17, "Cancel", 7, 3, 0, menuAction2, "context for menu 2"),
