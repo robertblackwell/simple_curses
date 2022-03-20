@@ -233,14 +233,8 @@ class View:
     that are swapped by the top menu"""
     def __init__(self, ident: str, widgets: List[WidgetBase], view_menu: List[M.MenuItem]):
         pass
-    def show(self):
-        pass
-    def hide(show):
-        pass
-    def focusable_widgets(self):
-        pass
 
-class Form:
+class App:
     def __init__(
         self, 
         stdscr, 

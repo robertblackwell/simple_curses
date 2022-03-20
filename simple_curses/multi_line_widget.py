@@ -71,7 +71,7 @@ class MultiLineWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, key, label, content_width, content_height, attributes, data):
+    def __init__(self, key:str, label:str, content_width:int, content_height:int, attributes, data:any):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
