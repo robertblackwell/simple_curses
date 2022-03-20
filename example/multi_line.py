@@ -21,7 +21,7 @@ from simple_curses.menu import MenuItem
 from simple_curses.multi_line_widget import MultiLineWidget
 from dropdown_widget import DropdownWidget
 from simple_curses.toggle_widget import ToggleWidget
-from simple_curses.form import Form
+from simple_curses.form import Form, ViewBody
 
 
 def testScreenSize(stdscr):
@@ -60,6 +60,8 @@ def main(stdscr):
     testScreenSize(stdscr)
     curses.curs_set(2)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
+
     left_widgets = [
 
         IPNetworkWidget(2, 2, "ipnet_01", "IPNetwork         ", 20, "", data),
@@ -69,6 +71,27 @@ def main(stdscr):
         TimeOfDayWidget(10, 2, "tod_01", "Time Of Day (24h) ", 20, "", data),
         TextWidget(12, 2, "text_01", "Text              ", 20, "", data),
         ToggleWidget(14, 2, "toggle_01", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
+        IPNetworkWidget(2, 2, "ipnet_02", "IPNetwork         ", 20, "", data),
+        IntegerWidget(4, 2, "int_val_02", "Integer           ", 20, "", data),
+        FloatWidget(6, 2, "float_val_02", "Float             ", 20, "", data),
+        IPAddressWidget(8, 2, "ipaddr_02", "IPAddr            ", 20, "", data),
+        TimeOfDayWidget(10, 2, "tod_02", "Time Of Day (24h) ", 20, "", data),
+        TextWidget(12, 2, "text_02", "Text              ", 20, "", data),
+        ToggleWidget(14, 2, "toggle_02", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
+        IPNetworkWidget(2, 2, "ipnet_03", "IPNetwork         ", 20, "", data),
+        IntegerWidget(4, 2, "int_val_03", "Integer           ", 20, "", data),
+        FloatWidget(6, 2, "float_val_03", "Float             ", 20, "", data),
+        IPAddressWidget(8, 2, "ipaddr_03", "IPAddr            ", 20, "", data),
+        TimeOfDayWidget(10, 2, "tod_03", "Time Of Day (24h) ", 20, "", data),
+        TextWidget(12, 2, "text_03", "Text              ", 20, "", data),
+        ToggleWidget(14, 2, "toggle_03", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
+        IPNetworkWidget(2, 2, "ipnet_04", "IPNetwork         ", 20, "", data),
+        IntegerWidget(4, 2, "int_val_04", "Integer           ", 20, "", data),
+        FloatWidget(6, 2, "float_val_04", "Float             ", 20, "", data),
+        IPAddressWidget(8, 2, "ipaddr_04", "IPAddr            ", 20, "", data),
+        TimeOfDayWidget(10, 2, "tod_04", "Time Of Day (24h) ", 20, "", data),
+        TextWidget(12, 2, "text_04", "Text              ", 20, "", data),
+        ToggleWidget(14, 2, "toggle_04", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
     ]
     right_widgets = [ 
         MultiLineWidget(2, 90, "sc_01", "IP Networks", 55, 10, "", data),
@@ -80,7 +103,7 @@ def main(stdscr):
         MenuItem(22, 17, "Cancel", 7, 3, 0, menuAction2, "context for menu 2"),
         MenuItem(22, 26, "Ok-Run", 7, 3, 0, menuAction3, "context for menu 3")
     ]
-    form = Form(stdscr, 40, 180, left_widgets, right_widgets, menu_widgets, data)
+    form = Form(stdscr, 45, 180, left_widgets, right_widgets, menu_widgets, data)
     form.run()
 
 

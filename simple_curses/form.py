@@ -1,4 +1,4 @@
-from turtle import right
+
 from typing import List
 import curses
 import curses.textpad
@@ -7,7 +7,7 @@ from simple_curses.colors import Colors
 import simple_curses.menu as M
 from simple_curses.message_widget import MessageWidget
 from widget_base import WidgetBase
-
+from partitian import Partitian, Rectangle
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
@@ -32,27 +32,149 @@ def fn_key_description(k1):
     s3 = "F" + s2
     return s3
 
-class Rectangle:
-    def __init__(self, nbr_rows, nbr_cols, y_beg, x_beg ):
-        self.nbr_rows = nbr_rows
-        self.nbr_cols = nbr_cols
-        self.y_begin = y_beg
-        self.x_begin = x_beg
+# class Rectangle:
+#     def __init__(self, nbr_rows, nbr_cols, y_beg, x_beg ):
+#         self.nbr_rows = nbr_rows
+#         self.nbr_cols = nbr_cols
+#         self.y_begin = y_beg
+#         self.x_begin = x_beg
 
+# class Partitian:
+#     def __init__(self, n: int, k: int):
+#         """Partitian n into k groups of a close to equal size as possible"""
+#         p = n // k
+#         r = n % k
+#         dim = p + 1
+#         if r == 0:
+#             dim = p
+#         index = 0
+#         self.groups = [0]*dim
+#         for i in range(0, n):
+#             if index == dim:
+#                 index = 0
+#             self.groups += 1
+
+
+
+class HStack:
+    pass
 class VStack:
     def __init__(self, win: curses.window, widgets: List[WidgetBase]):
-        
         pass
-class ViewBodyLeft:
-    pass
+class WidgetLayout:
+    def __init__(self, w:WidgetBase, y_begin, x_begin):
+        self.widget = w
+        self.y_begin = y_begin
+        self.x_begin = x_begin
 
-class ViewBodyRight:
-    pass
+class WidgetColumn:
+    def __init__(self, height, width, widget_layouts: List[WidgetLayout]):
+        self.height = height
+        self.width = width
+        self.widget_layouts = widget_layouts
+
+class WidgetAlllocation:
+    def __init__(self):
+        self.widget_columns: List[WidgetColumn] = []
+        pass
+
+    def add_widget_column(self, widget_column: WidgetColumn):
+        self.widget_columns.append(widget_column)
 
 class ViewBody:
-    pass
+
+    def __init__(self, form, stdscr, win:curses.window, widgets: List[WidgetBase]):
+        self.outter_win = win
+        h, w = win.getmaxyx()
+        ybeg, xbeg = win.getbegyx()
+        require_borders = True
+        if require_borders:
+            self.height = h - 2
+            self.width = w - 2
+            ybeg = ybeg + 1
+            xbeg = xbeg + 1
+
+        max_widget_width = 0
+        total_width = 0
+        item_width = None
+        widgets_total_height = 0
+        # calculate the widests widget and the total height required with 1 row between
+        for w in widgets:
+            max_widget_width = w.get_width() if max_widget_width < w.get_width() else max_widget_width
+            total_width += w.get_width() + 4
+            widgets_total_height += w.get_height() + 1
+
+
+        # how many columns that wide could we make - leaving 2 spaces on each side of a widget
+        max_columns = self.width // (max_widget_width + 1)
+
+        required_columns = (widgets_total_height // self.height) if (widgets_total_height % self.height) == 0 else (widgets_total_height // self.height) + 1 
+
+        if required_columns > max_columns:
+            raise ValueError("cannot fit {}  widgets in window of size y: {} x:{}", format(len(self.widgets), h, w))
+
+        self.nbr_columns = required_columns
+
+        nbr_widgets_per_column = len(widgets) // required_columns
+
+        nbr_columns_with_one_extra = len(widgets) % required_columns
+
+
+
+        widget_allocation = WidgetAlllocation()
+        current_column = []
+        col_width = 0
+        col_height = 2
+        y_begin = col_height
+        x_begin = 1
+        w_index = 0
+        while True:
+            if (col_height + w.get_height() + 1 > self.height or w_index >= len(widgets)):
+                # col_allocation.append(WidgetColumn(col_height, col_width, current_column))
+                widget_allocation.add_widget_column(WidgetColumn(col_height, col_width, current_column))
+                current_column = []
+                col_height = 2
+                y_begin = col_height
+                x_begin = x_begin + max_widget_width + 4
+                col_width = 0
+                if w_index >= len(widgets):
+                    break
+            else:
+                w = widgets[w_index]
+                wl = WidgetLayout(w, y_begin, x_begin)
+                current_column.append(wl)
+                col_height += w.get_height() + 1
+                y_begin = col_height
+                col_width = w.get_width() + 1 if col_width < w.get_width() + 1 else col_width
+                w_index += 1
+
+
+
+        # for w in widgets:
+        #     if col_height + w.get_height() + 1 < self.height and w_index != len(widgets) - 1:
+        #         wl = WidgetLayout(w, y_begin, x_begin)
+        #         current_column.append(wl)
+        #         col_height += w.get_height() + 1
+        #         y_begin = col_height
+        #         col_width = w.get_width() + 1 if col_width < w.get_width() + 1 else col_width
+        #     else:
+        #         # col_allocation.append(WidgetColumn(col_height, col_width, current_column))
+        #         widget_allocation.add_widget_column(WidgetColumn(col_height, col_width, current_column))
+        #         current_column = []
+        #         col_height = 2
+        #         y_begin = col_height
+        #         x_begin = x_begin + max_widget_width + 4
+        #         col_width = 0
+        #     w_index += 1
+
+        self.widget_allocation = widget_allocation
+        
+
+
 
 class ViewMenu:
+    """This is a Horizontal Stack, right justified, of menu items
+    """
     def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
         self.outter_win = menu_win
         self.height, self.width = menu_win.getmaxyx()
@@ -163,11 +285,25 @@ class Form:
                 w.set_form(self)
                 w.has_focus = False
 
-        for w in self.non_menu_widgets:
-            w.start_row = w.row + body_start_row
-            w.start_col = w.col + body_start_col
-            w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row,
-                                                    self.body_start_col + w.col))
+        self.vb = ViewBody(self, stdscr, self.body_win, left_widgets + right_widgets)
+        yb, xb = self.body_win.getbegyx()
+        for cols in self.vb.widget_allocation.widget_columns:
+            for wlo in cols.widget_layouts:
+                w = wlo.widget
+                x_begin = wlo.x_begin + xb
+                y_begin = wlo.y_begin + yb
+                w.set_enclosing_window(self.body_win.subwin(
+                    w.get_height(), 
+                    w.get_width(), 
+                    y_begin,
+                    x_begin))
+
+
+        # for w in self.non_menu_widgets:
+        #     w.start_row = w.row + body_start_row
+        #     w.start_col = w.col + body_start_col
+        #     w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row,
+        #                                             self.body_start_col + w.col))
 
         self.view_menu = ViewMenu(self, self.stdscr, self.menu_win, self.menu_items)
 

@@ -29,6 +29,17 @@ xlines = [
     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
+def make_subwin(win, nbr_rows, nbr_cols, y_begin_relative, x_begin_relative):
+    yb, xb = win.getbegyx()
+    ym, xm = win.getmaxyx()
+    y_begin_abs = y_begin_relative + yb
+    x_begin_abs = x_begin_relative + xb
+    assert yb <= y_begin_abs <= yb + ym
+    assert xb <= x_begin_abs <= xb + xm
+    assert yb <= y_begin_abs + nbr_rows <= yb + ym
+    assert xb <= x_begin_abs + nbr_cols <= xb + xm
+    sw = win.subwin(nbr_rows, nbr_cols, y_begin_abs, x_begin_abs)
+    return sw
 
 class MultiLineWidget(EditableWidgetBase):
 
@@ -36,7 +47,7 @@ class MultiLineWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, row, col, key, label, width, height, attributes, data):
+    def __init__(self, row, col, key, label, content_width, content_height, attributes, data):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -47,9 +58,20 @@ class MultiLineWidget(EditableWidgetBase):
         self.col: int = col
         self.data = data
         self.label: str = label + ": "
-        self.width: int = width
-        self.line_number_width: int = 3
-        self.height: int = height
+        self.content_width = content_width
+        self.width: int = content_width + 2
+        self.line_number_width: int = 4
+        # A multiline widget consists of :
+        # - an outter box
+        # - a title in the middile of the top box line
+        # - a content area of height equal to the content_height argument
+        # - a separator line bwteen the content area and the info area
+        # - an info area of 4 lines 
+        self.box_height = 2 #extra height for boxing the outter of the widget
+        self.info_separator_line_height = 1 # extra height for the divider line between the content and the info box
+        self.info_area_height = 4
+        self.content_height = content_height
+        self.height: int = content_height + self.box_height + self.info_separator_line_height + self.info_area_height 
         self.start_row: int = 0
         self.start_col: int = 0
         self.paste_mode: bool = False
@@ -58,21 +80,22 @@ class MultiLineWidget(EditableWidgetBase):
         self.lines_view = None
         self.outter_win = None
         self.form = None
-        tmp = width + len(self.label)
-        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.height - 3, self.width - 5)
-
+        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.content_height, self.content_width - self.line_number_width - 2)
+    
+   
     def set_enclosing_window(self, win):
         self.outter_win = win
         yp, xp = self.outter_win.getparyx()
         ym, xm = self.outter_win.getmaxyx()
         y, x = self.outter_win.getbegyx()
-        flg = False
+        flg = True
         if flg:
             self.title_window = self.outter_win.subwin(1, xm - 2, y + 1, x + 1)
-            self.line_number_win = self.outter_win.subwin(ym - 3, self.line_number_width, y + 2, x + 1)
-            self.content_win = self.outter_win.subwin(ym - 3, xm - self.line_number_width, y + 2,
+            # self.line_number_win = self.outter_win.subwin(ym - 3, self.line_number_width, y + 2, x + 1)
+            self.line_number_win = self.outter_win.subwin(self.content_height, self.line_number_width, y + 1, x + 1)
+            self.content_win = self.outter_win.subwin(self.content_height, xm - self.line_number_width, y + 1,
                                                       x + self.line_number_width)
-
+            self.line_number_win.bkgd(" ", Colors.button_focus())
             yp_title, xp_title = self.title_window.getparyx()
             ym_title, xm_title = self.title_window.getmaxyx()
             y_title, x_title = self.title_window.getbegyx()
@@ -85,7 +108,8 @@ class MultiLineWidget(EditableWidgetBase):
             ym_content, xm_content = self.content_win.getmaxyx()
             yb_content, xb_content = self.content_win.getbegyx()
 
-            self.info_win = curses.newwin(4, self.width, self.start_row + self.height - 2 + 1, self.start_col)
+            # self.info_win = self.outter_win.subwin(self.info_area_height, self.content_width, self.start_row + self.height - 2 + 1, x + 1)
+            self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 2, 1)
         else:
             self.title_window = curses.newwin(1, self.width, self.start_row, self.start_col)
             self.line_number_win = curses.newwin(self.height - 2, self.line_number_width, self.start_row + 1,
@@ -136,7 +160,9 @@ class MultiLineWidget(EditableWidgetBase):
         pass
 
     def render(self):
-        self.outter_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
+        self.outter_win.clear()
+        self.outter_win.box()
+        # self.outter_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
         self.render_title()
 
         view = self.mu_lines_buffer.get_view()
@@ -146,7 +172,7 @@ class MultiLineWidget(EditableWidgetBase):
         for y_content in range(y0, y1):
             txt = view.view_buffer[r]
             line_number = view.line_numbers[r]
-            ln_str = "{0:>2}".format(line_number)
+            ln_str = "{0:>2} ".format(line_number)
             y1m, x1m = self.content_win.getmaxyx()
             y2m, x2m = self.line_number_win.getmaxyx()
             self.content_win.addstr(r, 0, txt, Colors.green_black())

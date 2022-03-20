@@ -1,6 +1,5 @@
 import curses.textpad
 
-from form import Form
 from utils import *
 from widget_base import EditableWidgetBase
 import validator
@@ -46,7 +45,7 @@ class TextWidget(EditableWidgetBase):
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
 
-    def set_form(self, form: Form) -> None:
+    def set_form(self, form) -> None:
         self.form = form
 
     def get_width(self) -> int:

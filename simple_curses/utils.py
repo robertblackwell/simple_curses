@@ -46,7 +46,7 @@ def is_printable(chint):
 
 def is_edit_back(ch):
     """test ch is backspace"""
-    return ch == 0x7f
+    return ch == 0x7f or ch == 0x107
 
 
 def is_edit_del(ch):
