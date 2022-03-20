@@ -29,7 +29,31 @@ xlines = [
     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
-def make_subwin(win, nbr_rows, nbr_cols, y_begin_relative, x_begin_relative):
+def make_subwin(win: curses.window, nbr_rows: int, nbr_cols: int, y_begin_relative: int, x_begin_relative: int): 
+    """
+    A slightly safer way of making a curses subwin - it checks that start and end points are inside the parent window
+
+    Parameters
+    ----------
+        win: curses.window     
+            parent window - the subwindow must be entirely within the parent window
+        nbr_rows: int          
+            number of rows in sub window
+        nbr_cols: int          
+            number of columns in sub window
+        y_begin_relative: int  
+            starting row relative to parent window 
+        x_begin_relative: int  
+            starting column relative to parent window
+
+    Returns
+    -------
+        curses.window a subwindow of win
+
+    Raises
+    ------
+        assert error if the start or end points of the proposed subwin are not inside the parent window
+    """
     yb, xb = win.getbegyx()
     ym, xm = win.getmaxyx()
     y_begin_abs = y_begin_relative + yb
@@ -47,17 +71,16 @@ class MultiLineWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, row, col, key, label, content_width, content_height, attributes, data):
+    def __init__(self, key, label, content_width, content_height, attributes, data):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
-        self.title_window = None
         self.id: str = key
         self.has_focus: bool = False
-        self.row: int = row
-        self.col: int = col
+        # self.row: int = row
+        # self.col: int = col
         self.data = data
-        self.label: str = label + ": "
+        self.label: str = label
         self.content_width = content_width
         self.width: int = content_width + 2
         self.line_number_width: int = 4
@@ -85,38 +108,9 @@ class MultiLineWidget(EditableWidgetBase):
    
     def set_enclosing_window(self, win):
         self.outter_win = win
-        yp, xp = self.outter_win.getparyx()
-        ym, xm = self.outter_win.getmaxyx()
-        y, x = self.outter_win.getbegyx()
-        flg = True
-        if flg:
-            self.title_window = self.outter_win.subwin(1, xm - 2, y + 1, x + 1)
-            # self.line_number_win = self.outter_win.subwin(ym - 3, self.line_number_width, y + 2, x + 1)
-            self.line_number_win = self.outter_win.subwin(self.content_height, self.line_number_width, y + 1, x + 1)
-            self.content_win = self.outter_win.subwin(self.content_height, xm - self.line_number_width, y + 1,
-                                                      x + self.line_number_width)
-            self.line_number_win.bkgd(" ", Colors.button_focus())
-            yp_title, xp_title = self.title_window.getparyx()
-            ym_title, xm_title = self.title_window.getmaxyx()
-            y_title, x_title = self.title_window.getbegyx()
-
-            yp_line_number, xp_line_number = self.line_number_win.getparyx()
-            ym_line_number, xm_line_number = self.line_number_win.getmaxyx()
-            y_line_number, x_line_number = self.line_number_win.getbegyx()
-
-            yp_content, xp_content = self.content_win.getparyx()
-            ym_content, xm_content = self.content_win.getmaxyx()
-            yb_content, xb_content = self.content_win.getbegyx()
-
-            # self.info_win = self.outter_win.subwin(self.info_area_height, self.content_width, self.start_row + self.height - 2 + 1, x + 1)
-            self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 2, 1)
-        else:
-            self.title_window = curses.newwin(1, self.width, self.start_row, self.start_col)
-            self.line_number_win = curses.newwin(self.height - 2, self.line_number_width, self.start_row + 1,
-                                                 self.start_col + 1)
-            self.content_win = curses.newwin(self.height - 1, self.width - 3, self.start_row + 1,
-                                             self.start_col + 1 + 3)
-            self.info_win = curses.newwin(4, self.width, self.start_row + self.height - 2 + 1, self.start_col)
+        self.line_number_win = make_subwin(self.outter_win, self.content_height, self.line_number_width, 1, 1)
+        self.content_win = make_subwin(self.outter_win, self.content_height, self.content_width - self.line_number_width, 1, self.line_number_width)
+        self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 1, 1)
 
     def set_form(self, form: Form):
         self.form = form
@@ -154,9 +148,10 @@ class MultiLineWidget(EditableWidgetBase):
         """render the info box underneath the list of strings. The box outline
         should merge witht he box of the content window"""
         self.info_win.bkgd(" ", Colors.white_black())
-        self.info_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
-        self.info_win.addstr(1, 3, "Paste Mode: {} ".format(self.paste_mode), curses.A_BOLD)
-        self.info_win.addstr(2, 3, "Cntrl-p toggles paste mode", curses.A_BOLD)
+        # self.info_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
+        self.info_win.addstr(1, 3, "Navigate these lines with arrow keys ".format(self.paste_mode), curses.A_BOLD)
+        self.info_win.addstr(2, 3, "Type characters or Paste to insert.", curses.A_BOLD)
+        self.info_win.addstr(3, 3, "Del and BS keys to delete", curses.A_BOLD)
         pass
 
     def render(self):
@@ -184,7 +179,6 @@ class MultiLineWidget(EditableWidgetBase):
 
         self.render_info()
         self.outter_win.noutrefresh()
-        self.title_window.noutrefresh()
         self.content_win.noutrefresh()
         self.line_number_win.noutrefresh()
         self.info_win.noutrefresh()

@@ -94,7 +94,7 @@ def main(stdscr):
         ToggleWidget(14, 2, "toggle_04", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
     ]
     right_widgets = [ 
-        MultiLineWidget(2, 90, "sc_01", "IP Networks", 55, 10, "", data),
+        MultiLineWidget(key="sc_01", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50, content_height=10, attributes="", data=data),
         # DropdownWidget (16, 90, "dd_01", "Selection",   55, 10, "", data, ["one","two","three","four"], "three"),
     ]
     

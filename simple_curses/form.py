@@ -170,10 +170,37 @@ class ViewBody:
         self.widget_allocation = widget_allocation
         
 
-
+class TopMenu:
+    """This is a Horizontal Stack, LEFT justified, of menu items. Used for a Form top menu
+    to switch views
+    """
+    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
+        self.outter_win = menu_win
+        self.height, self.width = menu_win.getmaxyx()
+        ybeg, xbeg = menu_win.getbegyx()
+        max_item_width = 0
+        total_width = 0
+        item_width = None
+        for m in menu_items:
+            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
+            total_width += m.get_width() + 4
+        if (max_item_width + 2) * len(menu_items) < self.width:
+            item_width = max_item_width + 2 
+        else: 
+            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
+        xpos = xbeg + self.width - item_width
+        rectangles = []
+        for m in menu_items:
+            r = Rectangle(3, item_width - 2, ybeg + 1, xpos) #leave a space between the menu items
+            rectangles.append(r)
+            xpos += item_width
+            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
+            m.set_enclosing_window(tmp_win)
+            m.set_form(form)
+            m.has_focus = False
 
 class ViewMenu:
-    """This is a Horizontal Stack, right justified, of menu items
+    """This is a Horizontal Stack, right justified, of menu items. Used to provide a menu inside a view
     """
     def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
         self.outter_win = menu_win
@@ -202,7 +229,10 @@ class ViewMenu:
 
 
 class View:
-    pass
+    """A class that implements the detailed layout and function of a Form body. A single form typically has a number of views
+    that are swapped by the top menu"""
+    def __init__(self, ident: str, widgets: List[WidgetBase], view_menu: List[M.MenuItem]):
+        pass
 
 class Form:
     def __init__(
@@ -234,6 +264,7 @@ class Form:
         self.title_start_row = 0
         self.title_start_col = 0
         self.title_width = self.width
+
         self.outter_win = curses.newwin(self.height + 2, self.width + 2, 0, 0)
         self.inner_win = self.outter_win.subwin(self.height, self.width, 1, 1)
         self.title_win = curses.newwin(self.title_height, self.title_width, 0, 0)
@@ -272,14 +303,6 @@ class Form:
                 self.menu_items.append(w)
                 w.set_form(self)
                 w.has_focus = False
-                # # this is a horizonal stack of the menu items - would like it to be right justified
-                # ymnu, xmnu = self.menu_win.getbegyx()
-                # ymm, xmm = self.menu_win.getmaxyx()
-                # # w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.msg_start_row + 1, col + 1))
-                # tmp_win = self.menu_win.subwin(3, 10, ymnu+1, xmnu + col)
-                # w.set_enclosing_window(tmp_win)
-                # col += w.get_width() + 4
-                # c += w.get_width() + 4
             else:
                 self.non_menu_widgets.append(w)
                 w.set_form(self)
@@ -298,18 +321,7 @@ class Form:
                     y_begin,
                     x_begin))
 
-
-        # for w in self.non_menu_widgets:
-        #     w.start_row = w.row + body_start_row
-        #     w.start_col = w.col + body_start_col
-        #     w.set_enclosing_window(curses.newwin(w.get_height(), w.get_width(), self.body_start_row + w.row,
-        #                                             self.body_start_col + w.col))
-
         self.view_menu = ViewMenu(self, self.stdscr, self.menu_win, self.menu_items)
-
-        zz = self.body_win.getparyx()
-        z2 = self.title_win.getparyx()
-        z3 = z2
 
     def msg_error(self, s: str):
         self.message_widget.msg_error(s)
@@ -378,7 +390,7 @@ class Form:
 
     def render(self):
         self.make_boxes()
-        self.title_win.addstr(2, (self.width // 2) - (len(self.title) // 2), self.title, Colors.title_attr())
+        # self.title_win.addstr(2, (self.width // 2) - (len(self.title) // 2), self.title, Colors.title_attr())
         self.title_win.noutrefresh()
         self.body_win.noutrefresh()
         self.menu_win.noutrefresh()
