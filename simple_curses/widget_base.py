@@ -6,10 +6,10 @@ import curses.textpad
 class WidgetBase(ABC):
     """A basic widget that can display fixed text on the screen"""
 
-    @classmethod
-    @abstractmethod
-    def classmeth(cls):
-        pass
+    # @classmethod
+    # @abstractmethod
+    # def classmeth(cls):
+    #     pass
 
     # @abstractmethod
     # def foobar(self):

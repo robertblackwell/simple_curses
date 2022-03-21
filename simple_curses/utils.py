@@ -82,6 +82,8 @@ def is_function_key(ch):
     tmp = ch[0:6]
     return tmp == "KEY_F("
 
+def is_control_v(ch):
+    return ch == 0x16
 
 def fn_key_match(k1, k2):
     return k1 == k2

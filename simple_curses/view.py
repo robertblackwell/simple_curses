@@ -1,13 +1,19 @@
 
+from multiprocessing.sharedctypes import Value
 from typing import List
 import curses
 import curses.textpad
+from banner_widget import BannerWidget
+from kurses_ex import make_subwin
 
 from simple_curses.colors import Colors
 import simple_curses.menu as M
 from simple_curses.message_widget import MessageWidget
+from utils import is_control_v
 from widget_base import WidgetBase
 from partitian import Partitian, Rectangle
+from banner_widget import BannerWidget
+from layout import ColumnLayout
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
@@ -32,55 +38,6 @@ def fn_key_description(k1):
     s3 = "F" + s2
     return s3
 
-
-# class Rectangle:
-#     def __init__(self, nbr_rows, nbr_cols, y_beg, x_beg ):
-#         self.nbr_rows = nbr_rows
-#         self.nbr_cols = nbr_cols
-#         self.y_begin = y_beg
-#         self.x_begin = x_beg
-
-# class Partitian:
-#     def __init__(self, n: int, k: int):
-#         """Partitian n into k groups of a close to equal size as possible"""
-#         p = n // k
-#         r = n % k
-#         dim = p + 1
-#         if r == 0:
-#             dim = p
-#         index = 0
-#         self.groups = [0]*dim
-#         for i in range(0, n):
-#             if index == dim:
-#                 index = 0
-#             self.groups += 1
-
-
-
-class HStack:
-    pass
-class VStack:
-    def __init__(self, win: curses.window, widgets: List[WidgetBase]):
-        pass
-class WidgetLayout:
-    def __init__(self, w:WidgetBase, y_begin, x_begin):
-        self.widget = w
-        self.y_begin = y_begin
-        self.x_begin = x_begin
-
-class WidgetColumn:
-    def __init__(self, height, width, widget_layouts: List[WidgetLayout]):
-        self.height = height
-        self.width = width
-        self.widget_layouts = widget_layouts
-
-class WidgetAlllocation:
-    def __init__(self):
-        self.widget_columns: List[WidgetColumn] = []
-        pass
-
-    def add_widget_column(self, widget_column: WidgetColumn):
-        self.widget_columns.append(widget_column)
 
 class ViewBody:
 
@@ -120,55 +77,9 @@ class ViewBody:
 
         nbr_columns_with_one_extra = len(widgets) % required_columns
 
-
-
-        widget_allocation = WidgetAlllocation()
-        current_column = []
-        col_width = 0
-        col_height = 2
-        y_begin = col_height
-        x_begin = 1
-        w_index = 0
-        while True:
-            if (col_height + w.get_height() + 1 > self.height or w_index >= len(widgets)):
-                # col_allocation.append(WidgetColumn(col_height, col_width, current_column))
-                widget_allocation.add_widget_column(WidgetColumn(col_height, col_width, current_column))
-                current_column = []
-                col_height = 2
-                y_begin = col_height
-                x_begin = x_begin + max_widget_width + 4
-                col_width = 0
-                if w_index >= len(widgets):
-                    break
-            else:
-                w = widgets[w_index]
-                wl = WidgetLayout(w, y_begin, x_begin)
-                current_column.append(wl)
-                col_height += w.get_height() + 1
-                y_begin = col_height
-                col_width = w.get_width() + 1 if col_width < w.get_width() + 1 else col_width
-                w_index += 1
-
-
-
-        # for w in widgets:
-        #     if col_height + w.get_height() + 1 < self.height and w_index != len(widgets) - 1:
-        #         wl = WidgetLayout(w, y_begin, x_begin)
-        #         current_column.append(wl)
-        #         col_height += w.get_height() + 1
-        #         y_begin = col_height
-        #         col_width = w.get_width() + 1 if col_width < w.get_width() + 1 else col_width
-        #     else:
-        #         # col_allocation.append(WidgetColumn(col_height, col_width, current_column))
-        #         widget_allocation.add_widget_column(WidgetColumn(col_height, col_width, current_column))
-        #         current_column = []
-        #         col_height = 2
-        #         y_begin = col_height
-        #         x_begin = x_begin + max_widget_width + 4
-        #         col_width = 0
-        #     w_index += 1
-
-        self.widget_allocation = widget_allocation
+        clayout = ColumnLayout(self.height, max_widget_width)
+        clayout.add_widgets(widgets)
+        self.widget_allocation = clayout.widget_allocation
         
 
 class TopMenu:
@@ -229,6 +140,53 @@ class ViewMenu:
             m.has_focus = False
 
 
+class BannerView:
+    """A class that implements a view that dispays a single banner or info widget in the middle of the Form body. """
+    def __init__(self, ident: str, label: str, form, stdscr, window: curses.window, widget: WidgetBase):
+        # the outter_win will contain all the dataentry fields and across the bottom the view menu
+        self.outter_win = window
+        self.stdscr = stdscr
+        self.height, self.width = window.getmaxyx() 
+        ym, xm = window.getmaxyx()
+        yb, xb = window.getbegyx()
+        self.outter_y_begin, self.outter_x_begin = window.getbegyx()
+        self.widget = widget
+        self.label = label
+        self.ident = ident
+        self.form = form
+
+    def setup(self):
+        w = self.widget
+        ym, xm = self.outter_win.getmaxyx()
+        yb, xb = self.outter_win.getbegyx()
+        
+        rbeg = (ym - w.get_height()) // 2 - 1
+        if rbeg < 0: 
+            rbeg = 0
+        cbeg = (xm - w.get_width()) // 2 - 1
+        if cbeg < 0 : 
+            cbeg = 0
+
+        w.set_enclosing_window(self.outter_win.subwin(
+            w.get_height()+1, 
+            w.get_width()+1, 
+            yb+rbeg,
+            xb+cbeg))
+    
+    def show(self):
+        self.setup()
+
+    def hide(self):
+        self.outter_win.clear()
+        pass
+
+    def get_focus_widgets(self):
+        return [self.widget]
+
+    def get_render_widgets(self):
+        return [self.widget]
+
+
 class View:
     """A class that implements the detailed layout and function of a Form body. A single form typically has a number of views
     that are swapped by the top menu"""
@@ -237,7 +195,8 @@ class View:
         self.outter_win = window
         self.stdscr = stdscr
         self.height, self.width = window.getmaxyx() 
-        ym, xm = window.getbegyx()
+        ym, xm = window.getmaxyx()
+        yb, xb = window.getbegyx()
         self.outter_y_begin, self.outter_x_begin = window.getbegyx()
         self.widgets = widgets
         self.menu_items = menu_items
@@ -263,13 +222,21 @@ class View:
                 w = wlo.widget
                 x_begin = wlo.x_begin + xb
                 y_begin = wlo.y_begin + yb
-                w.set_enclosing_window(self.data_entry_win.subwin(
-                    w.get_height(), 
-                    w.get_width(), 
-                    y_begin,
-                    x_begin))
+                sw = make_subwin(self.data_entry_win, w.get_height(), w.get_width(), wlo.y_begin, wlo.x_begin)
+                w.set_enclosing_window(sw)
+                # w.set_enclosing_window(self.data_entry_win.subwin(
+                #     w.get_height(), 
+                #     w.get_width(), 
+                #     y_begin,
+                #     x_begin))
 
         self.view_menu = ViewMenu(self, self.stdscr, self.menu_win, self.menu_items)
+
+    def show(self):
+        self.setup()
+    
+    def hide(self):
+        self.outter_win.clear()
 
     def get_focus_widgets(self):
         return self.widgets + self.menu_items
@@ -278,21 +245,12 @@ class View:
         return self.widgets + self.menu_items
 
 
-class Form:
-    def __init__(
-        self, 
-        stdscr, 
-        body_height, 
-        width, 
-        view_widgets,
-        view_menu_items,
-        context, 
-        input_timeout_ms=2
-        ):
+class AppBase:
+    def __init__(self, stdscr, body_height, width,  context, input_timeout_ms=2):
         self.width = width
 
-        self.view_menu_widgets = view_menu_items
-        self.view_widgets = view_widgets
+        # self.view_menu_widgets = view_menu_items
+        # self.view_widgets = view_widgets
 
         self.context = context
         self.stdscr = stdscr
@@ -308,27 +266,10 @@ class Form:
         self.body_height = body_height
         self.height = self.body_height + self.title_height + self.msg_height + 2
 
-        # self.title_start_row = 0
-        # self.title_start_col = 0
-        # self.title_width = self.width
-
         self.outter_win = curses.newwin(self.height + 2, self.width + 2, 0, 0)
         y_outter, x_outter = self.outter_win.getbegyx()
         y_outter_m, x_outter_m = self.outter_win.getmaxyx()
         self.title_win = curses.newwin(self.title_height, self.width, y_outter, 0)
-
-        # self.body_start_row = self.title_start_row + self.title_height
-        # self.body_start_col = 0
-        # self.body_width = self.width
-
-        # self.menu_start_row = self.body_start_row + self.body_height - 1
-        # self.menu_width = self.width
-
-        # self.msg_start_row = self.body_start_row + self.body_height 
-        # self.msg_width = self.width
-
-        # body_start_row = self.body_start_row  # 4
-        # body_start_col = 0
 
         curses.mousemask(curses.ALL_MOUSE_EVENTS + curses.REPORT_MOUSE_POSITION)
 
@@ -336,23 +277,72 @@ class Form:
         self.body_win.bkgd(" ", Colors.button_focus())    
         ybdy, xbdy = self.body_win.getbegyx()
         ybdym, xbdym = self.body_win.getmaxyx()    
-        # setting up view 
-
-        self.view = View(self, "view_01", "First View", self.stdscr, self.body_win, self.view_widgets, self.view_menu_widgets)
-        self.view.setup()
-        self.focus_widgets = self.top_menu_items + self.view.get_focus_widgets()
-        
-        # self.message_widget = MessageWidget(self.msg_start_row, 0, "", "", self.msg_width, self.msg_height, "", context)
         self.message_widget = MessageWidget(ybdy + ybdym - 1, 0, "", "", self.width, self.msg_height, "", context)
         msg_win = curses.newwin(self.msg_height, self.width, ybdy + ybdym - 1, 0)
         self.message_widget.set_enclosing_window(msg_win)
         self.message_widget.set_form(self)
         # ymsg, xmsg = msg_win.getbegyx()
-        # ymsgm, xmsgm = msg_win.getmaxyx()    
+        # ymsgm, xmsgm = msg_win.getmaxyx()
+        self.register_views() 
 
-        self.render_widgets = self.top_menu_items + self.view.get_render_widgets() + [self.message_widget]
-        # self.render_widgets = self.top_menu_items + [self.message_widget]
- 
+        # setting up the single view
+        # fflag = True
+        # if fflag:
+        #     bw = BannerWidget()
+        #     self.view = BannerView(self, "bview_01", "Banner View", self.stdscr, self.body_win, bw)
+        #     self.view.setup()
+        #     self.focus_widgets = self.top_menu_items + self.view.get_focus_widgets()
+        #     self.render_widgets = self.top_menu_items + self.view.get_render_widgets() + [self.message_widget]
+
+        # else:
+        #     self.view = View(self, "view_01", "First View", self.stdscr, self.body_win, self.view_widgets, self.view_menu_widgets)
+        #     self.view.setup()
+        #     self.focus_widgets = self.top_menu_items + self.view.get_focus_widgets()
+        #     self.render_widgets = self.top_menu_items + self.view.get_render_widgets() + [self.message_widget]
+        # view setup complete
+        
+    def register_views(self):
+        # setting up the single view
+        self.current_view_index = 0
+        self.show_current_view()
+        # return
+        # fflag = True
+        # if fflag:
+        #     bw = BannerWidget()
+        #     self.view = BannerView(self, "bview_01", "Banner View", self.stdscr, self.body_win, bw)
+        #     self.view.setup()
+        #     self.focus_widgets = self.top_menu_items + self.view.get_focus_widgets()
+        #     self.render_widgets = self.top_menu_items + self.view.get_render_widgets() + [self.message_widget]
+
+        # else:
+        #     self.view = View(self, "view_01", "First View", self.stdscr, self.body_win, self.view_widgets, self.view_menu_widgets)
+        #     self.view.setup()
+        #     self.focus_widgets = self.top_menu_items + self.view.get_focus_widgets()
+        #     self.render_widgets = self.top_menu_items + self.view.get_render_widgets() + [self.message_widget]
+        # view setup complete
+
+    def show_current_view(self):
+        self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
+        self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [self.message_widget]
+        self.views[self.current_view_index].show()
+
+    def hide_current_view(self):
+        self.views[self.current_view_index].hide()
+
+    def change_view(self, next_view):
+        self.views[self.current_view_index].hide()
+        self.current_view_index = next_view % len(self.views)
+        self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
+        self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [self.message_widget]
+        self.views[self.current_view_index].show()
+
+    def next_view(self):
+        self.views[self.current_view_index].hide()
+        self.current_view_index = (self.current_view_index + 1) % len(self.views)
+        self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
+        self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [self.message_widget]
+        self.views[self.current_view_index].show()
+
     def enable(self):
         pass
 
@@ -410,6 +400,8 @@ class Form:
                 elif is_prev_control(ch):
                     w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
                     self.shift_focus_to(w_index)
+                elif is_control_v(ch):
+                    self.next_view()
                 # elif is_function_key(ch):
                 #     self.handle_menu(ch)
 

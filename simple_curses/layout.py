@@ -1,3 +1,192 @@
+from typing import List 
+import curses
+from widget_base import WidgetBase
+
+class HStack:
+    pass
+class VStack:
+    def __init__(self, win: curses.window, widgets: List[WidgetBase]):
+        pass
+
+PAD_X_START = 4
+PAD_X_BETWEEN = 1
+PAD_Y_START = 2
+PAD_Y_BETWEEN = 1
+
+class WidgetLayout:
+    """
+    represents the rectangle allocated to contain a widget
+    y_begin and x_begin attributes are relative starting coordinates
+    good for use with the kurses_ex function make_subwin()
+
+    """
+
+    def __init__(self, w:WidgetBase, y_begin, x_begin, y_max, x_max):
+        self.widget = w
+
+        self.y_begin = y_begin
+        "y_begin - is relative to the rectangle used in ColumnLayout"
+        self.x_begin = x_begin
+        "x_begin - is relative to the rectangle used in ColumnLayout"
+        self.ymax = y_max
+        self.xmax = x_max
+        if self.ymax < w.get_height():
+            raise ValueError("ymax: {}, w.get_height(): {}".format(self.ymax, w.get_height()))
+        if self.xmax < w.get_width():
+            raise ValueError("xmax: {}, w.get_width(): {}".format(self.xmax, w.get_width()))
+    
+    # def get_height(self):
+    #     return self.y_max
+
+    # def get_width(self):
+    #     return self.x_max
+
+class WidgetColumn:
+    def __init__(self, height, width, widget_layouts: List[WidgetLayout]):
+        # self.height = height
+        # self.width = width
+        self.widget_layouts = widget_layouts
+
+    def get_ymax(self):
+        h = 0
+        for wl in self.widget_layouts:
+            h += wl.ymax
+        return h
+
+    def widget_count(self):
+        return len(self.widget_layouts)
+
+class WidgetAlllocation:
+    def __init__(self):
+        self.widget_columns: List[WidgetColumn] = []
+        pass
+
+    def add_widget_column(self, widget_column: WidgetColumn):
+        self.widget_columns.append(widget_column)
+    
+    def get_ymax(self):
+        m = 0
+        for wc in self.widget_columns:
+            h = wc.get_ymax()
+            m = h if h > m else m
+        return m 
+    
+    def column_count(self):
+        return len(self.widget_columns)
+
+
+class ColumnLayout:
+    """Takes a list of widgets and arranges them into columns so that they will fit into
+    the rectangle formed by the constructors max_height and max_width paramters.
+
+    Makes sure that no column is wider than max_widget_width
+
+    Uses the padding constants at the top of this file
+    """    
+    def __init__(self, max_height, max_widget_width):
+        self.widget_allocation = WidgetAlllocation()
+        self.current_column = []
+        self.col_width = 0
+        self.col_height = PAD_Y_START
+        self.y_begin = self.col_height
+        self.x_begin = PAD_X_START
+        self.w_index = 0
+        self.max_height = max_height
+        self.max_widget_width = max_widget_width
+        self.widgets = None
+
+    def column_count(self):
+        """returns the number of columns"""
+        return self.widget_allocation.column_count()
+
+    def widget_count(self, column_index):
+        """Returns the number of widgets in the column with the given index"""
+        if column_index >= self.column_count():
+            raise RuntimeError("column index {} is out of bounds".format(column_index))
+        return len(self.widget_allocation.widget_columns[column_index].widget_layouts)
+
+    def get_widget_layout(self, column_index, widget_index):
+        """get the layout for a widget by index.
+        """
+        if column_index >= self.column_count():
+            raise RuntimeError("column index {} is out of bounds".format(column_index))
+        if widget_index >= self.widget_count(column_index):
+            raise RuntimeError("widget index {} is out of bounds".format(widget_index))
+        return self.widget_allocation.widget_columns[column_index].widget_layouts[widget_index]
+
+
+    def get_ymax(self):
+        return self.widget_allocation.get_ymax()
+
+    def next_column(self):
+        self.current_column = []
+        self.col_height = PAD_Y_START
+        self.y_begin = self.col_height
+        self.x_begin = self.x_begin + self.max_widget_width + PAD_X_START
+        self.col_width = 0
+
+    def add_widget_to_layout(self, w):
+        wl = WidgetLayout(w, self.y_begin, self.x_begin, w.get_height() + PAD_Y_BETWEEN, w.get_width() + PAD_X_BETWEEN)
+        # print("adding widget to layout y_begin:{} x_begin: {} ymax: {} xmax: {}".format(wl.y_begin, wl.x_begin, wl.ymax, wl.xmax))
+        self.current_column.append(wl)
+        self.col_height += w.get_height() + PAD_Y_BETWEEN
+        self.y_begin = self.col_height
+        self.col_width = w.get_width() + PAD_X_BETWEEN if self.col_width < w.get_width() + PAD_X_BETWEEN else self.col_width
+
+    def add_current_column_to_allocation(self):
+            self.widget_allocation.add_widget_column(WidgetColumn(self.col_height, self.col_width, self.current_column))
+
+    def add_widget_to_allocation(self, w):
+        return self.col_height + w.get_height() + PAD_Y_BETWEEN > self.max_height
+
+    def is_last(self):
+        return self.w_index == len(self.widgets) - 1
+
+    def would_overflow(self, w):
+        return (self.col_height + w.get_height() + PAD_Y_BETWEEN > self.max_height)
+
+    def widget_to_tall(self, w):
+        return w.get_height() + PAD_Y_BETWEEN > self.max_height
+
+    def assign_to_columns(self):
+        pass
+
+    def calc_max_width(self):
+        m = 0
+        for w in self.widgets:
+            tmp = w.get_width() + PAD_X_BETWEEN
+            m = tmp if tmp > m else m
+        return m
+
+    def assign_x_coord(self):
+        pass
+
+    def add_widgets(self, widgets):
+        self.widgets = widgets
+        while self.w_index < len(self.widgets):
+            w = widgets[self.w_index]
+            if self.widget_to_tall(w):
+                raise RuntimeError("widget too tall index:{} w.height {}".format(self.w_index, w.get_height() + PAD_Y_BETWEEN))
+            # self.col_height += w.get_height()
+            self.y_begin = self.col_height
+            # self.col_width = w.get_width() + PAD_X_BETWEEN if self.col_width < w.get_width() + PAD_X_BETWEEN else self.col_width
+            if self.would_overflow(w) and not self.is_last():
+                self.add_current_column_to_allocation()
+                self.next_column()
+                self.add_widget_to_layout(w)
+            elif self.would_overflow(w) and self.is_last():
+                self.add_current_column_to_allocation()
+                self.next_column()
+                self.add_widget_to_layout(w)
+                self.add_current_column_to_allocation()
+            elif self.is_last():
+                self.add_widget_to_layout(w)
+                self.add_current_column_to_allocation()
+            else:
+                self.add_widget_to_layout(w)
+            self.w_index += 1
+
+
 class WidgetPosition:
     def __init__(self, beg_y, beg_x, widget):
         self.beg_y = beg_y
