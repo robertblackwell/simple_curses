@@ -232,6 +232,11 @@ class View:
 
         self.view_menu = ViewMenu(self, self.stdscr, self.menu_win, self.menu_items)
 
+    def get_values(self):
+        v = []
+        for w in self.widgets:
+            v.append(w.get_value())
+
     def show(self):
         self.setup()
     

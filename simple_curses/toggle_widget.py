@@ -11,7 +11,9 @@ class ToggleWidget(EditableWidgetBase):
     def classmeth(cls):
         print("hello")
 
-    def __init__(self, relative_row, relative_col, key, label, width, attributes, data, values: List[str], initial_value):
+    def __init__(self, 
+        #relative_row, relative_col, 
+        key, label, width, attributes, data, values: List[str], initial_value):
 
         def calc_width(svalues: List[str]):
             w = 0
@@ -22,8 +24,8 @@ class ToggleWidget(EditableWidgetBase):
         self.win = None
         self.id = key
         self.has_focus = False
-        self.row = relative_row
-        self.col = relative_col
+        # self.row = relative_row
+        # self.col = relative_col
         self.data = data
         self.content = values
         self.initial_value = initial_value

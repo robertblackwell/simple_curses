@@ -12,12 +12,12 @@ class TextWidget(EditableWidgetBase):
     def classmeth(cls):
         print("hello")
 
-    def __init__(self, relative_row, relative_col, key, label, width, attributes, data):
+    def __init__(self,  key: str, label: str, width: int, attributes, data: any):
         self.win = None
         self.id = key
         self.has_focus = False
-        self.row = relative_row
-        self.col = relative_col
+        # self.row = relative_row
+        # self.col = relative_col
         self.data = data
         # self.content = ""
         # self.content_position = 0
@@ -130,30 +130,40 @@ class TextWidget(EditableWidgetBase):
 
 
 class IntegerWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
+    def __init__(self, key, label, width, attributes, data):
+        super().__init__(
+            #row, col, 
+            key, label, width, attributes, data)
         self.validator = validator.Integer()
 
 
 class FloatWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
+    def __init__(self, key, label, width, attributes, data):
+        super().__init__(
+            #row, col, 
+            key, label, width, attributes, data)
         self.validator = validator.Float()
 
 
 class IPAddressWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
+    def __init__(self, key, label, width, attributes, data):
+        super().__init__(
+            #row, col, 
+            key, label, width, attributes, data)
         self.validator = validator.IPAddress()
 
 
 class IPNetworkWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
+    def __init__(self, key, label, width, attributes, data):
+        super().__init__(
+            #row, col, 
+            key, label, width, attributes, data)
         self.validator = validator.IPNetwork()
 
 
 class TimeOfDayWidget(TextWidget):
-    def __init__(self, row, col, key, label, width, attributes, data):
-        super().__init__(row, col, key, label, width, attributes, data)
+    def __init__(self, key, label, width, attributes, data):
+        super().__init__(
+            #row, col, 
+            key, label, width, attributes, data)
         self.validator = validator.TimeOfDay24()
