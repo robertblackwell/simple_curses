@@ -43,3 +43,8 @@ def make_subwin(win: curses.window, nbr_rows: int, nbr_cols: int, y_begin_relati
     sw = win.subwin(nbr_rows, nbr_cols, y_begin_abs, x_begin_abs)
     return sw
 
+def win_addstr(win, row, col, astring, attr):
+    """
+    A wrapper for curses addstr that provides more diagnostic info for running off the edge of a window
+    """
+    pass

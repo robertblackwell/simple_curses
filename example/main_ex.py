@@ -1,6 +1,7 @@
 import sys
 import os
 import curses
+import subprocess
 
 requiredHeight = 30
 requiredWidth = 180
@@ -38,7 +39,30 @@ def test_screen_size(stdscr):
 def menu_action_0(form, context):
     form.msg_info("menu action 0")
 
-class ActionsForFirstView:
+class ActionBase:
+    def __init__(self, app):
+        self.app = app
+    
+    def exit_program(self, rc):
+        sys.exit(rc)
+    
+    def execute_command(self, cmd_ar):
+        out = subprocess.run(cmd_ar, capture_output=True)
+        rc = out.returncode
+        stdout_lines = out.stdout.decode("utf8").split("\n")
+        stderr_lines = out.stderr.decode("utf8").split("\n")
+        lines = stderr_lines + stdout_lines
+        if rc == 0:
+            self.app.msg_info("SUCCESS - Return is 0")
+            for line in lines:
+                self.app.msg_info(line)
+        else:
+            self.app.msg_error("FAILED - Return is {}".format(rc))
+            for line in lines:
+                self.app.msg_error(line)
+
+
+class ActionsForFirstView(ActionBase):
     """
     This is how to encapsulate the actions for a particular view into a class.
 
@@ -50,8 +74,11 @@ class ActionsForFirstView:
     the action class
 
     """
-    def __init__(self):
+    def __init__(self, app):
+        super().__init__(app)
         pass
+
+
 
     def validate(self, app, context):
         v = app.get_values()
@@ -64,17 +91,22 @@ class ActionsForFirstView:
 
 
     def cancel(self, app, context):
-        app.msg_info("menu action 0-2")
+        app.msg_info("exit 0-2")
+        self.exit_program(0)
 
 
     def run(self, app, context):
         v = app.get_values()
-        s = ""
+        astr = ""
+        args = []
         if v is not None:
             for k in v.keys():
-                s += "v[{}] = {}, ".format(k, v[k])
+                s =  "v[{}] = {}, ".format(k, v[k])
+                args.append(s)
+                astr += s
 
         app.msg_info("menu action 0-1 {}".format(v))
+        self.execute_command(["ls", "-al", "/"])
 
 
 def menu_action_11(form, context):
@@ -113,7 +145,7 @@ def menu_action_13(form, context):
 class App(AppBase):
     def __init__(self, stdscr, body_height, body_width, context, input_timeout_ms=2):
         # do not mosify this line
-        self.action01 = ActionsForFirstView()
+        self.action01 = ActionsForFirstView(self)
         super().__init__(stdscr, body_height, body_width, context)
 
     def register_views(self):
@@ -124,33 +156,33 @@ class App(AppBase):
         view_help = BannerView(self, "help_01", "Help   View", self.stdscr, self.body_win, HelpWidget(self))
         view_widgets_01 = [
 
-            IPNetworkWidget(self, "ipnet_01", "IPNetwork         ", 20, "", data),
-            IntegerWidget(self, "int_val_01", "Integer           ", 20, "", data),
-            FloatWidget(self, "float_val_01", "Float             ", 20, "", data),
-            IPAddressWidget(self, "ipaddr_01", "IPAddr            ", 20, "", data),
-            TimeOfDayWidget(self, "tod_01", "Time Of Day (24h) ", 20, "", data),
-            TextWidget(self, "text_01", "Text              ", 20, "", data),
+            IPNetworkWidget(self, "ipnet_01", "IPNetwork         ", 23, "", data),
+            IntegerWidget(self, "int_val_01", "Integer           ", 23, "", data),
+            FloatWidget(self, "float_val_01", "Float             ", 23, "", data),
+            IPAddressWidget(self, "ipaddr_01", "IPAddr            ", 23, "", data),
+            TimeOfDayWidget(self, "tod_01", "Time Of Day (24h) ", 23, "", data),
+            TextWidget(self, "text_01", "Text              ", 23, "", data),
             ToggleWidget(self, "toggle_01", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
-            IPNetworkWidget(self, "ipnet_02", "IPNetwork         ", 20, "", data),
-            IntegerWidget(self, "int_val_02", "Integer           ", 20, "", data),
-            FloatWidget(self, "float_val_02", "Float             ", 20, "", data),
-            IPAddressWidget(self, "ipaddr_02", "IPAddr            ", 20, "", data),
-            TimeOfDayWidget(self, "tod_02", "Time Of Day (24h) ", 20, "", data),
-            TextWidget(self, "text_02", "Text              ", 20, "", data),
+            IPNetworkWidget(self, "ipnet_02", "IPNetwork         ", 23, "", data),
+            IntegerWidget(self, "int_val_02", "Integer           ", 23, "", data),
+            FloatWidget(self, "float_val_02", "Float             ", 23, "", data),
+            IPAddressWidget(self, "ipaddr_02", "IPAddr            ", 23, "", data),
+            TimeOfDayWidget(self, "tod_02", "Time Of Day (24h) ", 23, "", data),
+            TextWidget(self, "text_02", "Text              ", 23, "", data),
             ToggleWidget(self, "toggle_02", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
-            IPNetworkWidget(self, "ipnet_03", "IPNetwork         ", 20, "", data),
-            IntegerWidget(self, "int_val_03", "Integer           ", 20, "", data),
-            FloatWidget(self, "float_val_03", "Float             ", 20, "", data),
-            IPAddressWidget(self, "ipaddr_03", "IPAddr            ", 20, "", data),
-            TimeOfDayWidget(self, "tod_03", "Time Of Day (24h) ", 20, "", data),
-            TextWidget(self, "text_03", "Text              ", 20, "", data),
+            IPNetworkWidget(self, "ipnet_03", "IPNetwork         ", 23, "", data),
+            IntegerWidget(self, "int_val_03", "Integer           ", 23, "", data),
+            FloatWidget(self, "float_val_03", "Float             ", 23, "", data),
+            IPAddressWidget(self, "ipaddr_03", "IPAddr            ", 23, "", data),
+            TimeOfDayWidget(self, "tod_03", "Time Of Day (24h) ", 23, "", data),
+            TextWidget(self, "text_03", "Text              ", 23, "", data),
             ToggleWidget(self, "toggle_03", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
-            IPNetworkWidget(self, "ipnet_04", "IPNetwork         ", 20, "", data),
-            IntegerWidget(self, "int_val_04", "Integer           ", 20, "", data),
-            FloatWidget(self, "float_val_04", "Float             ", 20, "", data),
-            IPAddressWidget(self, "ipaddr_04", "IPAddr            ", 20, "", data),
-            TimeOfDayWidget(self, "tod_04", "Time Of Day (24h) ", 20, "", data),
-            TextWidget(self, "text_04", "Text              ", 20, "", data),
+            IPNetworkWidget(self, "ipnet_04", "IPNetwork         ", 23, "", data),
+            IntegerWidget(self, "int_val_04", "Integer           ", 23, "", data),
+            FloatWidget(self, "float_val_04", "Float             ", 23, "", data),
+            IPAddressWidget(self, "ipaddr_04", "IPAddr            ", 23, "", data),
+            TimeOfDayWidget(self, "tod_04", "Time Of Day (24h) ", 23, "", data),
+            TextWidget(self, "text_04", "Text              ", 23, "", data),
             ToggleWidget(self, "toggle_04", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
             MultiLineWidget(app=self, key="sc_01", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50,
                             content_height=10, attributes="", data=data),
@@ -167,15 +199,15 @@ class App(AppBase):
 
         view_widgets_02 = [
 
-            IPNetworkWidget(self, "ipnet_11",      "IPNetwork          ", 20, "", data),
-            IntegerWidget(self,   "int_val_11",    "Integer            ", 20, "", data),
-            FloatWidget(self,     "float_val_11",  "Float              ", 20, "", data),
-            IPAddressWidget(self, "ipaddr_11",     "IPAddr             ", 20, "", data),
-            TimeOfDayWidget(self, "tod_11",        "Time Of Day (24h)  ", 20, "", data),
-            TextWidget(self,      "text_11",       "Text               ", 20, "", data),
+            IPNetworkWidget(self, "ipnet_11",      "IPNetwork          ", 23, "", data),
+            IntegerWidget(self,   "int_val_11",    "Integer            ", 23, "", data),
+            FloatWidget(self,     "float_val_11",  "Float              ", 23, "", data),
+            IPAddressWidget(self, "ipaddr_11",     "IPAddr             ", 23, "", data),
+            TimeOfDayWidget(self, "tod_11",        "Time Of Day (24h)  ", 23, "", data),
+            TextWidget(self,      "text_11",       "Text               ", 23, "", data),
             ToggleWidget(self,    "toggle_11",     "Toggle             ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
-            PathWidget(self,      "path_22",       "File path          ", 20, "", data),
-            PathExistsWidget(self,"path_exists_22","Existing File path ", 20, "", data),
+            PathWidget(self,      "path_22",       "File path          ", 23, "", data),
+            PathExistsWidget(self,"path_exists_22","Existing File path ", 23, "", data),
             # IntegerWidget(self, "int_val_22", "Integer           ", 20, "", data),
             # FloatWidget(self, "float_val_22", "Float             ", 20, "", data),
             MultiLineWidget(app=self, key="sc_11", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50,

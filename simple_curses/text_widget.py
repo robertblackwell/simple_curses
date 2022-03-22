@@ -12,7 +12,7 @@ class TextWidget(EditableWidgetBase):
     def classmeth(cls):
         print("hello")
 
-    def __init__(self, app, key: str, label: str, width: int, attributes, data: any):
+    def __init__(self, app, key: str, label: str, width: int, attributes, data: any, initial_value = ""):
         self.win = None
         self.id = key
         self.has_focus = False
@@ -32,7 +32,7 @@ class TextWidget(EditableWidgetBase):
         self.validator = validator.Text()
         tmp = width + len(self.label)
         # self.win = curses.newwin(1, width + len(self.label) + 2, row, col, )
-        self.string_buffer = string_buffer.StringBuffer("", self.width)
+        self.string_buffer = string_buffer.StringBuffer(initial_value, self.width)
 
         # these properties are for manaing the display of the conttent string during
         # entry and editing
@@ -130,41 +130,41 @@ class TextWidget(EditableWidgetBase):
 
 
 class IntegerWidget(TextWidget):
-    def __init__(self, app, key, label, width, attributes, data):
-        super().__init__(app, key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data, initial_value="0"):
+        super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.Integer()
 
 
 class FloatWidget(TextWidget):
-    def __init__(self, app, key, label, width, attributes, data):
-        super().__init__(app, key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data, initial_value="0.0"):
+        super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.Float()
 
 
 class IPAddressWidget(TextWidget):
-    def __init__(self, app, key, label, width, attributes, data):
-        super().__init__(app, key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data, initial_value="192.168.0.1"):
+        super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.IPAddress()
 
 
 class IPNetworkWidget(TextWidget):
-    def __init__(self, app, key, label, width, attributes, data):
-        super().__init__(app, key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data, initial_value="192.168.0.1"):
+        super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.IPNetwork()
 
 
 class TimeOfDayWidget(TextWidget):
-    def __init__(self, app, key, label, width, attributes, data):
-        super().__init__(app, key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data, initial_value="13:55"):
+        super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.TimeOfDay24()
 
 class PathWidget(TextWidget):
-    def __init__(self, app, key, label, width, attributes, data):
-        super().__init__(app, key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data, initial_value="/fred"):
+        super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.Path()
 
 
 class PathExistsWidget(TextWidget):
-    def __init__(self, app, key, label, width, attributes, data):
-        super().__init__(app, key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data, initial_value=" /home/robertblackwell"):
+        super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.PathExists()

@@ -18,23 +18,23 @@ print("RB importing simple_curses package")
 # from . import view
 # from . import widget_base
 
-
-from banner_widget     import *
-from colors            import *
-from dropdown_widget   import *
-from dummy_windget     import *
-from kurses_ex         import *
-from layout            import *
-from lines_buffer      import *
-from message_widget    import *
-from menu              import *
-from multi_line_view   import *
-from multi_line_buffer import *
-from multi_line_widget import *
-from string_buffer     import *
-from text_widget       import *
-from toggle_widget     import *
-from utils             import *
-from validator         import *
-from view              import *
-from widget_base       import *
+from appbase            import *
+from banner_widget      import *
+from colors             import *
+from dropdown_widget    import *
+from dummy_windget      import *
+from kurses_ex          import *
+from layout             import *
+from lines_buffer       import *
+from message_widget     import *
+from menu               import *
+from multi_line_view    import *
+from multi_line_buffer  import *
+from multi_line_widget  import *
+from string_buffer      import *
+from text_widget        import *
+from toggle_widget      import *
+from utils              import *
+from validator          import *
+from view               import *
+from widget_base        import *
