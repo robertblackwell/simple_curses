@@ -78,16 +78,18 @@ class MessageWidget(WidgetBase):
     def msg_post(self, label, msg, attr):
         self.msg_count += 1
         if len(msg) > self.width - 20:
-            msg_lines = textwrap(msg, self.width - 20)
+            msg_lines = textwrap.wrap(msg, self.width - 20)
             lnindex = 0
             for ln in msg_lines:
                 if lnindex == 0:
                     self.messages.append([self.msg_count, label, ln, attr])
                 else:
                     self.msg_count += 1
-                    self.messages.append([self.msg_count, "CONT", ln, attr])
-            else:
-                self.messages.append([self.msg_count, label, msg, attr])
+                    self.messages.append([self.msg_count, "     CONT: ", ln, attr])
+                
+                lnindex += 1
+        else:
+            self.messages.append([self.msg_count, label, msg, attr])
 
     def handle_input(self, chint):
         return False
@@ -98,17 +100,13 @@ class MessageWidget(WidgetBase):
         active_msgs = self.messages[len(self.messages) - self.height + 2:len(self.messages)]
         r = 1
         for msg in active_msgs:
-            lines = textwrap.wrap(msg[2], self.width - 50)
-            lnindex = 0
-            for ln in lines:
-                if lnindex == 0:
-                    ln = "  {0:>3}:{1}:{2}".format(msg[0], msg[1], ln)
-                else:
-                    ln = "  {0:>3}:{1}:{2}".format("  ", "    ", ln)
-
-                self.win.addstr(r, 1, ln)
-                lnindex += 1
-                r += 1
+            astring = " {0:>3}:{1}{2}".format(msg[0], msg[1], msg[2])
+            if len(astring) > self.width - 10:
+                astring = astring[0:self.width - 10]+".."
+            else:
+                astring.ljust(self.width - 10)
+            self.content_win.addstr(r - 1, 0, astring, msg[3])
+            r += 1
 
         self.win.noutrefresh()
         curses.doupdate()
