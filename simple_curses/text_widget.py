@@ -12,7 +12,7 @@ class TextWidget(EditableWidgetBase):
     def classmeth(cls):
         print("hello")
 
-    def __init__(self,  key: str, label: str, width: int, attributes, data: any):
+    def __init__(self, app, key: str, label: str, width: int, attributes, data: any):
         self.win = None
         self.id = key
         self.has_focus = False
@@ -28,7 +28,7 @@ class TextWidget(EditableWidgetBase):
         self.start_col = 0
 
         self.attributes = attributes
-        self.form = None
+        self.app = app
         self.validator = validator.Text()
         tmp = width + len(self.label)
         # self.win = curses.newwin(1, width + len(self.label) + 2, row, col, )
@@ -45,9 +45,9 @@ class TextWidget(EditableWidgetBase):
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
 
-    def set_form(self, form) -> None:
-        self.form = form
-
+    # def set_app(self, app) -> None:
+    #     self.app = app
+    # 
     def get_width(self) -> int:
         return len(self.label) + self.width + 2
 
@@ -66,7 +66,7 @@ class TextWidget(EditableWidgetBase):
             else:
                 self.win.addstr(0, i, "_")
 
-    # called by the containing form to paint/render the Widget
+    # called by the containing app to paint/render the Widget
     def render(self) -> None:
         self.paint_content_area_background()
         self.win.addstr(0, 0, self.label, curses.A_BOLD)
@@ -86,7 +86,7 @@ class TextWidget(EditableWidgetBase):
         self.win.noutrefresh()
 
     # 
-    # called by the Form instance to give this control focus
+    # called by the app instance to give this control focus
     # 
     def focus_accept(self) -> None:
         self.has_focus = True
@@ -130,40 +130,41 @@ class TextWidget(EditableWidgetBase):
 
 
 class IntegerWidget(TextWidget):
-    def __init__(self, key, label, width, attributes, data):
-        super().__init__(
-            #row, col, 
-            key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data):
+        super().__init__(app, key, label, width, attributes, data)
         self.validator = validator.Integer()
 
 
 class FloatWidget(TextWidget):
-    def __init__(self, key, label, width, attributes, data):
-        super().__init__(
-            #row, col, 
-            key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data):
+        super().__init__(app, key, label, width, attributes, data)
         self.validator = validator.Float()
 
 
 class IPAddressWidget(TextWidget):
-    def __init__(self, key, label, width, attributes, data):
-        super().__init__(
-            #row, col, 
-            key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data):
+        super().__init__(app, key, label, width, attributes, data)
         self.validator = validator.IPAddress()
 
 
 class IPNetworkWidget(TextWidget):
-    def __init__(self, key, label, width, attributes, data):
-        super().__init__(
-            #row, col, 
-            key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data):
+        super().__init__(app, key, label, width, attributes, data)
         self.validator = validator.IPNetwork()
 
 
 class TimeOfDayWidget(TextWidget):
-    def __init__(self, key, label, width, attributes, data):
-        super().__init__(
-            #row, col, 
-            key, label, width, attributes, data)
+    def __init__(self, app, key, label, width, attributes, data):
+        super().__init__(app, key, label, width, attributes, data)
         self.validator = validator.TimeOfDay24()
+
+class PathWidget(TextWidget):
+    def __init__(self, app, key, label, width, attributes, data):
+        super().__init__(app, key, label, width, attributes, data)
+        self.validator = validator.Path()
+
+
+class PathExistsWidget(TextWidget):
+    def __init__(self, app, key, label, width, attributes, data):
+        super().__init__(app, key, label, width, attributes, data)
+        self.validator = validator.PathExists()

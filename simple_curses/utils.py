@@ -82,8 +82,10 @@ def is_function_key(ch):
     tmp = ch[0:6]
     return tmp == "KEY_F("
 
+
 def is_control_v(ch):
     return ch == 0x16
+
 
 def fn_key_match(k1, k2):
     return k1 == k2
@@ -129,30 +131,3 @@ def is_delete_line(ch):
     return False
 
 
-class Keyboard:
-    _instance = None
-
-    def __init__(self):
-        raise RuntimeError('Call instance() instead')
-
-    @classmethod
-    def instance(cls):
-        if cls._instance is None:
-            if getch_flag:
-                cls._instance = Keyboard_getch(curses.stdscr)
-            else:
-                cls._instance = Keyboard_getkey(curses.stdscr)
-
-        return cls._instance
-
-
-class Keyboard_getch:
-    def __init__(self, stdscr):
-        self.stdscr = stdscr
-        pass
-
-
-class Keyboard_getkey:
-    def __init__(self):
-        self.stdscr = stdscr
-        pass

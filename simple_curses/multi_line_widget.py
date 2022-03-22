@@ -6,7 +6,6 @@ from utils import *
 from simple_curses.widget_base import EditableWidgetBase
 from multi_line_buffer import MultiLineBuffer
 # from simple_curses.menu import MenuItem
-from simple_curses.form import Form
 from kurses_ex import make_subwin
 
 xlines = [
@@ -36,7 +35,7 @@ class MultiLineWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, key:str, label:str, content_width:int, content_height:int, attributes, data:any):
+    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, attributes, data:any):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -67,7 +66,7 @@ class MultiLineWidget(EditableWidgetBase):
         self.attributes = attributes
         self.lines_view = None
         self.outter_win = None
-        self.form = None
+        self.app = app
         self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.content_height, self.content_width - self.line_number_width - 2)
     
    
@@ -77,8 +76,8 @@ class MultiLineWidget(EditableWidgetBase):
         self.content_win = make_subwin(self.outter_win, self.content_height, self.content_width - self.line_number_width, 1, self.line_number_width)
         self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 1, 1)
 
-    def set_form(self, form: Form):
-        self.form = form
+    # def set_app(self, app: app):
+    #     self.app = app
 
     def add_line(self, line: str):
         self.mu_lines_buffer.append_line(line)
@@ -198,7 +197,7 @@ class MultiLineWidget(EditableWidgetBase):
         before = self.paste_mode
         after = not self.paste_mode
         self.set_paste_mode(after)
-        self.form.msg_info("toggle_paste_mode from:{} to:{}".format(before, after))
+        self.app.msg_info("toggle_paste_mode from:{} to:{}".format(before, after))
 
     def set_paste_mode(self, on_off):
         if on_off:

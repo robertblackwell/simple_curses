@@ -1,6 +1,5 @@
 import curses.textpad
 from typing import List
-from form import Form
 from utils import *
 from widget_base import EditableWidgetBase
 
@@ -11,9 +10,7 @@ class ToggleWidget(EditableWidgetBase):
     def classmeth(cls):
         print("hello")
 
-    def __init__(self, 
-        #relative_row, relative_col, 
-        key, label, width, attributes, data, values: List[str], initial_value):
+    def __init__(self, app, key, label, width, attributes, data, values: List[str], initial_value):
 
         def calc_width(svalues: List[str]):
             w = 0
@@ -24,8 +21,6 @@ class ToggleWidget(EditableWidgetBase):
         self.win = None
         self.id = key
         self.has_focus = False
-        # self.row = relative_row
-        # self.col = relative_col
         self.data = data
         self.content = values
         self.initial_value = initial_value
@@ -40,13 +35,13 @@ class ToggleWidget(EditableWidgetBase):
         self.start_col = 0
 
         self.attributes = attributes
-        self.form = None
+        self.app = app
 
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
 
-    def set_form(self, form: Form) -> None:
-        self.form = form
+    # def set_app(self, app: app) -> None:
+    #     self.app = app
 
     def get_width(self) -> int:
         return len(self.label) + self.width + 2
@@ -66,7 +61,7 @@ class ToggleWidget(EditableWidgetBase):
             else:
                 self.win.addstr(0, i, "_")
 
-    # called by the containing form to paint/render the Widget
+    # called by the containing app to paint/render the Widget
     def render(self) -> None:
         self.paint_content_area_background()
         self.win.addstr(0, 0, self.label, curses.A_BOLD)
@@ -89,7 +84,7 @@ class ToggleWidget(EditableWidgetBase):
         self.win.noutrefresh()
 
     # 
-    # called by the Form instance to give this control focus
+    # called by the app instance to give this control focus
     # 
     def focus_accept(self) -> None:
         self.has_focus = True

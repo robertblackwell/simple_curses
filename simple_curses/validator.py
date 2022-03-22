@@ -1,8 +1,11 @@
 import time
+import os
+import sys
 import ipaddress
 import string
 import re
 from typing import TypeVar, List
+import pathlib
 
 T = TypeVar("T")
 
@@ -98,9 +101,11 @@ class IPNetwork:
     def error_message(self):
         return "Invalid ip network"
 
+
 class TimeOfDay24:
     def __init__(self):
         pass
+
     def validate(self, astr):
         try:
             i = time.strptime(astr, "%H:%M")
@@ -118,7 +123,7 @@ def time12_to_24(time_string):
     is_pm = "pm" in time12
     if not (is_am or is_pm):
         return None
-    time_list = list(map(int, time12[:-2].strip().split(':')))            
+    time_list = list(map(int, time12[:-2].strip().split(':')))
     if not len(time_list) == 2:
         return None
     if not 0 <= time_list[0] <= 12:
@@ -132,9 +137,11 @@ def time12_to_24(time_string):
 
     return (':'.join(map(lambda x: str(x).rjust(2, '0'), time_list)))
 
+
 class TimeOfDay12:
     def __init__(self):
         pass
+
     def validate(self, astr: str):
         try:
             intermediate = time12_to_24(astr)
@@ -147,3 +154,36 @@ class TimeOfDay12:
 
     def error_message(self):
         return "Invalid 12hr time of day - correct format is HH:MM AM or HH:MM PM"
+
+class Path:
+    def __init__(self):
+        self.astr = None
+
+    def validate(self, astr: str):
+        self.astr = astr
+        try:
+            p = pathlib.Path(astr)
+            return p
+        except ValueError:
+            return None
+
+    def error_message(self):
+        return "Invalid file path {}".format(self.astr)
+
+class PathExists:
+    def __init__(self):
+        self.astr = None
+        pass
+
+    def validate(self, astr: str):
+        self.astr = astr
+        try:
+            p = pathlib.Path(astr)
+            if not p.exists():
+                raise ValueError()
+            return p
+        except ValueError:
+            return None
+
+    def error_message(self):
+        return "File path {} is either invalid or does not exists".format(self.astr)

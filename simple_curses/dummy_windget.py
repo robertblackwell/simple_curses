@@ -25,7 +25,7 @@ class DummyWidget:
 
     def set_enclosing_window(self, win):
         self.outter_win = win
-    
+
     def set_form(self, form):
         self.form = form
 
@@ -49,7 +49,6 @@ class DummyWidget:
         self.outter_win.noutrefresh()
         curses.doupdate()
 
-
     def handle_input(self, ch):
         return False
 
@@ -57,6 +56,7 @@ class DummyWidget:
         self.outter_win.bkgd(" ", Colors.button_focus())
         self.outter_win.noutrefresh()
         curses.doupdate()
+
 
 class DummyShortWidget(DummyWidget):
     def __init__(self, key, label, width, height, attributes, data):

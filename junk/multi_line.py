@@ -32,11 +32,11 @@ def testScreenSize(stdscr):
                 requiredHeight, requiredWidth, h, w))
 
 
-def menuAction0(form, context):
+def menu_action_0(form, context):
     form.msg_info("menu action 0")
 
 
-def menuAction1(form, context):
+def menu_action_1(form, context):
     v = form.get_values()
     s = ""
     if v is not None:
@@ -60,7 +60,6 @@ def main(stdscr):
     testScreenSize(stdscr)
     curses.curs_set(2)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-
 
     left_widgets = [
 
@@ -93,13 +92,14 @@ def main(stdscr):
         TextWidget(12, 2, "text_04", "Text              ", 20, "", data),
         ToggleWidget(14, 2, "toggle_04", "Toggle            ", 3, "", data, ['ENABLED', "DISABLED"], "DISABLED"),
     ]
-    right_widgets = [ 
-        MultiLineWidget(key="sc_01", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50, content_height=10, attributes="", data=data),
+    right_widgets = [
+        MultiLineWidget(key="sc_01", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50, content_height=10,
+                        attributes="", data=data),
         # DropdownWidget (16, 90, "dd_01", "Selection",   55, 10, "", data, ["one","two","three","four"], "three"),
     ]
-    
-    menu_widgets = [ 
-        MenuItem(22, 2, "Validate", 13, 3, 0, menuAction1, "context for menu 1"),
+
+    menu_widgets = [
+        MenuItem(22, 2, "Validate", 13, 3, 0, menu_action_1, "context for menu 1"),
         MenuItem(22, 17, "Cancel", 7, 3, 0, menuAction2, "context for menu 2"),
         MenuItem(22, 26, "Ok-Run", 7, 3, 0, menuAction3, "context for menu 3")
     ]

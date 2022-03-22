@@ -1,7 +1,6 @@
-import sys
 import unittest
 
-from store_db import *
+from junk.store_db import *
 
 
 class TestStringBufferAppend(unittest.TestCase):

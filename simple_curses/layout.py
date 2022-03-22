@@ -1,17 +1,30 @@
-from typing import List 
+from typing import List
 import curses
 from widget_base import WidgetBase
 
+
 class HStack:
     pass
+
+
 class VStack:
     def __init__(self, win: curses.window, widgets: List[WidgetBase]):
         pass
+
 
 PAD_X_START = 4
 PAD_X_BETWEEN = 1
 PAD_Y_START = 2
 PAD_Y_BETWEEN = 1
+
+
+class Rectangle:
+    def __init__(self, nbr_rows, nbr_cols, y_beg, x_beg):
+        self.nbr_rows = nbr_rows
+        self.nbr_cols = nbr_cols
+        self.y_begin = y_beg
+        self.x_begin = x_beg
+
 
 class WidgetLayout:
     """
@@ -21,7 +34,7 @@ class WidgetLayout:
 
     """
 
-    def __init__(self, w:WidgetBase, y_begin, x_begin, y_max, x_max):
+    def __init__(self, w: WidgetBase, y_begin, x_begin, y_max, x_max):
         self.widget = w
 
         self.y_begin = y_begin
@@ -34,12 +47,13 @@ class WidgetLayout:
             raise ValueError("ymax: {}, w.get_height(): {}".format(self.ymax, w.get_height()))
         if self.xmax < w.get_width():
             raise ValueError("xmax: {}, w.get_width(): {}".format(self.xmax, w.get_width()))
-    
+
     # def get_height(self):
     #     return self.y_max
 
     # def get_width(self):
     #     return self.x_max
+
 
 class WidgetColumn:
     def __init__(self, height, width, widget_layouts: List[WidgetLayout]):
@@ -56,6 +70,7 @@ class WidgetColumn:
     def widget_count(self):
         return len(self.widget_layouts)
 
+
 class WidgetAlllocation:
     def __init__(self):
         self.widget_columns: List[WidgetColumn] = []
@@ -63,14 +78,14 @@ class WidgetAlllocation:
 
     def add_widget_column(self, widget_column: WidgetColumn):
         self.widget_columns.append(widget_column)
-    
+
     def get_ymax(self):
         m = 0
         for wc in self.widget_columns:
             h = wc.get_ymax()
             m = h if h > m else m
-        return m 
-    
+        return m
+
     def column_count(self):
         return len(self.widget_columns)
 
@@ -82,7 +97,8 @@ class ColumnLayout:
     Makes sure that no column is wider than max_widget_width
 
     Uses the padding constants at the top of this file
-    """    
+    """
+
     def __init__(self, max_height, max_widget_width):
         self.widget_allocation = WidgetAlllocation()
         self.current_column = []
@@ -114,7 +130,6 @@ class ColumnLayout:
             raise RuntimeError("widget index {} is out of bounds".format(widget_index))
         return self.widget_allocation.widget_columns[column_index].widget_layouts[widget_index]
 
-
     def get_ymax(self):
         return self.widget_allocation.get_ymax()
 
@@ -127,14 +142,15 @@ class ColumnLayout:
 
     def add_widget_to_layout(self, w):
         wl = WidgetLayout(w, self.y_begin, self.x_begin, w.get_height() + PAD_Y_BETWEEN, w.get_width() + PAD_X_BETWEEN)
-        # print("adding widget to layout y_begin:{} x_begin: {} ymax: {} xmax: {}".format(wl.y_begin, wl.x_begin, wl.ymax, wl.xmax))
+        # print("adding widget to layout y_begin:{} x_begin: {} ymax: {} xmax: {}"
+        #   .format(wl.y_begin, wl.x_begin, wl.ymax, wl.xmax))
         self.current_column.append(wl)
         self.col_height += w.get_height() + PAD_Y_BETWEEN
         self.y_begin = self.col_height
         self.col_width = w.get_width() + PAD_X_BETWEEN if self.col_width < w.get_width() + PAD_X_BETWEEN else self.col_width
 
     def add_current_column_to_allocation(self):
-            self.widget_allocation.add_widget_column(WidgetColumn(self.col_height, self.col_width, self.current_column))
+        self.widget_allocation.add_widget_column(WidgetColumn(self.col_height, self.col_width, self.current_column))
 
     def add_widget_to_allocation(self, w):
         return self.col_height + w.get_height() + PAD_Y_BETWEEN > self.max_height
@@ -143,7 +159,7 @@ class ColumnLayout:
         return self.w_index == len(self.widgets) - 1
 
     def would_overflow(self, w):
-        return (self.col_height + w.get_height() + PAD_Y_BETWEEN > self.max_height)
+        return self.col_height + w.get_height() + PAD_Y_BETWEEN > self.max_height
 
     def widget_to_tall(self, w):
         return w.get_height() + PAD_Y_BETWEEN > self.max_height
@@ -166,10 +182,12 @@ class ColumnLayout:
         while self.w_index < len(self.widgets):
             w = widgets[self.w_index]
             if self.widget_to_tall(w):
-                raise RuntimeError("widget too tall index:{} w.height {}".format(self.w_index, w.get_height() + PAD_Y_BETWEEN))
+                raise RuntimeError(
+                    "widget too tall index:{} w.height {}".format(self.w_index, w.get_height() + PAD_Y_BETWEEN))
             # self.col_height += w.get_height()
             self.y_begin = self.col_height
-            # self.col_width = w.get_width() + PAD_X_BETWEEN if self.col_width < w.get_width() + PAD_X_BETWEEN else self.col_width
+            # self.col_width = w.get_width() + PAD_X_BETWEEN if self.col_width < w.get_width() + PAD_X_BETWEEN else 
+            # self.col_width 
             if self.would_overflow(w) and not self.is_last():
                 self.add_current_column_to_allocation()
                 self.next_column()
@@ -218,11 +236,13 @@ class VerticalStack:
 
         if excess_rows <= 0:
             raise ValueError(
-                "LayoutVerticcalStack.required_space  requires too many rows rows required : {}  rows available rows {}}".format(
+                "LayoutVerticcalStack.required_space  requires too many rows rows required : {}  rows available rows "
+                "{}}".format( 
                     rows, available_rows))
         if excess_width <= 0:
             raise ValueError(
-                "LayoutVerticcalStack.required_space  requires too much width  width required : {}  width available rows {}}".format(
+                "LayoutVerticcalStack.required_space  requires too much width  width required : {}  width available "
+                "rows {}}".format( 
                     max_width, available_width))
 
         start_row = self.begin_row + (2 if excess_rows > 2 else excess_rows)
@@ -240,6 +260,7 @@ class VerticalStack:
 
 class HorizontalStack:
     def __init__(self, max_pos, widgets):
+        self.widget_positions = None
         self.begin_row = 0  # begin_pos[0]
         self.begin_col = 0  # begin_pos[1]
         self.max_row = max_pos[0]
@@ -262,11 +283,13 @@ class HorizontalStack:
 
         if excess_cols < 0:
             raise ValueError(
-                "LayoutHorizontalStack.required_space  requires too many cols   cols_required  : {}  cols available   {}}".format(
+                "LayoutHorizontalStack.required_space  requires too many cols   cols_required  : {}  cols available   "
+                "{}}".format( 
                     cols, available_cols))
         if excess_height < 0:
             raise ValueError(
-                "LayoutVerticcalStack.required_space  requires too much height  height_required : {}  available height {}}".format(
+                "LayoutVerticcalStack.required_space  requires too much height  height_required : {}  available "
+                "height {}}".format( 
                     max_height, available_height))
 
         n = len(self.widgets)

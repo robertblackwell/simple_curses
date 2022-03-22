@@ -35,11 +35,6 @@ class WidgetBase(ABC):
     def set_enclosing_window(self, win: curses.window) -> None:
         pass
 
-    @abstractmethod
-    def set_form(self, form) -> None:
-        pass
-
-
 class FocusableWidgetBase(WidgetBase):
     """A widget that can accept the focus and may be able to navigate around its fixed text display"""
 

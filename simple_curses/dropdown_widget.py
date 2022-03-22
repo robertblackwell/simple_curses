@@ -1,13 +1,8 @@
 from typing import List
-import curses
 import curses.textpad
-import lines_buffer
-from colors import Colors
 from utils import *
 from simple_curses.widget_base import EditableWidgetBase
 from multi_line_buffer import MultiLineBuffer
-from simple_curses.menu import MenuItem
-from simple_curses.form import Form
 
 xlines = [
     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
@@ -30,11 +25,13 @@ xlines = [
     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
+
 def calc_width(svalues: List[str]):
     w = 0
     for v in svalues:
         w = len(v) if len(v) > w else w
     return w
+
 
 class DropdownWidget(EditableWidgetBase):
 
@@ -42,15 +39,15 @@ class DropdownWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, row, col, key, label, width, height, attributes, data, selections: List[str], initial_value):
+    def __init__(self, app, key, label, width, height, attributes, data, selections: List[str], initial_value):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
         self.title_window = None
         self.id: str = key
         self.has_focus: bool = False
-        self.row: int = row
-        self.col: int = col
+        # self.row: int = row
+        # self.col: int = col
         self.data = data
         self.label: str = label + ": "
         self.width: int = calc_width(selections)
@@ -64,7 +61,7 @@ class DropdownWidget(EditableWidgetBase):
         self.attributes = attributes
         self.lines_view = None
         self.outter_win = None
-        self.form = None
+        self.app = app
         tmp = width + len(self.label)
         self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.height - 3, self.width - 5)
 
@@ -100,9 +97,6 @@ class DropdownWidget(EditableWidgetBase):
             self.content_win = curses.newwin(self.height - 1, self.width - 3, self.start_row + 1,
                                              self.start_col + 1 + 3)
             self.info_win = curses.newwin(4, self.width, self.start_row + self.height - 2 + 1, self.start_col)
-
-    def set_form(self, form: Form):
-        self.form = form
 
     def add_line(self, line: str):
         self.mu_lines_buffer.append_line(line)

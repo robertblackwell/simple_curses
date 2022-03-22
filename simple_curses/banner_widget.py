@@ -49,11 +49,11 @@ help_lines = [
 
 
 class BlockTextWidget(WidgetBase):
-    def __init__(self, text_block: List[str]):
+    def __init__(self, app, text_block: List[str]):
         self.height = len(text_block)
         self.width = len(text_block[0])
         self.text_block = text_block
-        self.form = None
+        self.app = app
         self.outter_win = None
         self.has_focus = False
     
@@ -82,8 +82,8 @@ class BlockTextWidget(WidgetBase):
         cbeg = 0 #((xm - self.width) // 2)
         self.banner_win = make_subwin(window, self.height+1, self.width+1, rbeg, cbeg)
 
-    def set_form(self, form):
-        self.form = form
+    # def set_app(self, app):
+    #     self.app = app
 
     def render(self):
         if self.has_focus:
@@ -103,9 +103,9 @@ class BlockTextWidget(WidgetBase):
         return False
 
 class BannerWidget(BlockTextWidget):
-    def __init__(self):
-        super().__init__(banner_lines_01)
+    def __init__(self, app):
+        super().__init__(app, banner_lines_01)
 
 class HelpWidget(BlockTextWidget):
-    def __init__(self):
-        super().__init__(help_lines)
+    def __init__(self, app):
+        super().__init__(app, help_lines)

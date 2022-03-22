@@ -7,7 +7,7 @@ from simple_curses.colors import Colors
 import simple_curses.menu as M
 from simple_curses.message_widget import MessageWidget
 from widget_base import WidgetBase
-from partitian import Partitian, Rectangle
+from layout import Rectangle
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT

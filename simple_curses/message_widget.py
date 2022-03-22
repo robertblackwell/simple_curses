@@ -1,7 +1,9 @@
 import curses
 import curses.textpad
+import textwrap
 from colors import Colors
 from widget_base import WidgetBase
+
 
 class MessageWidget(WidgetBase):
     """This widget provides a box into which messsages can be written.
@@ -19,8 +21,8 @@ class MessageWidget(WidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, row, col, key, label, width, height, attributes, data):
-        self.form = None
+    def __init__(self, app, row, col, key, label, width, height, attributes, data):
+        self.app = app
         self.content_win = None
         self.win = None
         self.row = row
@@ -57,9 +59,9 @@ class MessageWidget(WidgetBase):
         self.content_win = self.win.subwin(h_sub, w_sub, r_sub, c_sub)
         pass
 
-    def set_form(self, form):
-        self.form = form
-        pass
+    # def set_form(self, form):
+    #     self.form = form
+    #     pass
 
     def msg_error(self, msg):
         label = " ERROR: "
@@ -75,7 +77,17 @@ class MessageWidget(WidgetBase):
 
     def msg_post(self, label, msg, attr):
         self.msg_count += 1
-        self.messages.append([self.msg_count, label, msg, attr])
+        if len(msg) > self.width - 20:
+            msg_lines = textwrap(msg, self.width - 20)
+            lnindex = 0
+            for ln in msg_lines:
+                if lnindex == 0:
+                    self.messages.append([self.msg_count, label, ln, attr])
+                else:
+                    self.msg_count += 1
+                    self.messages.append([self.msg_count, "CONT", ln, attr])
+            else:
+                self.messages.append([self.msg_count, label, msg, attr])
 
     def handle_input(self, chint):
         return False
@@ -86,13 +98,17 @@ class MessageWidget(WidgetBase):
         active_msgs = self.messages[len(self.messages) - self.height + 2:len(self.messages)]
         r = 1
         for msg in active_msgs:
-            astring = "  {0:>3}:{1}:{2}".format(msg[0], msg[1], msg[2])
-            if len(astring) > self.width - 5:
-                astring = astring[0:self.width - 5]
-            else:
-                astring.ljust(self.width - 5)
-            self.content_win.addstr(r - 1, 0, astring, msg[3])
-            r += 1
+            lines = textwrap.wrap(msg[2], self.width - 50)
+            lnindex = 0
+            for ln in lines:
+                if lnindex == 0:
+                    ln = "  {0:>3}:{1}:{2}".format(msg[0], msg[1], ln)
+                else:
+                    ln = "  {0:>3}:{1}:{2}".format("  ", "    ", ln)
+
+                self.win.addstr(r, 1, ln)
+                lnindex += 1
+                r += 1
 
         self.win.noutrefresh()
         curses.doupdate()
