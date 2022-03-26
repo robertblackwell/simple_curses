@@ -5,11 +5,7 @@ import curses
 import curses.textpad
 import time
 import string
-
-import string_buffer
-import lines_buffer
 from colors import Colors
-import validator
 
 getch_flag = True
 

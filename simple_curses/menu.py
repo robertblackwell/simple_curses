@@ -1,17 +1,9 @@
-import time
-import sys
-from abc import ABC, abstractmethod, abstractproperty
+
 import curses
 import curses.textpad
-import time
-from simple_curses.colors import Colors
-from simple_curses.utils import *
-from simple_curses.widget_base import WidgetBase
+from simple_curses import Colors, MenuBase, is_return, is_space, is_linefeed
 
-class MenuItem(WidgetBase):
-    @classmethod
-    def classmeth(cls):
-        pass
+class DummyMenuItem(MenuBase):
     def __init__(self, app, label, width, height, attributes, function, context):
         self.label = label
         self.function = function

@@ -32,6 +32,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "aorc ex",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/example/aorc.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "test string buffer",
             "type": "python",
             "request": "launch",
@@ -247,6 +258,17 @@
             "request": "launch",
             "stopOnEntry" :true,
             "program": "${workspaceFolder}/tests/test_col_layout.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        }
+        {
+            "name": "test subclass ",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/tests/test_subclass.py",
             "cwd": "${workspaceFolder}/tests",
             "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
             "args": [],

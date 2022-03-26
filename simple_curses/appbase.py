@@ -2,7 +2,6 @@ from typing import List
 import curses
 import curses.textpad
 
-from simple_curses.colors import Colors
 from simple_curses.message_widget import MessageWidget
 from utils import is_control_v
 
@@ -35,7 +34,7 @@ class AppBase:
         self.width = width
         self.views = None
         self.data = None
-        self.log_keystrokes = False
+        self.log_keystrokes = True
         self.context = context
         self.stdscr = stdscr
         self.focus_index = 0
@@ -58,9 +57,8 @@ class AppBase:
 
         curses.mousemask(curses.ALL_MOUSE_EVENTS + curses.REPORT_MOUSE_POSITION)
 
-        self.body_win = curses.newwin(self.body_height, self.width, y_outter + self.title_height,
-                                      0)  # self.body_start_row, 0)
-        self.body_win.bkgd(" ", Colors.button_focus())
+        self.body_win = curses.newwin(self.body_height, self.width, y_outter + self.title_height, 0)
+        # self.body_win.bkgd(" ", Colors.button_focus())
         ybdy, xbdy = self.body_win.getbegyx()
         ybdym, xbdym = self.body_win.getmaxyx()
         self.message_widget = MessageWidget(self, ybdy + ybdym - 1, 0, "", "", self.width, self.msg_height, "", context)
@@ -77,10 +75,10 @@ class AppBase:
         raise NotImplementedError()
 
     def show_current_view(self):
+        self.views[self.current_view_index].show()
         self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
         self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
             self.message_widget]
-        self.views[self.current_view_index].show()
 
     def hide_current_view(self):
         self.views[self.current_view_index].hide()
@@ -88,18 +86,18 @@ class AppBase:
     def change_view(self, next_view):
         self.views[self.current_view_index].hide()
         self.current_view_index = next_view % len(self.views)
+        self.views[self.current_view_index].show()
         self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
         self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
             self.message_widget]
-        self.views[self.current_view_index].show()
 
     def next_view(self):
         self.views[self.current_view_index].hide()
         self.current_view_index = (self.current_view_index + 1) % len(self.views)
+        self.views[self.current_view_index].show()
         self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
         self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
             self.message_widget]
-        self.views[self.current_view_index].show()
 
     def enable(self):
         pass
@@ -176,8 +174,10 @@ class AppBase:
         self.title_win.noutrefresh()
         self.body_win.noutrefresh()
 
-        for w in self.render_widgets:
-            w.render()
+        # for w in self.render_widgets:
+        #     w.render()
+
+        self.views[self.current_view_index].render()
         self.message_widget.render()
 
         curses.doupdate()

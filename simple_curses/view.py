@@ -3,10 +3,11 @@ import curses
 import curses.textpad
 from kurses_ex import make_subwin
 
-import simple_curses.menu as M
-from widget_base import WidgetBase
-from layout import ColumnLayout, Rectangle
-
+# import simple_curses.menu as M
+from menu import *
+from widget_base import *
+from layout import *
+from title_widget import TitleWidget
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
@@ -30,110 +31,6 @@ def fn_key_description(k1):
     s2 = s1.replace(")", "")
     s3 = "F" + s2
     return s3
-
-
-class ViewBody:
-
-    def __init__(self, form, stdscr, win: curses.window, widgets: List[WidgetBase]):
-        self.outter_win = win
-        yh, xw = win.getmaxyx()
-        ybeg, xbeg = win.getbegyx()
-        require_borders = True
-        if require_borders:
-            self.height = yh - 2
-            self.width = xw - 2
-            ybeg = ybeg + 1
-            xbeg = xbeg + 1
-
-        max_widget_width = 0
-        total_width = 0
-        item_width = None
-        widgets_total_height = 0
-        # calculate the widests widget and the total height required with 1 row between
-        for w in widgets:
-            max_widget_width = w.get_width() if max_widget_width < w.get_width() else max_widget_width
-            total_width += w.get_width() + 4
-            widgets_total_height += w.get_height() + 1
-
-        # how many columns that wide could we make - leaving 2 spaces on each side of a widget
-        max_columns = self.width // (max_widget_width + 1)
-
-        required_columns = (widgets_total_height // self.height) if (widgets_total_height % self.height) == 0 else (
-                                                                                                                               widgets_total_height // self.height) + 1
-
-        if required_columns > max_columns:
-            raise ValueError("cannot fit {}  widgets in window of size y: {} x:{}".format(len(widgets), yh, xw))
-
-        self.nbr_columns = required_columns
-
-        nbr_widgets_per_column = len(widgets) // required_columns
-
-        nbr_columns_with_one_extra = len(widgets) % required_columns
-
-        clayout = ColumnLayout(self.height, max_widget_width)
-        clayout.add_widgets(widgets)
-        self.widget_allocation = clayout.widget_allocation
-
-
-class TopMenu:
-    """This is a Horizontal Stack, LEFT justified, of menu items. Used for a Form top menu
-    to switch views
-    """
-
-    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
-        self.outter_win = menu_win
-        self.height, self.width = menu_win.getmaxyx()
-        ybeg, xbeg = menu_win.getbegyx()
-        max_item_width = 0
-        total_width = 0
-        item_width = None
-        for m in menu_items:
-            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
-            total_width += m.get_width() + 4
-        if (max_item_width + 2) * len(menu_items) < self.width:
-            item_width = max_item_width + 2
-        else:
-            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
-        xpos = xbeg + self.width - item_width
-        rectangles = []
-        for m in menu_items:
-            r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
-            rectangles.append(r)
-            xpos += item_width
-            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
-            m.set_enclosing_window(tmp_win)
-            m.set_form(form)
-            m.has_focus = False
-
-
-class ViewMenu:
-    """This is a Horizontal Stack, right justified, of menu items. Used to provide a menu inside a view
-    """
-
-    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
-        self.outter_win = menu_win
-        self.height, self.width = menu_win.getmaxyx()
-        ybeg, xbeg = menu_win.getbegyx()
-        max_item_width = 0
-        total_width = 0
-        item_width = None
-        for m in menu_items:
-            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
-            total_width += m.get_width() + 4
-        if (max_item_width + 2) * len(menu_items) < self.width:
-            item_width = max_item_width + 2
-        else:
-            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
-        xpos = xbeg + self.width - item_width
-        rectangles = []
-        for m in reversed(menu_items):
-            r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
-            rectangles.append(r)
-            xpos += -item_width
-            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
-            m.set_enclosing_window(tmp_win)
-            # m.set_form(form)
-            m.has_focus = False
 
 
 class BannerView:
@@ -183,13 +80,128 @@ class BannerView:
     def get_render_widgets(self):
         return [self.widget]
 
+    def render(self):
+        self.widget.render()
+
+
+
+class TopMenu:
+    """This is a Horizontal Stack, LEFT justified, of menu items. Used for a Form top menu
+    to switch views
+    """
+
+    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[MenuItem]):
+        self.outter_win = menu_win
+        self.height, self.width = menu_win.getmaxyx()
+        ybeg, xbeg = menu_win.getbegyx()
+        max_item_width = 0
+        total_width = 0
+        item_width = None
+        for m in menu_items:
+            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
+            total_width += m.get_width() + 4
+        if (max_item_width + 2) * len(menu_items) < self.width:
+            item_width = max_item_width + 2
+        else:
+            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
+        xpos = xbeg + self.width - item_width
+        rectangles = []
+        for m in menu_items:
+            r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
+            rectangles.append(r)
+            xpos += item_width
+            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
+            m.set_enclosing_window(tmp_win)
+            m.set_form(form)
+            m.has_focus = False
+
+
+class ViewMenu:
+    """This is a Horizontal Stack, right justified, of menu items. Used to provide a menu inside a view
+    """
+
+    def __init__(self, app, parent_view, stdscr, menu_win: curses.window, menu_items: List[MenuItem]):
+        self.app = app
+        self.parent_view = parent_view
+        self.outter_win = menu_win
+        self.height, self.width = menu_win.getmaxyx()
+        ybeg, xbeg = menu_win.getbegyx()
+        max_item_width = 0
+        total_width = 0
+        item_width = None
+        for m in menu_items:
+            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
+            total_width += m.get_width() + 4
+        if (max_item_width + 2) * len(menu_items) < self.width:
+            item_width = max_item_width + 2
+        else:
+            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
+        xpos = xbeg + self.width - item_width
+        rectangles = []
+        for m in reversed(menu_items):
+            r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
+            rectangles.append(r)
+            xpos += -item_width
+            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
+            m.set_enclosing_window(tmp_win)
+            m.has_focus = False
+
+       
+class ViewBody:
+
+    def __init__(self, form, stdscr, win: curses.window, widgets: List[WidgetBase]):
+        self.outter_win = win
+        yh, xw = win.getmaxyx()
+        ybeg, xbeg = win.getbegyx()
+        require_borders = True
+        if require_borders:
+            self.height = yh - 2
+            self.width = xw - 2
+            ybeg = ybeg + 1
+            xbeg = xbeg + 1
+
+        max_widget_width = 0
+        total_width = 0
+        item_width = None
+        widgets_total_height = 0
+        # calculate the widests widget and the total height required with 1 row between
+        for w in widgets:
+            max_widget_width = w.get_width() if max_widget_width < w.get_width() else max_widget_width
+            total_width += w.get_width() + 4
+            widgets_total_height += w.get_height() + 1
+
+        # how many columns that wide could we make - leaving 2 spaces on each side of a widget
+        max_columns = self.width // (max_widget_width + 1)
+
+        required_columns = (widgets_total_height // self.height) if (widgets_total_height % self.height) == 0 else (
+                                                                                                                               widgets_total_height // self.height) + 1
+
+        if required_columns > max_columns:
+            raise ValueError("cannot fit {}  widgets in window of size y: {} x:{}".format(len(widgets), yh, xw))
+
+        self.nbr_columns = required_columns
+
+        nbr_widgets_per_column = len(widgets) // required_columns
+
+        nbr_columns_with_one_extra = len(widgets) % required_columns
+
+        clayout = ColumnLayout(self.height, max_widget_width)
+        clayout.add_widgets(widgets)
+        self.widget_allocation = clayout.widget_allocation
+
+
 
 class View:
-    """A class that implements the detailed layout and function of a Form body. A single form typically has a number of views
-    that are swapped by the top menu"""
+    """A class that implements the detailed layout and function of a data entry view body body. A single app typically has a number of views
+    that are swapped by the top menu or keyboard short cuts. This class represents the type of view that has data entry fields
+    and an action menu at the bottom.
+    
+    This view and its companions ViewMenu and ViewBody perform the layout calculations
 
-    def __init__(self, app, ident: str, label: str, stdscr, window: curses.window, widgets: List[WidgetBase],
-                 menu_items: List[M.MenuItem]):
+    """
+
+    def __init__(self, app, ident: str, title: str, stdscr, window: curses.window, widgets: List[WidgetBase],
+                 menu_items: List[MenuItem]):
         # the outter_win will contain all the dataentry fields and across the bottom the view menu
         self.view_menu = None
         self.view_body = None
@@ -205,9 +217,34 @@ class View:
         self.outter_y_begin, self.outter_x_begin = window.getbegyx()
         self.widgets = widgets
         self.menu_items = menu_items
-        self.label = label
+        self.focus_widgets = [w for w in (self.widgets + self.menu_items) if is_focusable(w) ]
+        # for w in (self.menu_items + self.widgets):
+        #     klass = w.__class__
+        #     bases = klass.__bases__
+        #     if is_focusable(w):
+        #     # if isinstance(w, FocusableWidgetBase) or isinstance(w, MenuItem): #@TODO this is a hack find problem and fix
+        #         self.focus_widgets.append(w)
+        self.title = title
+        self.title_widget = None
         self.ident = ident
         self.app = app
+
+    def _verify_dependencies(self):
+        if self.app is None:
+            raise RuntimeError("instamce of class {} is not linked to an app".format(self.__class__.__name__))
+        if self.app is None:
+            raise RuntimeError("instamce of class {} is not linked to any widgets".format(self.__class__.__name__))
+        if self.app is None:
+            raise RuntimeError("instamce of class {} is not linked to any menu items".format(self.__class__.__name__))
+
+    def inject_widgets(self, widgets: List[WidgetBase]):
+        pass
+
+    def inject_menu_items(self, menu_items: List[MenuItem]):
+        pass
+
+    def inject_app(self, app):
+        pass
 
     def setup(self):
         self.menu_height = 5
@@ -219,8 +256,11 @@ class View:
         body_height = 0
         col = body_start_col + 4
         c = 1
+        self.title_widget = TitleWidget(self, "", "SomeTitle", 10, 1, "", "")
+        self.title_widget.set_enclosing_window(self.data_entry_win)
 
-        self.view_body = ViewBody(self, self.stdscr, self.data_entry_win, self.widgets)
+        self.view_body = ViewBody(self.app, self.stdscr, self.data_entry_win, self.widgets)
+
         yb, xb = self.data_entry_win.getbegyx()
         for cols in self.view_body.widget_allocation.widget_columns:
             for wlo in cols.widget_layouts:
@@ -230,7 +270,7 @@ class View:
                 sw = make_subwin(self.data_entry_win, w.get_height(), w.get_width(), wlo.y_begin, wlo.x_begin)
                 w.set_enclosing_window(sw)
 
-        self.view_menu = ViewMenu(self, self.stdscr, self.menu_win, self.menu_items)
+        self.view_menu = ViewMenu(self.app, self, self.stdscr, self.menu_win, self.menu_items)
 
     def get_values(self):
         v = []
@@ -244,8 +284,18 @@ class View:
         self.outter_win.clear()
 
     def get_focus_widgets(self):
+        widgets = self.focus_widgets if len(self.focus_widgets) != 0 else self.widgets + self.menu_items
+        return widgets
         return self.widgets + self.menu_items
 
     def get_render_widgets(self):
-        return self.widgets + self.menu_items
+        return [self.title_widget] + self.widgets + self.menu_items
+
+    def render(self):
+        for w in self.widgets + self.menu_items:
+            w.render()
+        ym, xm = self.outter_win.getmaxyx()
+        xpos = (xm - len(self.title)) // 2
+        self.outter_win.addstr(0, xpos, self.title, curses.A_BOLD)
+        self.outter_win.noutrefresh()
 

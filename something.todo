@@ -1,0 +1,8 @@
+☐ dropdown widget needs to be implemented
+☐ multiline widget needs a refinement to do a list of network IP addresses CIDR format called prefixes and demo pasting a list of prefixes
+☐ top menu needs implementing
+☐ define screens to replicate aorc.py
+☐ under stand the processing done by aorc.py
+☐ work out how to run the example using simple_curses as a package imstalled locally
+☐ investigate venv
+☐ prepare a presentation for Richard on how it works

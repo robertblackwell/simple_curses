@@ -2,6 +2,7 @@ import curses.textpad
 
 from utils import *
 from widget_base import EditableWidgetBase
+from string_buffer import StringBuffer
 import validator
 
 # A basic text widget that allows the entry of printable characters.
@@ -32,7 +33,7 @@ class TextWidget(EditableWidgetBase):
         self.validator = validator.Text()
         tmp = width + len(self.label)
         # self.win = curses.newwin(1, width + len(self.label) + 2, row, col, )
-        self.string_buffer = string_buffer.StringBuffer(initial_value, self.width)
+        self.string_buffer = StringBuffer(initial_value, self.width)
 
         # these properties are for manaing the display of the conttent string during
         # entry and editing

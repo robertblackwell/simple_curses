@@ -1,17 +1,11 @@
 import time
-import os
-import sys
 import ipaddress
-import string
-import re
 from typing import TypeVar, List
 import pathlib
 
-T = TypeVar("T")
-
 
 class ArrayOf:
-    def __init__(self, validator: T):
+    def __init__(self, validator):
         self.validator = validator
 
     def validate(self, ar: List[str]):
