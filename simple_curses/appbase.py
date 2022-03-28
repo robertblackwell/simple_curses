@@ -72,7 +72,11 @@ class AppBase:
         self.show_current_view()
 
     def register_views(self):
+        # this method should be overridden by a derived class when buildign an actual app
         raise NotImplementedError()
+
+    def get_current_view(self):
+        return self.views[self.current_view_index]
 
     def show_current_view(self):
         self.views[self.current_view_index].show()

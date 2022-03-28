@@ -73,6 +73,10 @@ class StringBuffer:
         self.content = ""
         self._compute_display_string()
 
+    def add_string(self, astr):
+        for ch in astr:
+            self.handle_character(ch)
+
     def _incr_cpos_buffer(self):
         self.cpos_buffer = self.cpos_buffer + 1 if self.cpos_buffer < self.width - 1 else self.cpos_buffer
 

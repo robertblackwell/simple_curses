@@ -102,6 +102,13 @@ class MultiLineWidget(EditableWidgetBase):
     def get_value(self):
         return self.mu_lines_buffer.get_value()
 
+    def set_value(self, value):
+        self.clear()
+        if type(value) is list:
+            for ln in value:
+                self.add_line(ln) 
+        pass
+
     def render_title(self):
         """Print the title in the middle of the top row - inside the top line of the box"""
         tl = len(self.label)

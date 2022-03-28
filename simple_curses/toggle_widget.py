@@ -52,6 +52,23 @@ class ToggleWidget(EditableWidgetBase):
     def clear(self):
         self.content = False
 
+    def get_key(self):
+        return self.id
+
+    def get_value(self) -> bool:
+        return self.content
+
+    def set_value(self, onoff):
+        if type(onoff) == str and onoff in self.content:
+            self.current_index = self.content.index(onoff)
+        elif type(onoff) == bool:
+            self.current_index = 1 if onoff else 0
+        elif type(onoff) == int and 0 <= onoff < len(self.content):
+            self.current_index = onoff 
+        else:
+            raise ValueError("onoff is invalid {} {}".format(type(onoff), onoff))
+
+
     # paint attributes for the content area so that it is visible to used
     def paint_content_area_background(self) -> None:
         tmp = self.width + len(self.label) - 1
@@ -93,8 +110,7 @@ class ToggleWidget(EditableWidgetBase):
     def focus_release(self) -> None:
         self.has_focus = False
 
-    def get_value(self) -> bool:
-        return self.content
+
 
     # 
     # Called by inpput handling functions to signal to user that the last keysttroke was

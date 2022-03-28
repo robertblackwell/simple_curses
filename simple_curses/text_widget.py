@@ -1,6 +1,8 @@
 import curses.textpad
 
 from utils import *
+import pathlib
+import ipaddress
 from widget_base import EditableWidgetBase
 from string_buffer import StringBuffer
 import validator
@@ -96,8 +98,20 @@ class TextWidget(EditableWidgetBase):
     def focus_release(self) -> None:
         self.has_focus = False
 
+    def get_key(self):
+        return self.id
+
     def get_value(self) -> string:
         return self.string_buffer.content
+
+    def set_value(self, value):
+        if type(value) == str:
+            self.string_buffer.clear()
+            self.string_buffer.add_string(value)
+            pass
+        else:
+            raise ValueError("value is invalid type:{} value:{}".format(type(value), value))
+
 
     # 
     # Called by inpput handling functions to signal to user that the last keysttroke was
@@ -135,11 +149,27 @@ class IntegerWidget(TextWidget):
         super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.Integer()
 
+    def set_value(self, value):
+        if type(value) == str:
+            super().set_value(value)
+        elif type(value) == int:
+            super().set_value("{}".format(value))
+        else:
+            ValueError("value:{} of type {} is invalid".format(value, type(value)))
+
 
 class FloatWidget(TextWidget):
     def __init__(self, app, key, label, width, attributes, data, initial_value="0.0"):
         super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.Float()
+
+    def set_value(self, value):
+        if type(value) == str:
+            super().set_value(value)
+        elif type(value) == float:
+            super().set_value("{}".format(value))
+        else:
+            ValueError("value:{} of type {} is invalid".format(value, type(value)))
 
 
 class IPAddressWidget(TextWidget):
@@ -147,25 +177,65 @@ class IPAddressWidget(TextWidget):
         super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.IPAddress()
 
+    def set_value(self, value):
+        if type(value) == str:
+            super().set_value(value)
+        elif isinstance(value, ipaddress.IPv4Address) or isinstance(value, ipaddress.IPv6Address):
+            super().set_value("{}".format(value))
+        else:
+            ValueError("value:{} of type {} is invalid".format(value, type(value)))
+
 
 class IPNetworkWidget(TextWidget):
     def __init__(self, app, key, label, width, attributes, data, initial_value="192.168.0.1"):
         super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.IPNetwork()
 
+    def set_value(self, value):
+        if type(value) == str:
+            super().set_value(value)
+        elif isinstance(value, ipaddress.IPv4Network ) or isinstance(value, ipaddress.IPv6Network):
+            super().set_value("{}".format(value))
+        else:
+            ValueError("value:{} of type {} is invalid".format(value, type(value)))
+
 
 class TimeOfDayWidget(TextWidget):
     def __init__(self, app, key, label, width, attributes, data, initial_value="13:55"):
         super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.TimeOfDay24()
+    def set_value(self, value):
+        if type(value) == str:
+            super().set_value(value)
+        elif isinstance(value, time.struct_time):
+            super().set_value("{}".format(time.strf("%H:%M", value)))
+        else:
+            ValueError("value:{} of type {} is invalid".format(value, type(value)))
+
 
 class PathWidget(TextWidget):
     def __init__(self, app, key, label, width, attributes, data, initial_value="/fred"):
         super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.Path()
 
+    def set_value(self, value):
+        if type(value) == str:
+            super().set_value(value)
+        elif isinstance(value, pathlib.PosixPath):
+            super().set_value("{}".format(value))
+        else:
+            ValueError("value:{} of type {} is invalid".format(value, type(value)))
+
 
 class PathExistsWidget(TextWidget):
     def __init__(self, app, key, label, width, attributes, data, initial_value=" /home/robertblackwell"):
         super().__init__(app, key, label, width, attributes, data, initial_value)
         self.validator = validator.PathExists()
+
+    def set_value(self, value):
+        if type(value) == str:
+            super().set_value(value)
+        elif isinstance(value, pathlib.PosixPath):
+            super().set_value("{}".format(value))
+        else:
+            ValueError("value:{} of type {} is invalid".format(value, type(value)))

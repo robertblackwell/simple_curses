@@ -39,6 +39,9 @@ class WidgetBase:#(ABC):
     def set_parent_view(self, view):
         self.parent_view = view
 
+    def get_key(self):
+        raise NotImplementedError()
+
 
 class FocusableWidgetBase(WidgetBase):
     """A widget that can accept the focus and may be able to navigate around its fixed text display"""
@@ -57,6 +60,10 @@ class EditableWidgetBase(FocusableWidgetBase):
 
     @abstractmethod
     def get_value(self) -> str:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def set_value(self, v) -> str:
         raise NotImplementedError()
 
     @abstractmethod
@@ -117,7 +124,7 @@ class MenuItem(MenuBase):
         return did_handle_ch
 
     def invoke(self) -> None:
-        self.function(self.app, self.context)
+        self.function(self.app, self.app.get_current_view(), self.context)
     
     def render(self) -> None:
         if self.has_focus:
@@ -132,15 +139,32 @@ class MenuItem(MenuBase):
 
 
 def is_widget(w):
-    return callable(getattr(w, "get_height")) \
+    x0 = isinstance(w, WidgetBase)
+    return x0
+    return hasattr(w, "get_height") \
+        and callable(getattr(w, "get_height")) \
+        and hasattr(w, "get_width") \
         and callable(getattr(w, "get_width")) \
+        and hasattr(w, "get_width") \
         and callable(getattr(w, "render")) \
+        and hasattr(w, "render") \
         and callable(getattr(w, "set_enclosing_window")) \
+        and hasattr(w, "handle_input") \
         and callable(getattr(w, "handle_input"))
 
 
 def is_focusable(widget):
-    return callable(getattr(widget, "focus_accept")) and callable(getattr(widget, "focus_release"))
+    x0 = isinstance(widget, FocusableWidgetBase)
+    return x0
+    x0 = hasattr(widget, "focus_accept") and callable(getattr(widget, "focus_accept")) 
+    x1 = hasattr(widget, "focus_relase") and callable(getattr(widget, "focus_release"))
+    return hasattr(widget, "focus_accept") and callable(getattr(widget, "focus_accept")) and hasattr(widget, "focus_relase") and callable(getattr(widget, "focus_release"))
 
 def is_editable(widget):
-    return is_focusable(widget) and callable(getattr(widget, "get_values")) and callable(getattr(widget, "clear"))
+    x0 = isinstance(widget, EditableWidgetBase)
+    return x0
+    x0 = is_focusable(widget)
+    x1 = hasattr(widget, "get_value") and callable(getattr(widget, "get_value"))
+    x2 = hasattr(widget, "clear") and callable(getattr(widget, "clear"))
+    res = is_focusable(widget) and hasattr(widget, "get_value") and callable(getattr(widget, "get_value")) and hasattr(widget, "clear") and callable(getattr(widget, "clear"))
+    return res

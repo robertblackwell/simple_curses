@@ -169,6 +169,7 @@ class ViewBody:
             max_widget_width = w.get_width() if max_widget_width < w.get_width() else max_widget_width
             total_width += w.get_width() + 4
             widgets_total_height += w.get_height() + 1
+            
 
         # how many columns that wide could we make - leaving 2 spaces on each side of a widget
         max_columns = self.width // (max_widget_width + 1)
@@ -271,11 +272,19 @@ class View:
                 w.set_enclosing_window(sw)
 
         self.view_menu = ViewMenu(self.app, self, self.stdscr, self.menu_win, self.menu_items)
+        self.set_values(self.app.state)
 
     def get_values(self):
         v = []
         for w in self.widgets:
             v.append(w.get_value())
+
+    def set_values(self, values):
+        for w in self.widgets:
+            if is_editable(w):
+                k = w.get_key()
+                v = getattr(values, k)
+                w.set_value(v)
 
     def show(self):
         self.setup()

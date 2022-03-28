@@ -1,3 +1,6 @@
+☐ priority -- the action functions on view menus do not have access to the view
+☐ remove initial value from widgets
+☐ find a more systematic way of inserting the new state - is it really the case that only menu actions change state. Maybe widgets should have an on_change caoability.
 ☐ dropdown widget needs to be implemented
 ☐ multiline widget needs a refinement to do a list of network IP addresses CIDR format called prefixes and demo pasting a list of prefixes
 ☐ top menu needs implementing
