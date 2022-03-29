@@ -5,7 +5,7 @@ from utils import *
 
 
 class DummyWidget:
-    def __init__(self, key, label, width, height, attributes, data):
+    def __init__(self, key, label, width, height,  data):
         self.id = key
         self.has_focus = False
         self.row = 0
@@ -17,7 +17,7 @@ class DummyWidget:
         self.start_row = 0
         self.start_col = 0
 
-        self.attributes = attributes
+        # self.attributes = attributes
         self.lines_view = None
         self.outter_win = None
         self.form = None

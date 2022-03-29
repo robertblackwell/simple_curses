@@ -6,7 +6,7 @@ from kurses_ex import make_subwin
 
 
 class TitleWidget:
-    def __init__(self, app, key, label, width, height, attributes, data):
+    def __init__(self, app, key, label, width, height, data):
         self.id = key
         self.has_focus = False
         self.data = data
@@ -14,7 +14,7 @@ class TitleWidget:
         self.width = len(label) + 2
         self.height = 1
 
-        self.attributes = attributes
+        # self.attributes = attributes
         self.outter_win = None
         self.win = None
         self.app = app

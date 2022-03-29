@@ -41,11 +41,11 @@ from subprocess import Popen, PIPE
 prefix = ""
 add_route = 0
 duration = 1200
-exception_file = '''/home/cjensen/bin/stuff/ddos2_exceptions'''
-v14_command_file = '''/home/cjensen/bin/stuff/ddos2_v14_command_push'''
-quick_push = '''/home/cjensen/bin/stuff/ddos2_quick_push'''
-save = '''/home/cjensen/bin/stuff/save'''
-pid_file = '''/home/cjensen/bin/stuff/ddos2_script.pid'''
+exception_file = '''/home/robert/Projects/simple_curses/aorc_app/stuff/ddos2_exceptions'''
+v14_command_file = '''/home/robert/Projects/simple_curses/aorc_app/stuff/ddos2_v14_command_push'''
+quick_push = '''/home/robert/Projects/simple_curses/aorc_app/stuff/ddos2_quick_push'''
+save = '''/home/robert/Projects/simple_curses/aorc_app/stuff/save'''
+pid_file = '''/home/robert/Projects/simple_curses/aorc_app/stuff/ddos2_script.pid'''
 customer_name = ""
 bus_org_id = ""
 list_name = ""
@@ -176,7 +176,8 @@ def add_to_prefix_list_nokia(nokia_name, prefixes, prefix_list, entry_num, next_
     open(quick_push, 'w')
 
     # generate the prefix-list code and store in a file
-    command = '''/configure router policy-options abort\n/configure router policy-options begin'''
+    command = '''/configure router policy-options abort''' +\
+              '''\n/configure router policy-options begin'''
     update_file(quick_push, command)
 
     for each in prefixes:
@@ -187,7 +188,13 @@ def add_to_prefix_list_nokia(nokia_name, prefixes, prefix_list, entry_num, next_
         update_file(quick_push, command, each)
 
     if new:
-        command = '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + entry_num + ''' description ''' + prefix_list + '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + entry_num + ''' from prefix-list ''' + prefix_list + '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + entry_num + ''' from family ipv4\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + entry_num + ''' action next-policy community replace ddos2-aorc ddos-global-scrubbers\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + entry_num + ''' action next-policy local-preference 3100100250\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + entry_num + ''' action next-policy next-hop ''' + next_hop
+        command = '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + str(entry_num) + ''' description ''' + prefix_list + \
+                  '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + str(entry_num) + ''' from prefix-list ''' + prefix_list + \
+                  '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + str(entry_num) + ''' from family ipv4''' + \
+                  '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + str(entry_num) + ''' action next-policy community replace ddos2-aorc ddos-global-scrubbers''' + \
+                  '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + str(entry_num) + ''' action next-policy local-preference 3100100250''' + \
+                  '''\n/configure router policy-options policy-statement ''' + policy_name + ''' entry ''' + str(entry_num) + ''' action next-policy next-hop ''' + next_hop
+
         update_file(quick_push, command)
     command = '''\n/configure router policy-options commit'''
     update_file(quick_push, command)
@@ -214,7 +221,15 @@ def add_to_prefix_list_juniper(juniper_name, prefixes, prefix_list, next_hop, ne
         update_file(quick_push, command)
 
     if new:
-        command = '''\nset policy-options policy-statement ''' + prefix_list + ''' term BGP then accept\nset policy-options policy-statement ''' + prefix_list + ''' term REJECT then reject\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' from policy ''' + prefix_list + '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then local-preference 3100100250\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then community add ddos2-aorc\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then community add ddos-global-scrubbers\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then next-hop ''' + next_hop + '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then accept'''
+        command = \
+            '''\nset policy-options policy-statement ''' + prefix_list + ''' term BGP then accept''' + \
+            '''\nset policy-options policy-statement ''' + prefix_list + ''' term REJECT then reject''' + \
+            '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' from policy ''' + prefix_list + \
+            '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then local-preference 3100100250''' +\
+            '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then community add ddos2-aorc''' +\
+            '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then community add ddos-global-scrubbers''' +\
+            '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then next-hop ''' + next_hop + \
+            '''\nset policy-options policy-statement ''' + policy_name + ''' term ''' + prefix_list + ''' then accept'''
         update_file(quick_push, command)
     command = '''\ncommit and-quit'''
     update_file(quick_push, command)
@@ -235,7 +250,9 @@ def rem_from_prefix_list_nokia(nokia_name, prefixes, prefix_list, entry_num, nex
     update_file(quick_push, command)
 
     if disco:
-        command = '''\n/configure router policy-options policy-statement ddos2-dynamic-check no entry ''' + entry_num + '''\n/configure router policy-options no prefix-list ''' + prefix_list
+        command = \
+            '''\n/configure router policy-options policy-statement ddos2-dynamic-check no entry ''' + str(entry_num) + \
+            '''\n/configure router policy-options no prefix-list ''' + prefix_list
         update_file(quick_push, command)
     else:
         for each in prefixes:

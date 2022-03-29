@@ -89,19 +89,19 @@ class App(AppBase):
         ##########################################################
         add_prefixes_new_install_widgets = [
 
-            TextWidget(self, "cust_name",        "Cust name           ", 23, "", data),
-            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, "", data),
-            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3, "", data, ['No ', "Yes"], "No "),
-            ToggleWidget(self, "is_dm_order",    "Is a DM order       ", 3, "", data, ['No ', "Yes"], "No "),
+            TextWidget(self, "cust_name",        "Cust name           ", 23, data),
+            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, data),
+            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3, data, ['No ', "Yes"]),
+            ToggleWidget(self, "is_dm_order",    "Is a DM order       ", 3, data, ['No ', "Yes"]),
             ToggleWidget(self, "is_aorc_capitalized",       
-                                                 "Is aorc capitalized ", 3, "", data, ['No ', "Yes"], "No "),
+                                                 "Is aorc capitalized ", 3, data, ['No ', "Yes"]),
 
             IntegerWidget(self, "nokia_entry_nbr",   
-                                              "New install Nokia entry number ", 23, "", data, initial_value = "0"),
-            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, "", data, initial_value = "192.168.192.168"),
+                                                 "New install Nokia entry number ", 23, data),
+            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data),
                             
             MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
-                            content_height=20, attributes="", data=data),
+                            content_height=20, data=data),
         ]
 
         add_prefixes_new_install_menu = [
@@ -117,19 +117,19 @@ class App(AppBase):
         ##########################################################
         add_prefixes_not_new_install_widgets = [
 
-            TextWidget(self, "cust_name",        "Cust name           ", 23, "", data),
-            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, "", data),
-            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3, "", data, ['No ', "Yes"], "No "),
-            ToggleWidget(self, "is_dm_order",    "Is a DM order       ", 3, "", data, ['No ', "Yes"], "No "),
+            TextWidget(self, "cust_name",        "Cust name           ", 23, data),
+            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, data),
+            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3,  data, ['No ', "Yes"]),
+            ToggleWidget(self, "is_dm_order",    "Is a DM order       ", 3,  data, ['No ', "Yes"]),
             ToggleWidget(self, "is_aorc_capitalized",       
-                                                 "Is aorc capitalized ", 3, "", data, ['No ', "Yes"], "No "),
+                                                 "Is aorc capitalized ", 3, data, ['No ', "Yes"]),
 
             IntegerWidget(self, "nokia_entry_nbr",   
-                                                 "New install Nokia entry number ", 23, "", data, initial_value = "0"),
-            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, "", data, initial_value = "192.168.192.168"),
+                                                 "New install Nokia entry number ", 23, data),
+            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data),
                             
             MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
-                            content_height=20, attributes="", data=data),
+                            content_height=20, data=data),
         ]
 
         add_prefixes_not_new_install_menu = [
@@ -146,19 +146,19 @@ class App(AppBase):
         ##########################################################
         remove_prefixes_with_disconnect_widgets = [
 
-            TextWidget(self, "cust_name",        "Cust name           ", 23, "", data),
-            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, "", data),
-            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3, "", data, ['No ', "Yes"], "No "),
-            ToggleWidget(self, "is_dm_order",    "Is a DM order       ", 3, "", data, ['No ', "Yes"], "No "),
+            TextWidget(self, "cust_name",        "Cust name           ", 23, data),
+            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, data),
+            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3,  data, ['No ', "Yes"]),
+            ToggleWidget(self, "is_dm_order",    "Is a DM order       ", 3,  data, ['No ', "Yes"]),
             ToggleWidget(self, "is_aorc_capitalized",       
-                                                 "Is aorc capitalized ", 3, "", data, ['No ', "Yes"], "No "),
+                                                 "Is aorc capitalized ", 3, data, ['No ', "Yes"]),
 
             IntegerWidget(self, "nokia_entry_nbr",   
-                                              "New install Nokia entry number ", 23, "", data, initial_value = "0"),
-            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, "", data, initial_value = "192.168.192.168"),
+                                                 "New install Nokia entry number ", 23, data),
+            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data),
                             
             MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
-                            content_height=20, attributes="", data=data),
+                            content_height=20, data=data),
         ]
 
         remove_prefixes_with_disconnect_menu = [
@@ -175,19 +175,19 @@ class App(AppBase):
         ##########################################################
         remove_prefixes_not_disconnect_widgets = [
 
-            TextWidget(self, "cust_name",        "Cust name           ", 23, "", data),
-            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, "", data),
-            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3, "", data, ['No ', "Yes"], "No "),
-            ToggleWidget(self, "is_dm_order",     "Is a DM order       ", 3, "", data, ['No ', "Yes"], "No "),
+            TextWidget(self, "cust_name",        "Cust name           ", 23, data),
+            TextWidget(self, "bus_org_id",       "Business Org ID     ", 23, data),
+            ToggleWidget(self, "is_marvel_order","Is a Marvel Order   ", 3,  data, ['No ', "Yes"]),
+            ToggleWidget(self, "is_dm_order",     "Is a DM order       ", 3, data, ['No ', "Yes"]),
             ToggleWidget(self, "is_aorc_capitalized",       
-                                                  "Is aorc capitalized ", 3, "", data, ['No ', "Yes"], "No "),
+                                                  "Is aorc capitalized ", 3, data, ['No ', "Yes"]),
 
             IntegerWidget(self, "nokia_entry_nbr",   
-                                              "New install Nokia entry number ", 23, "", data, initial_value = "0"),
-            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, "", data, initial_value = "192.168.192.168"),
+                                                 "New install Nokia entry number ", 23, data ),
+            IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data ),
                             
             MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
-                            content_height=20, attributes="", data=data),
+                            content_height=20, data=data),
         ]
 
         remove_prefixes_not_with_disconnect_menu = [
@@ -210,11 +210,11 @@ class App(AppBase):
                 "by this program"
             ]),
 
-            PathWidget(self, "config_exception_file",     "Exception File Path    ", 70, "", data, initial_value='''/home/cjensen/bin/stuff/ddos2_exceptions'''),
-            PathWidget(self, "config_v14_command_file",   "V14 Command File Path  ", 70, "", data, initial_value='''/home/cjensen/bin/stuff/ddos2_v14_command_push'''),
-            PathWidget(self, "config_quick_push_file",    "Quick Push File Path   ", 70, "", data, initial_value='''/home/cjensen/bin/stuff/ddos2_quick_push'''),
-            PathWidget(self, "config_save_file",          "Save File Path         ", 70, "", data, initial_value='''/home/cjensen/bin/stuff/save'''),
-            PathWidget(self, "config_pid_file",           "PID File Path          ", 70, "", data, initial_value='''/home/cjensen/bin/stuff/ddos2_script.pid'''),
+            PathWidget(self, "config_exception_file",     "Exception File Path    ", 70, data),
+            PathWidget(self, "config_v14_command_file",   "V14 Command File Path  ", 70, data),
+            PathWidget(self, "config_quick_push_file",    "Quick Push File Path   ", 70, data),
+            PathWidget(self, "config_save_file",          "Save File Path         ", 70, data),
+            PathWidget(self, "config_pid_file",           "PID File Path          ", 70, data),
 
             BlockTextWidget(self, [
                 ""
@@ -225,7 +225,7 @@ class App(AppBase):
                 "This next field is string constant used by the program NOT a file path",
             ]),
 
-            TextWidget(self, "config_policy_name",        "DDOS Policy Name Constant ", 70, "", data, initial_value="ddos2-dynamic-check"),
+            TextWidget(self, "config_policy_name",        "DDOS Policy Name Constant ", 70, data),
             
         ]
 

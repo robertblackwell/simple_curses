@@ -257,7 +257,7 @@ class View:
         body_height = 0
         col = body_start_col + 4
         c = 1
-        self.title_widget = TitleWidget(self, "", "SomeTitle", 10, 1, "", "")
+        self.title_widget = TitleWidget(self, "", "SomeTitle", 10, 1, "")
         self.title_widget.set_enclosing_window(self.data_entry_win)
 
         self.view_body = ViewBody(self.app, self.stdscr, self.data_entry_win, self.widgets)

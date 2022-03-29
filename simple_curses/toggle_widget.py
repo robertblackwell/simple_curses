@@ -10,7 +10,7 @@ class ToggleWidget(EditableWidgetBase):
     def classmeth(cls):
         print("hello")
 
-    def __init__(self, app, key, label, width, attributes, data, values: List[str], initial_value):
+    def __init__(self, app, key, label, width, data, values: List[str]):
 
         def calc_width(svalues: List[str]):
             w = 0
@@ -23,18 +23,18 @@ class ToggleWidget(EditableWidgetBase):
         self.has_focus = False
         self.data = data
         self.content = values
-        self.initial_value = initial_value
-        try:
-            self.current_index = values.index(initial_value)
-        except ValueError:
-            raise ValueError("initial_value {} is not list of possible values {}".format(initial_value, ", ".join(values)))
+        # self.initial_value = initial_value
+        # try:
+        #     self.current_index = values.index(initial_value)
+        # except ValueError:
+        #     raise ValueError("initial_value {} is not list of possible values {}".format(initial_value, ", ".join(values)))
         self.label = label + ": "
         self.width = calc_width(values)
         self.height = 1
         self.start_row = 0
         self.start_col = 0
 
-        self.attributes = attributes
+        # self.attributes = attributes
         self.app = app
 
     def set_enclosing_window(self, win: curses.window) -> None:

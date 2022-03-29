@@ -35,7 +35,7 @@ class MultiLineWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, attributes, data:any):
+    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:any):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -63,7 +63,7 @@ class MultiLineWidget(EditableWidgetBase):
         self.start_col: int = 0
         self.paste_mode: bool = False
 
-        self.attributes = attributes
+        # self.attributes = attributes
         self.lines_view = None
         self.outter_win = None
         self.app = app

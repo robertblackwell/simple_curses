@@ -39,7 +39,7 @@ class DropdownWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, app, key, label, width, height, attributes, data, selections: List[str], initial_value):
+    def __init__(self, app, key, label, width, height,  data, selections: List[str]):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -51,7 +51,7 @@ class DropdownWidget(EditableWidgetBase):
         self.data = data
         self.label: str = label + ": "
         self.width: int = calc_width(selections)
-        self.current_selection_index = selections.index(initial_value)
+        # self.current_selection_index = selections.index(initial_value)
         self.line_number_width: int = 3
         self.height: int = height
         self.start_row: int = 0
