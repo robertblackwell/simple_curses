@@ -1,6 +1,7 @@
 import curses.textpad
 from typing import List
 from utils import *
+from validator import *
 from widget_base import EditableWidgetBase
 
 
@@ -23,6 +24,7 @@ class ToggleWidget(EditableWidgetBase):
         self.has_focus = False
         self.data = data
         self.content = values
+        self.current_index = 0 #index into values[]
         # self.initial_value = initial_value
         # try:
         #     self.current_index = values.index(initial_value)
@@ -55,15 +57,19 @@ class ToggleWidget(EditableWidgetBase):
     def get_key(self):
         return self.id
 
-    def get_value(self) -> bool:
-        return self.content
+    def get_value(self) -> WidgetSingleValue:
+        return WidgetSingleValue(self.content[self.current_index], self.current_index == 1, True)
 
     def set_value(self, onoff):
-        if type(onoff) == str and onoff in self.content:
+        if isinstance(onoff, WidgetSingleValue):
+            value = onoff.str_value
+        else:
+            value = onoff
+        if type(value) == str and onoff in self.content:
             self.current_index = self.content.index(onoff)
-        elif type(onoff) == bool:
+        elif type(value) == bool:
             self.current_index = 1 if onoff else 0
-        elif type(onoff) == int and 0 <= onoff < len(self.content):
+        elif type(value) == int and 0 <= onoff < len(self.content):
             self.current_index = onoff 
         else:
             raise ValueError("onoff is invalid {} {}".format(type(onoff), onoff))

@@ -101,11 +101,19 @@ class TextWidget(EditableWidgetBase):
     def get_key(self):
         return self.id
 
-    def get_value(self) -> string:
-        return self.string_buffer.content
+    def get_value(self) -> validator.WidgetSingleValue:
+        str_value = self.string_buffer.content
+        widget_value = self.validator.validate(str_value)
+        return widget_value
 
     def set_value(self, value):
-        if type(value) == str:
+        if isinstance(value, validator.WidgetSingleValue):
+            v:validator.WidgetSingleValue = value
+            vv = v.str_value
+            self.string_buffer.clear()
+            self.string_buffer.add_string(vv)
+
+        elif type(value) == str:
             self.string_buffer.clear()
             self.string_buffer.add_string(value)
             pass
@@ -150,7 +158,7 @@ class IntegerWidget(TextWidget):
         self.validator = validator.Integer()
 
     def set_value(self, value):
-        if type(value) == str:
+        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif type(value) == int:
             super().set_value("{}".format(value))
@@ -164,7 +172,7 @@ class FloatWidget(TextWidget):
         self.validator = validator.Float()
 
     def set_value(self, value):
-        if type(value) == str:
+        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif type(value) == float:
             super().set_value("{}".format(value))
@@ -178,7 +186,7 @@ class IPAddressWidget(TextWidget):
         self.validator = validator.IPAddress()
 
     def set_value(self, value):
-        if type(value) == str:
+        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, ipaddress.IPv4Address) or isinstance(value, ipaddress.IPv6Address):
             super().set_value("{}".format(value))
@@ -192,7 +200,7 @@ class IPNetworkWidget(TextWidget):
         self.validator = validator.IPNetwork()
 
     def set_value(self, value):
-        if type(value) == str:
+        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, ipaddress.IPv4Network ) or isinstance(value, ipaddress.IPv6Network):
             super().set_value("{}".format(value))
@@ -205,7 +213,7 @@ class TimeOfDayWidget(TextWidget):
         super().__init__(app, key, label, width,  data)#, initial_value)
         self.validator = validator.TimeOfDay24()
     def set_value(self, value):
-        if type(value) == str:
+        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, time.struct_time):
             super().set_value("{}".format(time.strf("%H:%M", value)))
@@ -219,7 +227,7 @@ class PathWidget(TextWidget):
         self.validator = validator.Path()
 
     def set_value(self, value):
-        if type(value) == str:
+        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, pathlib.PosixPath):
             super().set_value("{}".format(value))
@@ -233,7 +241,7 @@ class PathExistsWidget(TextWidget):
         self.validator = validator.PathExists()
 
     def set_value(self, value):
-        if type(value) == str:
+        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, pathlib.PosixPath):
             super().set_value("{}".format(value))

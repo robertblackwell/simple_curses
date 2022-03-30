@@ -24,6 +24,8 @@ from kurses_ex          import *
 from validator          import *
 
 from action_base        import *
+from multi_line_view    import *
+from multi_line_buffer  import *
 
 from widget_base        import *
 from banner_widget      import *
@@ -33,8 +35,6 @@ from layout             import *
 from lines_buffer       import *
 from menu               import *
 from message_widget     import *
-from multi_line_view    import *
-from multi_line_buffer  import *
 from multi_line_widget  import *
 from string_buffer      import *
 from text_widget        import *

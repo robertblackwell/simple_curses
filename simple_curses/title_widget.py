@@ -3,9 +3,10 @@ import curses.textpad
 from colors import Colors
 from utils import *
 from kurses_ex import make_subwin
+from widget_base import WidgetBase
 
 
-class TitleWidget:
+class TitleWidget(WidgetBase):
     def __init__(self, app, key, label, width, height, data):
         self.id = key
         self.has_focus = False

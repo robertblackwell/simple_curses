@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Dict
 import curses
 import curses.textpad
 from kurses_ex import make_subwin
@@ -7,6 +7,7 @@ from kurses_ex import make_subwin
 from menu import *
 from widget_base import *
 from layout import *
+from validator import *
 from title_widget import TitleWidget
 
 def is_next_control(ch):
@@ -274,16 +275,34 @@ class View:
         self.view_menu = ViewMenu(self.app, self, self.stdscr, self.menu_win, self.menu_items)
         self.set_values(self.app.state)
 
-    def get_values(self):
-        v = []
-        for w in self.widgets:
-            v.append(w.get_value())
+    def get_values(self) -> ViewValues:
+        """
+        @return A ViewValues object for the view.
+        This consists of a dictionary:
+        -   Which has an entry for each EditableWidget in the view.
+        -   The keys are obtained from the widgets with the get_key() method
+        -   and the values are WidgetValue isnstances obtained with widget.get_value()
+        Plus a boolean to indicate whether all the strings validated correctly.
+        If any one widget value did not parse correctly the valid/ok boolean is set to false
 
-    def set_values(self, values):
+        """
+        v = ViewValues()
+        ok = True
         for w in self.widgets:
             if is_editable(w):
                 k = w.get_key()
-                v = getattr(values, k)
+                # v1 = w.get_value()
+                v[k] = w.get_value()
+                v.ok = v.ok and v[k].is_ok()
+        return v
+
+    def set_values(self, state_values):
+        
+        vals = state_values
+        for w in self.widgets:
+            if is_editable(w):
+                k = w.get_key()
+                v = getattr(vals, k)
                 w.set_value(v)
 
     def show(self):

@@ -13,7 +13,7 @@ from multi_line_view import MultiLineView2
 # insert a character into the self.content string at the given position
 # does not modify any properties
 def _string_insert_character(str, pos, ch):
-    assert (0 <= pos <= len(str) and len(str) > 0)
+    assert (0 <= pos <= len(str) and len(str) >= 0)
     s1 = str
     s21 = s1[0: pos] + ch
     s22 = s1[pos: len(s1)]
@@ -223,7 +223,7 @@ class MultiLineBuffer:
             assert False, "content insert character only for edit mode"
 
         assert (0 <= pos <= len(self.content[self.cpos_y_content]) and len(
-            self.content[self.cpos_y_content]) > 0)
+            self.content[self.cpos_y_content]) >= 0)
         return _string_insert_character(self.content[self.cpos_y_content], pos, ch)
 
     def _content_remove_character(self, pos):

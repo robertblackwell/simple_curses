@@ -1,11 +1,13 @@
 import curses
 import curses.textpad
 import textwrap
+from abc import ABC
+
 from colors import Colors
 from widget_base import WidgetBase
 
 
-class MessageWidget(WidgetBase):
+class MessageWidget(WidgetBase, ABC):
     """This widget provides a box into which messsages can be written.
     Each message is a single line.
     -   The message is truncated to fit into a line

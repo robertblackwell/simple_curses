@@ -16,9 +16,9 @@ if not project_dir in sys.path:
     sys.path.append(project_dir)
     sys.path.append(src_dir)
 
-import aorc_app.actions as A
-from aorc_app.state import AorcState
 from simple_curses import *
+from aorc_app import *
+from actions import validate, view_cancel, program_cancel, rem_from_prefix_list_juniper, rem_from_prefix_list_nokia, add_to_prefix_list_juniper, add_to_prefix_list_nokia
 
 def test_screen_size(stdscr):
     h, w = stdscr.getmaxyx()
@@ -100,14 +100,14 @@ class App(AppBase):
                                                  "New install Nokia entry number ", 23, data),
             IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data),
                             
-            MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
+            IPNetworkCIDR(app=self, key="prefixes", label="Prefixes", content_width=50,
                             content_height=20, data=data),
         ]
 
         add_prefixes_new_install_menu = [
-            MenuItem(self, "Validate", 13, 3, 0, A.validate, "context for menu 1"),
-            MenuItem(self, "Cancel", 7, 3, 0, A.view_cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run", 7, 3, 0, A.run_add_prefix_new, "context for menu 3")
+            MenuItem(self, "Validate", 13, 3, 0, validate, "context for menu 1"),
+            MenuItem(self, "Cancel", 7, 3, 0, view_cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run", 7, 3, 0, run_add_prefix_new, "context for menu 3")
         ]
         add_prefixes_new_install_view = View(self, "add_new_install", "Add prefix - New Install", self.stdscr, self.body_win, add_prefixes_new_install_widgets,
                                   add_prefixes_new_install_menu)
@@ -128,14 +128,14 @@ class App(AppBase):
                                                  "New install Nokia entry number ", 23, data),
             IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data),
                             
-            MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
+            IPNetworkCIDR(app=self, key="prefixes", label="Prefixes", content_width=50,
                             content_height=20, data=data),
         ]
 
         add_prefixes_not_new_install_menu = [
-            MenuItem(self, "Validate", 13, 3, 0, A.validate, "context for menu 1"),
-            MenuItem(self, "Cancel", 7, 3, 0, A.view_cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run", 7, 3, 0, A.run_add_prefix_notnew, "context for menu 3")
+            MenuItem(self, "Validate", 13, 3, 0, validate, "context for menu 1"),
+            MenuItem(self, "Cancel", 7, 3, 0, view_cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run", 7, 3, 0, run_add_prefix_notnew, "context for menu 3")
         ]
         add_prefixes_not_new_install_view = View(self, "add_not_new_install", "Add prefix - NOT - New Install", self.stdscr, self.body_win, 
                                 add_prefixes_not_new_install_widgets,
@@ -157,14 +157,14 @@ class App(AppBase):
                                                  "New install Nokia entry number ", 23, data),
             IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data),
                             
-            MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
+            IPNetworkCIDR(app=self, key="prefixes", label="Prefixes", content_width=50,
                             content_height=20, data=data),
         ]
 
         remove_prefixes_with_disconnect_menu = [
-            MenuItem(self, "Validate", 13, 3, 0, A.validate, "context for menu 1"),
-            MenuItem(self, "Cancel", 7, 3, 0, A.view_cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run", 7, 3, 0, A.run_remove_prefix_disconnect, "context for menu 3")
+            MenuItem(self, "Validate", 13, 3, 0, validate, "context for menu 1"),
+            MenuItem(self, "Cancel", 7, 3, 0, view_cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run", 7, 3, 0, run_remove_prefix_disconnect, "context for menu 3")
         ]
         remove_prefixes_with_disconnect_view = View(self, "add_not_new_install", "Remove prefixes with disconnect", self.stdscr, self.body_win, 
                                 remove_prefixes_with_disconnect_widgets,
@@ -186,14 +186,14 @@ class App(AppBase):
                                                  "New install Nokia entry number ", 23, data ),
             IPAddressWidget(self, "next_hop_ip", "New install Next hop IP        ", 23, data ),
                             
-            MultiLineWidget(app=self, key="sc_01", label="Prefixes", content_width=50,
+            IPNetworkCIDR(app=self, key="prefixes", label="Prefixes", content_width=50,
                             content_height=20, data=data),
         ]
 
         remove_prefixes_not_with_disconnect_menu = [
-            MenuItem(self, "Validate", 13, 3, 0, A.validate, "context for menu 1"),
-            MenuItem(self, "Cancel", 7, 3, 0, A.view_cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run", 7, 3, 0, A.run_remove_prefix_notdisconnect, "context for menu 3")
+            MenuItem(self, "Validate", 13, 3, 0, validate, "context for menu 1"),
+            MenuItem(self, "Cancel", 7, 3, 0, view_cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run", 7, 3, 0, run_remove_prefix_notdisconnect, "context for menu 3")
         ]
 
         remove_prefixes_not_with_disconnect_view = View(self, "add_not_new_install", "Remove prefixes - NOT - with disconnect", self.stdscr, self.body_win, 
@@ -230,8 +230,8 @@ class App(AppBase):
         ]
 
         config_menu = [
-            MenuItem(self, "Cancel", 7, 3, 0, A.view_cancel, "context for menu 2"),
-            MenuItem(self, "Save", 7, 3, 0, A.run_config_action, "context for menu 3")
+            MenuItem(self, "Cancel", 7, 3, 0, view_cancel, "context for menu 2"),
+            MenuItem(self, "Save", 7, 3, 0, run_config_action, "context for menu 3")
         ]
 
         config_view = View(self, "config", "AORC Config values", self.stdscr, self.body_win, 

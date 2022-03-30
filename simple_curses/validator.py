@@ -1,18 +1,153 @@
 import time
 import ipaddress
-from typing import TypeVar, List
+from typing import TypeVar, List, Union, Generic, Any, Dict
 import pathlib
 
+T = TypeVar('T')
+
+class ResultType(Generic[T]):
+    def __init__(self, value: Union[T, None], err_msg: str = ""):
+        self.value: Union[T, None] = value
+        self.ok: bool = value is not None
+        self.err_msg: str = err_msg
+
+    def is_ok(self) -> bool:
+        return (self.ok and self.value is not None)
+
+    def get_value(self) -> T:
+        if not self.is_ok():
+            raise RuntimeError("cannot get_value of ResultType with ok==False")
+        return self.value
+
+    def get_errmsg(self):
+        if self.is_ok():
+            raise RuntimeError("cannot get_errmsgof ResultType with ok==True")
+        return self.value
+
+
+class WidgetSingleValue:
+    def __init__(self, str_value:str, parsed_value:Union[Any, None], ok: bool, err_msg = ""):
+        self.type = "WidgetSingleValue"
+        self.parsed_value = parsed_value
+        self.str_value = str_value
+        self.err_msg = err_msg
+
+    def is_ok(self):
+        return self.parsed_value != None
+
+    def get_string_value(self) -> str:
+        return self.str_value
+
+    def get_parsed_value(self) -> any:
+        if self.is_ok():
+            return self.parsed_value
+        raise ValueError("WidgetSingleValue does not have parsed value")
+
+
+class WidgetListOfValues:
+    def __init__(self):
+        self.values = []
+        self.ok = True
+        self.type = "WidgetListOfValues"
+
+    def append(self, str_value: str, parsed_value: Union[any, None], ok: bool):
+        self.values.append(WidgetSingleValue(str_value, parsed_value))
+        self.ok = self.ok and ok
+
+    def is_ok(self):
+        return self.ok
+
+    def get_string_values(self):
+        v = []
+        for tmp in self.values:
+            v.append(tmp.get_string())
+        return v
+
+    def get_string_value(self):
+        return self.get_string_values()
+
+    def get_parsed_values(self):
+        v = []
+        for tmp in self.values:
+            v.append(tmp.get_parsed_value())
+        return v
+
+    def get_parsed_value(self):
+        return self.get_parsed_values()
+
+class XXWidgetSingleValue:
+    def __init__(self, str_value:str, parsed_value:Union[any, None], ok: bool, err_msg=''):
+        self.parsed_value = parsed_value
+        self.str_value = str_value
+        self.ok = ok
+        self.error_messages = err_msg
+
+class XXWidgetListOfValues:
+    def __init__(self):
+        self.values = []
+        self.ok = True
+
+    def append(self, single_value: WidgetSingleValue):
+        self.values.append(single_value)
+        self.ok = self.ok and single_value.ok
+
+WidgetValue = Union[WidgetSingleValue, WidgetListOfValues]
+ViewValueType = ResultType[Dict[str, WidgetValue]]
+
+class ViewValues:
+    def __init__(self):
+        self.ok = True
+    def is_ok(self):
+        return self.ok
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value: WidgetValue):
+        setattr(self, key, value)
+    
+    def keys(self):
+        return self.__dict__.keys()
+
+    def values(self):
+        return self.__dict__.values()
+
+    def string_value_dict(self):
+        v = {}
+        d = self.__dict__
+        for k in self.__dict__.keys():
+            if k != "ok":
+                wv : WidgetValue = self[k]
+                v[k] = wv.get_string_value()
+        return v
+
+    def parsed_value_dict(self):
+        v = {}
+        for k in self.__dict__.keys():
+            if k != "ok":
+                wv : WidgetValue = self[k]
+                v[k] = wv.get_parsed_value()
+        return v
+
+    def invalid_values_dict(self):
+        v = {}
+        for k in self.__dict__.keys():
+            if k != "ok":
+                wv : WidgetValue = self[k]
+                if not wv.is_ok():
+                    v[k] = wv.get_string_value()
+        return v
 
 class ArrayOf:
     def __init__(self, validator):
         self.validator = validator
 
     def validate(self, ar: List[str]):
-        result = []
+        ok = True
+        result = WidgetListOfValues()
         for s in ar:
             try:
                 r = self.validator.validate(s)
+                ok = ok and r.ok
                 result.append(r)
             except ValueError:
                 return None
@@ -28,24 +163,23 @@ class Text:
 
     def validate(self, str):
         try:
-            return str
+            return WidgetSingleValue(str, str, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(str, None, False, "INvalid Text String")
 
     def error_message(self):
         return "Invalid text string"
-
 
 class Integer:
     def __init__(self):
         pass
 
-    def validate(self, str):
+    def validate(self, astr):
         try:
-            i = int(str)
-            return i
+            i = int(astr)
+            return WidgetSingleValue(astr, i, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "Invalid Integer")
 
     def error_message(self):
         return "Invalid integer"
@@ -55,12 +189,12 @@ class Float:
     def __init__(self):
         pass
 
-    def validate(self, str):
+    def validate(self, astr):
         try:
-            f = float(str)
-            return f
+            f = float(astr)
+            return WidgetSingleValue(f, astr, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "Invalid Floating point number")
 
     def error_message(self):
         return "Invalid floating point number"
@@ -70,12 +204,12 @@ class IPAddress:
     def __init__(self):
         pass
 
-    def validate(self, str):
+    def validate(self, astr):
         try:
-            i = ipaddress.ip_address(str)
-            return i
+            i = ipaddress.ip_address(astr)
+            return WidgetSingleValue(astr, i, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "Invalid IP address")
 
     def error_message(self):
         return "Invalid ip address"
@@ -85,12 +219,12 @@ class IPNetwork:
     def __init__(self):
         pass
 
-    def validate(self, str):
+    def validate(self, astr):
         try:
-            i = ipaddress.ip_network(str)
-            return i
+            i = ipaddress.ip_network(astr)
+            return WidgetSingleValue(astr, i, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "Invalid IP address")
 
     def error_message(self):
         return "Invalid ip network"
@@ -103,12 +237,12 @@ class TimeOfDay24:
     def validate(self, astr):
         try:
             i = time.strptime(astr, "%H:%M")
-            return i
+            return WidgetSingleValue(astr, i, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "Invalid 24hr time of day - correct format is HH:MM ")
 
     def error_message(self):
-        return "Invalid ip 24hr time of day - correct format is HH:MM "
+        return "Invalid 24hr time of day - correct format is HH:MM "
 
 
 def time12_to_24(time_string):
@@ -142,9 +276,9 @@ class TimeOfDay12:
             if not intermediate:
                 raise ValueError("conversion 12 H time to 24H time failed")
             i = time.strptime(intermediate, "%H:%M")
-            return i
+            return WidgetSingleValue(astr, i, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "Invalid 12hr time of day - correct format is HH:MM AM or HH:MM PM")
 
     def error_message(self):
         return "Invalid 12hr time of day - correct format is HH:MM AM or HH:MM PM"
@@ -157,9 +291,9 @@ class Path:
         self.astr = astr
         try:
             p = pathlib.Path(astr)
-            return p
+            return WidgetSingleValue(astr, p, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "Invalid file path {}".format(self.astr)) 
 
     def error_message(self):
         return "Invalid file path {}".format(self.astr)
@@ -175,9 +309,9 @@ class PathExists:
             p = pathlib.Path(astr)
             if not p.exists():
                 raise ValueError()
-            return p
+            return WidgetSingleValue(astr, p, True)
         except ValueError:
-            return None
+            return WidgetSingleValue(astr, None, False, "File path {} invalid or does not exist ".format(self.astr)) 
 
     def error_message(self):
         return "File path {} is either invalid or does not exists".format(self.astr)

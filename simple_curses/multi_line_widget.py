@@ -1,12 +1,11 @@
 import curses
 import curses.textpad
-import lines_buffer
 from colors import Colors
 from utils import *
-from simple_curses.widget_base import EditableWidgetBase
+from widget_base import *
 from multi_line_buffer import MultiLineBuffer
-# from simple_curses.menu import MenuItem
 from kurses_ex import make_subwin
+import validator
 
 xlines = [
     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
@@ -62,12 +61,13 @@ class MultiLineWidget(EditableWidgetBase):
         self.start_row: int = 0
         self.start_col: int = 0
         self.paste_mode: bool = False
+        self.validator = validator.ArrayOf(validator.Text())
 
         # self.attributes = attributes
+        self.app = app
+        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer([], self.content_height, self.content_width - self.line_number_width - 2)
         self.lines_view = None
         self.outter_win = None
-        self.app = app
-        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.content_height, self.content_width - self.line_number_width - 2)
     
    
     def set_enclosing_window(self, win):
@@ -99,8 +99,19 @@ class MultiLineWidget(EditableWidgetBase):
     def clear(self):
         self.mu_lines_buffer.clear()
 
-    def get_value(self):
-        return self.mu_lines_buffer.get_value()
+    def get_key(self) -> str:
+        return self.id
+
+    def get_value(self) -> validator.WidgetListOfValues:
+        values = self.mu_lines_buffer.get_value()
+        str_result = [] if len(values) == 1 and values[0] == "" else values
+        failed = False
+        list_of_values = validator.WidgetListOfValues()
+        for v in str_result:
+            widget_single_value = self.validator.validate(v)
+            list_of_values.append(widget_single_value)
+
+        return list_of_values
 
     def set_value(self, value):
         self.clear()
@@ -220,3 +231,9 @@ class MultiLineWidget(EditableWidgetBase):
         self.mu_lines_buffer.cursor_set_at_end()
         self.mu_lines_buffer.handle_newline()
         self.paste_mode = True
+
+
+class IPNetworkCIDR(MultiLineWidget):
+    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:any):
+        super().__init__(app, key, label, content_width, content_height, data)
+        self.validator = validator.ArrayOf(validator.IPNetwork())

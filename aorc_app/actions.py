@@ -2,8 +2,10 @@ import sys
 import os
 import curses
 import subprocess
+# from aorc_app.aorc import App
+from typing import Dict
 from aorc_app.state import AorcState
-from simple_curses import ActionBase
+from simple_curses import AppBase, ActionBase, View, WidgetSingleValue, WidgetListOfValues, BannerView, ResultType, WidgetValue, ViewValues
 from aorc_doit import *
 
 def execute_command(app, cmd_ar):
@@ -32,15 +34,6 @@ def program_cancel(app, view, context):
     sys.exit(0)
 
 
-def validate(self, app, view, context):
-    v = app.get_values()
-    s = ""
-    if v is not None:
-        for k in v.keys():
-            s += "v[{}]={} ".format(k, v[k])
-    app.msg_info("menu action 0-1 {}".format(v))
-    # run a command with elements of v as arguments
-
 def config_validate(app, view, context):
     v = app.get_values()
     s = ""
@@ -63,31 +56,77 @@ def run_config_action(app, view, context):
     view.set_values(new_state)
     app.state = new_state
 
-def run_add_prefix_new(app, view, context):
-    new_state = validate(app, view, context)
-    app.msg_info("run_add_prefixes_new:: {}".format(new_state.__dict__))
-    #here need to update the content in each widget
-    app.view.set_values(new_state)
+def make_error_msg(view_values: ViewValues):
+    error_dict = view_values.invalid_values_dict()
+    return "Error in these fieldds {}".format(error_dict)
+
+def state_from_view_values(view_values: ViewValues):
+    new_state = AorcState()
+    vals = view_values.string_value_dict()
+
+    new_state.__dict__.update(vals)
+    return new_state
+
+def validate(app, view: View, context):
+    # this next statement also performs validation at the field level
+    view_values: ViewValues = view.get_values()
+    new_state = state_from_view_values(view_values)
     app.state = new_state
+    if view_values.is_ok():
+        app.msg_info("run_add_prefixes_new:: {}".format(new_state.__dict__))
+        # here should put the actual processing that the run command is supposed to perform
+        # may actually change the value of view during that processing
+        view.set_values(new_state)
+    else:
+        app.msg_error("{}".format(make_error_msg(view_values)))
+        view.set_values(new_state)
+
+def config_validate(app, view: View, context):
+    # this next statement also performs validation at the field level
+    view_values: ViewValues = view.get_values()
+    new_state = state_from_view_values(view_values)
+    app.state = new_state
+    if view_values.is_ok():
+        app.msg_info("run_add_prefixes_new:: {}".format(new_state.__dict__))
+        # here should put the actual processing that the run command is supposed to perform
+        # may actually change the value of view during that processing
+        view.set_values(new_state)
+    else:
+        app.msg_error("{}".format(make_error_msg(view_values)))
+        view.set_values(new_state)
+
+def run_add_prefix_new(app, view, context):
+    # this next statement also performs validation at the field level
+    view_values: ViewValues = view.get_values()
+    new_state = state_from_view_values(view_values)
+    app.state = new_state
+    if view_values.is_ok():
+        app.msg_info("run_add_prefixes_new:: {}".format(new_state.__dict__))
+        # here should put the actual processing that the run command is supposed to perform
+        # may actually change the value of view during that processing
+        view.set_values(new_state)
+    else:
+        app.msg_error("{}".format(make_error_msg(view_values)))
+        view.set_values(new_state)
 
 def run_add_prefix_notnew(app, view, context):
     new_state = validate(app, view, context)
     app.msg_info("run_add_prefixes_notnew:: {}".format(new_state.__dict__))
     #here need to update the content in each widget
-    app.view.set_values(new_state)
+    view.set_values(new_state)
     app.state = new_state
 
 def run_remove_prefix_disconnect(app, view, context):
     new_state = validate(app, view, context)
     app.msg_info("run_remove_prefixes_disconnect:: {}".format(new_state.__dict__))
     #here need to update the content in each widget
-    app.view.set_values(new_state)
+    view.set_values(new_state)
     app.state = new_state
 
 def run_remove_prefix_notdisconnect(app, view, context):
     new_state = config_validate(app, view, context)
     app.msg_info("run_remove_prefixes_notdisconnect:: {}".format(new_state.__dict__))
     #here need to update the content in each widget
-    app.view.set_values(new_state)
+    view.set_values(new_state)
     app.state = new_state
 
