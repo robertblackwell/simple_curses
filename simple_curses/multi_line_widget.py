@@ -1,5 +1,6 @@
 import curses
 import curses.textpad
+# from simple_curses import *
 from colors import Colors
 from utils import *
 from widget_base import *
@@ -106,10 +107,11 @@ class MultiLineWidget(EditableWidgetBase):
         values = self.mu_lines_buffer.get_value()
         str_result = [] if len(values) == 1 and values[0] == "" else values
         failed = False
-        list_of_values = validator.WidgetListOfValues()
-        for v in str_result:
-            widget_single_value = self.validator.validate(v)
-            list_of_values.append(widget_single_value)
+        # list_of_values = validator.WidgetListOfValues()
+        list_of_values = self.validator.validate(str_result)
+        # for v in str_result:
+        #     widget_single_value = self.validator.validate(v)
+        #     list_of_values.append(widget_single_value)
 
         return list_of_values
 

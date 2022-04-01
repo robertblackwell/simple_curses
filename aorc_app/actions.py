@@ -34,19 +34,19 @@ def program_cancel(app, view, context):
     sys.exit(0)
 
 
-def config_validate(app, view, context):
-    v = app.get_values()
-    s = ""
-    new_state = AorcState()
-    ns = {}
-    if v is not None:
-        for k in v.keys():
-            s += "v[{}]={} ".format(k, v[k])
-            setattr(new_state, k, v[k])
-            ns[k] = v[k]
+# def config_validate(app, view, context):
+#     v = app.get_values()
+#     s = ""
+#     new_state = AorcState()
+#     ns = {}
+#     if v is not None:
+#         for k in v.keys():
+#             s += "v[{}]={} ".format(k, v[k])
+#             setattr(new_state, k, v[k])
+#             ns[k] = v[k]
 
-    app.msg_info("menu action 0-1 {}".format(v))
-    return new_state
+#     app.msg_info("menu action 0-1 {}".format(v))
+#     return new_state
 
 def run_config_action(app, view, context):
     new_state = config_validate(app, view, context)
@@ -57,15 +57,35 @@ def run_config_action(app, view, context):
     app.state = new_state
 
 def make_error_msg(view_values: ViewValues):
-    error_dict = view_values.invalid_values_dict()
-    return "Error in these fieldds {}".format(error_dict)
+    msg_lines = []
+    ed = {}
+    for k in view_values.value_keys():
+        wv = view_values[k]
+        if not wv.is_ok():
+            if wv.type == "WidgetSingleValue":
+                ed[k] = wv
+                msg = "Field with id:{} has invalid values {}".format(k, wv.get_string_value())
+                msg_lines.append(msg)
+            else:
+                ev = []
+                for v in wv.values:
+                    if not v.is_ok():
+                        ev.append(v.get_string_value())
+                msg = "Field id:{} has invalid values {}".format(k, ev)
+                msg_lines.append(msg)
+                ev2 = ev
 
-def state_from_view_values(view_values: ViewValues):
-    new_state = AorcState()
+    error_text = ", ".join(msg_lines)
+
+    return "Validation Errors {}".format(error_text)
+
+def state_from_view_values(old_state, view_values: ViewValues):
+    new_state = old_state.copy()
     vals = view_values.string_value_dict()
 
     new_state.__dict__.update(vals)
     return new_state
+
 
 def validate(app, view: View, context):
     # this next statement also performs validation at the field level
@@ -84,7 +104,7 @@ def validate(app, view: View, context):
 def config_validate(app, view: View, context):
     # this next statement also performs validation at the field level
     view_values: ViewValues = view.get_values()
-    new_state = state_from_view_values(view_values)
+    new_state = state_from_view_values(app.state, view_values)
     app.state = new_state
     if view_values.is_ok():
         app.msg_info("run_add_prefixes_new:: {}".format(new_state.__dict__))
@@ -98,7 +118,7 @@ def config_validate(app, view: View, context):
 def run_add_prefix_new(app, view, context):
     # this next statement also performs validation at the field level
     view_values: ViewValues = view.get_values()
-    new_state = state_from_view_values(view_values)
+    new_state = state_from_view_values(app.state, view_values)
     app.state = new_state
     if view_values.is_ok():
         app.msg_info("run_add_prefixes_new:: {}".format(new_state.__dict__))

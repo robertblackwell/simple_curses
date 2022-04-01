@@ -1,11 +1,11 @@
 import curses.textpad
-
-from utils import *
+from simple_curses import *
 import pathlib
 import ipaddress
-from widget_base import EditableWidgetBase
-from string_buffer import StringBuffer
-import validator
+# from utils import *
+# from widget_base import EditableWidgetBase
+# from string_buffer import StringBuffer
+# import validator
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls

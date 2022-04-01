@@ -1,7 +1,8 @@
 import curses
 import curses.textpad
-from colors import Colors
-from utils import *
+from simple_curses import *
+# from colors import Colors
+# from utils import *
 
 
 class DummyWidget:

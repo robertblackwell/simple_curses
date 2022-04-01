@@ -1,8 +1,9 @@
 import curses.textpad
 from typing import List
-from utils import *
-from validator import *
-from widget_base import EditableWidgetBase
+from simple_curses import *
+# from utils import *
+# from validator import *
+# from widget_base import EditableWidgetBase
 
 
 # A widget that is either ON or OFF

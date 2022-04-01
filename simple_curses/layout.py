@@ -1,6 +1,7 @@
 from typing import List
 import curses
-from widget_base import WidgetBase
+from simple_curses import *
+# from widget_base import WidgetBase
 
 
 class HStack:

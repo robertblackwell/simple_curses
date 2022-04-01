@@ -2,7 +2,7 @@ import curses
 import curses.textpad
 import textwrap
 from abc import ABC
-
+from simple_curses import *
 from colors import Colors
 from widget_base import WidgetBase
 

@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod, abstractproperty
 import curses
 import curses.textpad
-from colors import Colors
-from utils import *
-from multi_line_buffer import MultiLineBuffer
+from simple_curses import *
+from simple_curses.colors import Colors
+from simple_curses.utils import *
+from simple_curses.multi_line_buffer import MultiLineBuffer
 from kurses_ex import *
 
-class WidgetBase:#(ABC):
+
+class WidgetBase:  # (ABC):
     """A basic widget that can display fixed text on the screen"""
 
     # @classmethod
@@ -80,6 +82,7 @@ class MenuBase(FocusableWidgetBase):
     def invoke(self):
         raise NotImplementedError()
 
+
 class MenuItem(MenuBase):
     def __init__(self, app, label, width, height, attributes, function, context):
         self.label = label
@@ -96,7 +99,6 @@ class MenuItem(MenuBase):
         self.start_row = 0
         self.start_col = 0
 
-
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
 
@@ -111,7 +113,7 @@ class MenuItem(MenuBase):
 
     def focus_accept(self) -> None:
         self.has_focus = True
-    
+
     def focus_release(self) -> None:
         self.has_focus = False
 
@@ -127,7 +129,7 @@ class MenuItem(MenuBase):
 
     def invoke(self) -> None:
         self.function(self.app, self.app.get_current_view(), self.context)
-    
+
     def render(self) -> None:
         if self.has_focus:
             self.win.bkgd(" ", Colors.button_focus())
@@ -137,6 +139,7 @@ class MenuItem(MenuBase):
             self.win.addstr(1, 1, self.label, Colors.button_no_focus())
 
         self.win.noutrefresh()
+
 
 xlines = [
     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
@@ -159,13 +162,14 @@ xlines = [
     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
 ]
 
+
 class DummyMultiLineWidget(EditableWidgetBase):
 
     @classmethod
     def classmeth(cls):
         pass
 
-    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:any):
+    def __init__(self, app, key: str, label: str, content_width: int, content_height: int, data: any):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -184,11 +188,11 @@ class DummyMultiLineWidget(EditableWidgetBase):
         # - a content area of height equal to the content_height argument
         # - a separator line bwteen the content area and the info area
         # - an info area of 4 lines 
-        self.box_height = 2 #extra height for boxing the outter of the widget
-        self.info_separator_line_height = 1 # extra height for the divider line between the content and the info box
+        self.box_height = 2  # extra height for boxing the outter of the widget
+        self.info_separator_line_height = 1  # extra height for the divider line between the content and the info box
         self.info_area_height = 4
         self.content_height = content_height
-        self.height: int = content_height + self.box_height + self.info_separator_line_height + self.info_area_height 
+        self.height: int = content_height + self.box_height + self.info_separator_line_height + self.info_area_height
         self.start_row: int = 0
         self.start_col: int = 0
         self.paste_mode: bool = False
@@ -197,14 +201,16 @@ class DummyMultiLineWidget(EditableWidgetBase):
         self.lines_view = None
         self.outter_win = None
         self.app = app
-        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.content_height, self.content_width - self.line_number_width - 2)
-    
-   
+        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.content_height,
+                                                                self.content_width - self.line_number_width - 2)
+
     def set_enclosing_window(self, win):
         self.outter_win = win
         self.line_number_win = make_subwin(self.outter_win, self.content_height, self.line_number_width, 1, 1)
-        self.content_win = make_subwin(self.outter_win, self.content_height, self.content_width - self.line_number_width, 1, self.line_number_width)
-        self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 1, 1)
+        self.content_win = make_subwin(self.outter_win, self.content_height,
+                                       self.content_width - self.line_number_width, 1, self.line_number_width)
+        self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 1,
+                                    1)
 
     # def set_app(self, app: app):
     #     self.app = app
@@ -236,7 +242,7 @@ class DummyMultiLineWidget(EditableWidgetBase):
         self.clear()
         if type(value) is list:
             for ln in value:
-                self.add_line(ln) 
+                self.add_line(ln)
         pass
 
     def render_title(self):
@@ -356,23 +362,26 @@ def is_widget(w):
     x0 = isinstance(w, WidgetBase)
     return x0
     return hasattr(w, "get_height") \
-        and callable(getattr(w, "get_height")) \
-        and hasattr(w, "get_width") \
-        and callable(getattr(w, "get_width")) \
-        and hasattr(w, "get_width") \
-        and callable(getattr(w, "render")) \
-        and hasattr(w, "render") \
-        and callable(getattr(w, "set_enclosing_window")) \
-        and hasattr(w, "handle_input") \
-        and callable(getattr(w, "handle_input"))
+           and callable(getattr(w, "get_height")) \
+           and hasattr(w, "get_width") \
+           and callable(getattr(w, "get_width")) \
+           and hasattr(w, "get_width") \
+           and callable(getattr(w, "render")) \
+           and hasattr(w, "render") \
+           and callable(getattr(w, "set_enclosing_window")) \
+           and hasattr(w, "handle_input") \
+           and callable(getattr(w, "handle_input"))
 
 
 def is_focusable(widget):
     x0 = isinstance(widget, FocusableWidgetBase) or isinstance(widget, EditableWidgetBase)
     return x0
-    x0 = hasattr(widget, "focus_accept") and callable(getattr(widget, "focus_accept")) 
+    x0 = hasattr(widget, "focus_accept") and callable(getattr(widget, "focus_accept"))
     x1 = hasattr(widget, "focus_relase") and callable(getattr(widget, "focus_release"))
-    return hasattr(widget, "focus_accept") and callable(getattr(widget, "focus_accept")) and hasattr(widget, "focus_relase") and callable(getattr(widget, "focus_release"))
+    return hasattr(widget, "focus_accept") and callable(getattr(widget, "focus_accept")) and hasattr(widget,
+                                                                                                     "focus_relase") and callable(
+        getattr(widget, "focus_release"))
+
 
 def is_editable(widget):
     x0 = isinstance(widget, EditableWidgetBase)
@@ -380,5 +389,6 @@ def is_editable(widget):
     x0 = is_focusable(widget)
     x1 = hasattr(widget, "get_value") and callable(getattr(widget, "get_value"))
     x2 = hasattr(widget, "clear") and callable(getattr(widget, "clear"))
-    res = is_focusable(widget) and hasattr(widget, "get_value") and callable(getattr(widget, "get_value")) and hasattr(widget, "clear") and callable(getattr(widget, "clear"))
+    res = is_focusable(widget) and hasattr(widget, "get_value") and callable(getattr(widget, "get_value")) and hasattr(
+        widget, "clear") and callable(getattr(widget, "clear"))
     return res

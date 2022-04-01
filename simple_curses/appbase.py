@@ -109,7 +109,7 @@ class AppBase:
     def disable(self):
         pass
 
-    def msg_error(self, s: str):
+    def msg_error(self, s):
         self.message_widget.msg_error(s)
 
     def msg_warn(self, s):

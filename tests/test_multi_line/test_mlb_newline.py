@@ -93,16 +93,24 @@ class TestMultiLinesBufferNewline02(unittest.TestCase):
         self.assertEqual(lb.cpos_x_buffer, 0)
         self.assertEqual(lb.cpos_x_content, 0)
         v1 = lb.get_view()
-        for i in range(0, 40):
+        lb.handle_up()
+        lb.handle_up()
+        for i in range(0, 43):
             lb.handle_right()
         v2 = lb.get_view()
+        self.assertEqual(len(lb.content), 8)
+        self.assertEqual(lb.cpos_y_content, 5)
+        self.assertEqual(lb.cpos_y_buffer, 2)
+        self.assertEqual(lb.cpos_x_buffer, 42)
+        self.assertEqual(lb.cpos_x_content, 42)
         lb.handle_newline()
         v3 = lb.get_view()
         self.assertEqual(len(lb.content), 9)
-        self.assertEqual(lb.cpos_y_content, 8)
-        self.assertEqual(lb.cpos_y_buffer, 4)
+        self.assertEqual(lb.cpos_y_content, 6)
+        self.assertEqual(lb.cpos_y_buffer, 3)
         self.assertEqual(lb.cpos_x_buffer, 0)
         self.assertEqual(lb.cpos_x_content, 0)
+        self.assertEqual(lb.content[lb.cpos_y_content], "")
 
     def test_multi_line_buffer_newline_at_start(self):
         ar = lines[0:7].copy()

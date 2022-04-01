@@ -9,3 +9,8 @@
 ☐ work out how to run the example using simple_curses as a package imstalled locally
 ☐ investigate venv
 ☐ prepare a presentation for Richard on how it works
+Remove state Appenfing/EDITIN:
+    ☐ the state is ambiguous and is causing a bug in the handling of the delete key as it forgets to update the state.
+
+Passing Values from View to actions:
+    ☐ move validation into the action handler ad simply have the View return an array of strings or other primitive values. That will make the validation process much less convoluted
