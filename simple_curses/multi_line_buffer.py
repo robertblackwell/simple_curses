@@ -1,7 +1,7 @@
 from hashlib import new
 from typing import List, Set, Dict, Tuple, Optional
 import string
-from multi_line_view import MultiLineView2
+from .multi_line_view import MultiLineView2
 
 
 #
@@ -408,7 +408,7 @@ class MultiLineBuffer:
             self._incr_cpos_x_content()
             self._incr_cpos_x_buffer()
             self.content[self.cpos_y_content] = self._content_insert_character(pos, ch)
-        self.set_paste_mode_off()
+        # self.set_paste_mode_off()
 
     # handle a backspace character. Delete the character on the left of the cursor
     def handle_backspace(self):

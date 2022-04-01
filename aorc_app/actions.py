@@ -16,7 +16,8 @@ def execute_command(app, cmd_ar: List[str]):
     Execute a clli command and send the output (stdout and stderr) to the message box
         Parameters:
             app: AorcApp
-            cmd_ar: List[str] is an array of strings
+            cmd_ar: List[str] is an array of strings, each element is components of the cli command 
+                                see the subprocess module for details
     """
     out = subprocess.run(cmd_ar, capture_output=True)
     rc = out.returncode

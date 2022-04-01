@@ -1,7 +1,9 @@
 
 import curses
 import curses.textpad
-from simple_curses import Colors, MenuBase, is_return, is_space, is_linefeed
+from .colors import Colors
+from .widget_base import MenuBase
+from .utils import  is_return, is_space, is_linefeed
 
 class DummyMenuItem(MenuBase):
     def __init__(self, app, label, width, height, attributes, function, context):
@@ -38,7 +40,7 @@ class DummyMenuItem(MenuBase):
     def focus_release(self) -> None:
         self.has_focus = False
 
-    def handle_input(self, ch) -> None:
+    def handle_input(self, ch) -> bool:
         did_handle_ch = True
         if is_return(ch) or is_space(ch) or is_linefeed(ch):
             self.invoke()

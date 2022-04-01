@@ -16,11 +16,18 @@ if not project_dir in sys.path:
     sys.path.append(project_dir)
     sys.path.append(src_dir)
 
-from simple_curses import *
-from aorc_app import *
-from actions import rem_from_prefix_list_juniper, rem_from_prefix_list_nokia, add_to_prefix_list_juniper, \
-    add_to_prefix_list_nokia
-from config_actions import run_config_action
+from simple_curses.view import View, BannerView
+from simple_curses.widget_base import MenuItem
+from simple_curses.banner_widget import BannerWidget, HelpWidget, BlockTextWidget
+from simple_curses.text_widget import TextWidget, IntegerWidget, IPAddressWidget, PathWidget
+from simple_curses.multi_line_widget import IPNetworkCIDR
+from simple_curses.toggle_widget import ToggleWidget
+
+from simple_curses.appbase import AppBase
+
+from aorc_app.state import AorcState
+from aorc_app.actions import run_add_prefix_new, view_cancel, run_add_prefix_notnew, run_remove_prefix_disconnect, run_remove_prefix_notdisconnect
+from aorc_app.config_actions import run_config_action
 
 
 def test_screen_size(stdscr):

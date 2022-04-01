@@ -13,7 +13,7 @@ import subprocess
 #     sys.path.append(project_dir)
 #     sys.path.append(src_dir)
 
-from simple_curses import *
+# from simple_curses import *
 
 
 class ActionBase:

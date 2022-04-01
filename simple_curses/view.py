@@ -1,14 +1,14 @@
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, cast
 import curses
 import curses.textpad
 from kurses_ex import make_subwin
 
 # import simple_curses.menu as M
-from widget_base import WidgetBase, MenuItem, is_editable, is_focusable
-from layout import Rectangle, ColumnLayout
-from validator import *
-from title_widget import TitleWidget
-from menu import *
+from simple_curses.widget_base import EditableWidgetBase, WidgetBase, MenuItem, is_editable, is_focusable
+from simple_curses.layout import Rectangle, ColumnLayout
+from simple_curses.validator import *
+from simple_curses.title_widget import TitleWidget
+from simple_curses.menu import *
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
@@ -113,7 +113,6 @@ class TopMenu:
             xpos += item_width
             tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
             m.set_enclosing_window(tmp_win)
-            m.set_form(form)
             m.has_focus = False
 
 
@@ -218,7 +217,7 @@ class View:
         self.outter_y_begin, self.outter_x_begin = window.getbegyx()
         self.widgets = widgets
         self.menu_items = menu_items
-        self.focus_widgets = [w for w in (self.widgets + self.menu_items) if is_focusable(w) ]
+        self.focus_widgets = [w for w in (self.widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
         # for w in (self.menu_items + self.widgets):
         #     klass = w.__class__
         #     bases = klass.__bases__
@@ -273,7 +272,7 @@ class View:
         for w in self.widgets:
             if is_editable(w):
                 k = w.get_key()
-                v[k] = w.get_value()
+                v[k] = cast(EditableWidgetBase, w).get_value()
         return v
 
     def set_values(self, state_values):

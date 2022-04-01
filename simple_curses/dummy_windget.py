@@ -1,8 +1,8 @@
 import curses
 import curses.textpad
-from simple_curses import *
-# from colors import Colors
-# from utils import *
+
+from .colors import Colors
+from .utils import *
 
 
 class DummyWidget:
@@ -50,7 +50,7 @@ class DummyWidget:
         self.outter_win.noutrefresh()
         curses.doupdate()
 
-    def handle_input(self, ch):
+    def handle_input(self, ch) -> bool:
         return False
 
     def position_cursor(self):

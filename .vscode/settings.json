@@ -1,5 +1,5 @@
 {
-    "python.analysis.extraPaths": ["simple_curses"],
+    "python.analysis.extraPaths": ["simple_curses", "aorc_app"],
     "python.testing.unittestArgs": [
       "-v",
       "-s",

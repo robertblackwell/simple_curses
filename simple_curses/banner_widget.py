@@ -1,9 +1,9 @@
 import curses
 from typing import List, Union, Any
 
-from widget_base import WidgetBase
-from kurses_ex import make_subwin
-from colors import Colors
+from .widget_base import WidgetBase
+from .kurses_ex import make_subwin
+from .colors import Colors
 
 banner_lines_01 = [
     "**********************************************************************************",

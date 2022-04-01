@@ -3,7 +3,7 @@ import curses
 import curses.textpad
 
 from simple_curses.message_widget import MessageWidget
-from utils import is_control_v
+from simple_curses.utils import is_control_v
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
@@ -90,6 +90,7 @@ class AppBase:
     def change_view(self, next_view):
         self.views[self.current_view_index].hide()
         self.current_view_index = next_view % len(self.views)
+        self.focus_index = 0
         self.views[self.current_view_index].show()
         self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
         self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
@@ -98,6 +99,7 @@ class AppBase:
     def next_view(self):
         self.views[self.current_view_index].hide()
         self.current_view_index = (self.current_view_index + 1) % len(self.views)
+        self.focus_index = 0
         self.views[self.current_view_index].show()
         self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
         self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
@@ -150,8 +152,10 @@ class AppBase:
                 chstr = "??"
             if self.log_keystrokes:    
                 self.message_widget.msg_info("handle_input ch: {} hex: {}".format(chstr, hex(ch)))
+
             focus_widget = self.focus_widgets[self.focus_index]
             focus_widget.focus_accept()
+            
             if focus_widget.handle_input(ch):
                 continue
             else:

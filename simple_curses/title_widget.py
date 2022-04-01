@@ -1,13 +1,14 @@
 import curses
 import curses.textpad
 
-from colors import Colors
-from utils import *
-from kurses_ex import make_subwin
-from widget_base import WidgetBase
+from .colors import Colors
+from .utils import *
+from .kurses_ex import make_subwin
+from .widget_base import WidgetBase
 
 
 class TitleWidget(WidgetBase):
+
     def __init__(self, app, key, label, width, height, data):
         self.id = key
         self.has_focus = False
@@ -22,7 +23,7 @@ class TitleWidget(WidgetBase):
         self.app = app
 
 
-    def set_enclosing_window(self, win):
+    def set_enclosing_window(self, win: curses.window):
         self.outter_win = win
         ym, xm = self.outter_win.getmaxyx()
         ybeg = (ym - self.width) // 2

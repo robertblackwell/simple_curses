@@ -1,10 +1,10 @@
 import curses.textpad
 import pathlib
 import ipaddress
-from utils import *
-from widget_base import EditableWidgetBase
-from string_buffer import StringBuffer
-import validator
+from typing import Any
+from .utils import *
+from .widget_base import EditableWidgetBase
+from .string_buffer import StringBuffer
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
@@ -14,8 +14,8 @@ class TextWidget(EditableWidgetBase):
     def classmeth(cls):
         print("hello")
 
-    def __init__(self, app, key: str, label: str, width: int, data: any): #, initial_value = ""):
-        self.win = None
+    def __init__(self, app, key: str, label: str, width: int, data: Any): #, initial_value = ""):
+        # self.win = None
         self.id = key
         self.has_focus = False
         # self.row = relative_row

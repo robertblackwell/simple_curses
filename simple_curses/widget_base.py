@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod, abstractproperty
 import curses
 import curses.textpad
-from simple_curses import *
+from typing import Any
+# from simple_curses import *
 from simple_curses.colors import Colors
 from simple_curses.utils import *
 from simple_curses.multi_line_buffer import MultiLineBuffer
-from kurses_ex import *
+from simple_curses.kurses_ex import *
 
 
 class WidgetBase(ABC):
@@ -117,7 +118,7 @@ class MenuItem(MenuBase):
     def focus_release(self) -> None:
         self.has_focus = False
 
-    def handle_input(self, ch) -> None:
+    def handle_input(self, ch) -> bool:
         did_handle_ch = True
         if is_return(ch) or is_space(ch) or is_linefeed(ch):
             self.invoke()
@@ -141,26 +142,26 @@ class MenuItem(MenuBase):
         self.win.noutrefresh()
 
 
-xlines = [
-    "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "1  02-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "2  03-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "3  04-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "4  05-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "5  06-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "6  07-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "7  08-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "8  09-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "9  10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "A  0A-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "B  0B-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "C  0C-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "D  0D-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "E  0E-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "F  0F-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "10 10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-]
+# xlines = [
+#     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "1  02-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "2  03-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "3  04-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "4  05-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "5  06-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "6  07-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "7  08-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "8  09-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "9  10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "A  0A-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "B  0B-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "C  0C-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "D  0D-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "E  0E-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "F  0F-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "10 10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+# ]
 
 
 class DummyMultiLineWidget(EditableWidgetBase):
@@ -169,7 +170,7 @@ class DummyMultiLineWidget(EditableWidgetBase):
     def classmeth(cls):
         pass
 
-    def __init__(self, app, key: str, label: str, content_width: int, content_height: int, data: any):
+    def __init__(self, app, key: str, label: str, content_width: int, content_height: int, data: Any):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -201,7 +202,7 @@ class DummyMultiLineWidget(EditableWidgetBase):
         self.lines_view = None
         self.outter_win = None
         self.app = app
-        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer(xlines, self.content_height,
+        self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer([""], self.content_height,
                                                                 self.content_width - self.line_number_width - 2)
 
     def set_enclosing_window(self, win):
@@ -256,7 +257,7 @@ class DummyMultiLineWidget(EditableWidgetBase):
         should merge witht he box of the content window"""
         self.info_win.bkgd(" ", Colors.white_black())
         # self.info_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
-        self.info_win.addstr(1, 3, "Navigate these lines with arrow keys ".format(self.paste_mode), curses.A_BOLD)
+        self.info_win.addstr(1, 3, "Navigate these lines with arrow keys ", curses.A_BOLD)
         self.info_win.addstr(2, 3, "Type characters or Paste to insert.", curses.A_BOLD)
         self.info_win.addstr(3, 3, "Del and BS keys to delete", curses.A_BOLD)
         pass

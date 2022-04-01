@@ -2,11 +2,11 @@ import curses
 import curses.textpad
 from typing import List, Any
 # from simple_curses import *
-from colors import Colors
-from utils import *
-from widget_base import WidgetBase, EditableWidgetBase
-from multi_line_buffer import MultiLineBuffer
-from kurses_ex import make_subwin
+from .colors import Colors
+from .utils import *
+from .widget_base import WidgetBase, EditableWidgetBase
+from .multi_line_buffer import MultiLineBuffer
+from .kurses_ex import make_subwin
 
 # xlines = [
 #     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
@@ -36,7 +36,7 @@ class MultiLineWidget(EditableWidgetBase):
     -    a title in the middile of the top box line
     -    a content area of height equal to the content_height argument
     -    a separator line bwteen the content area and the info area
-    -    an info area of 4 lines 
+    -    an info area of N lines - edit the code to change N 
     """
     @classmethod
     def classmeth(cls):

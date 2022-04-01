@@ -1,9 +1,9 @@
 import curses.textpad
 from typing import List
 
-from utils import *
-from validator import *
-from widget_base import EditableWidgetBase
+from .utils import *
+from .validator import *
+from .widget_base import EditableWidgetBase
 
 
 # A widget that is either ON or OFF
@@ -20,7 +20,7 @@ class ToggleWidget(EditableWidgetBase):
                 w = len(v) if len(v) > w else w
             return w
 
-        self.win = None
+        # self.win: Union[None, curses.window] = None
         self.id = key
         self.has_focus = False
         self.data = data

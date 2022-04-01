@@ -1,16 +1,24 @@
-☐ priority -- the action functions on view menus do not have access to the view
-☐ remove initial value from widgets
-☐ find a more systematic way of inserting the new state - is it really the case that only menu actions change state. Maybe widgets should have an on_change caoability.
 ☐ dropdown widget needs to be implemented
-☐ multiline widget needs a refinement to do a list of network IP addresses CIDR format called prefixes and demo pasting a list of prefixes
 ☐ top menu needs implementing
-☐ define screens to replicate aorc.py
-☐ under stand the processing done by aorc.py
 ☐ work out how to run the example using simple_curses as a package imstalled locally
 ☐ investigate venv
 ☐ prepare a presentation for Richard on how it works
-Remove state Appenfing/EDITIN:
+Remove state Appending/Editing State:
     ☐ the state is ambiguous and is causing a bug in the handling of the delete key as it forgets to update the state.
+    ☐ specifically handling of the following characters needds to change newline, backspace, delete, printables
+    ☐ back arrow needs to move to previous line once it gets to start of line
+    ☐ right arrow needs to move to next line from end of line
+    ☐ treat empty lines more formally - they are not only at the end or for empty content, they can exist any where
+    ☐ adding space to the end of the line should not happen in multilinebuffer
+    ☐ contemplate endling lines with NL or '\0'
 
-Passing Values from View to actions:
-    ☐ move validation into the action handler ad simply have the View return an array of strings or other primitive values. That will make the validation process much less convoluted
+Remove Pastmode from MultilineBuffer, MultulineWidget:
+
+Archive:
+  ✔ priority -- the action functions on view menus do not have access to the view @done(22-04-02 08:23)
+  ✔ remove initial value from widgets @done(22-04-02 08:23)
+  ✔ find a more systematic way of inserting the new state - is it really the case that only menu actions change state. Maybe widgets should have an on_change caoability. @done(22-04-02 08:23)
+  ✔ multiline widget needs a refinement to do a list of network IP addresses CIDR format called prefixes and demo pasting a list of prefixes @done(22-04-02 08:23)
+  ✔ define screens to replicate aorc.py @done(22-04-02 08:23)
+  ✔ under stand the processing done by aorc.py @done(22-04-02 08:23)
+  ✔ move validation into the action handler ad simply have the View return an array of strings or other primitive values. That will make the validation process much less convoluted @done(22-04-02 08:22) @project(Passing Values from View to actions)
