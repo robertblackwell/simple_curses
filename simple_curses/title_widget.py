@@ -1,10 +1,10 @@
 import curses
 import curses.textpad
-from simple_curses import *
-# from colors import Colors
-# from utils import *
-# from kurses_ex import make_subwin
-# from widget_base import WidgetBase
+
+from colors import Colors
+from utils import *
+from kurses_ex import make_subwin
+from widget_base import WidgetBase
 
 
 class TitleWidget(WidgetBase):

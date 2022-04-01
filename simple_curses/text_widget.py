@@ -1,11 +1,10 @@
 import curses.textpad
-from simple_curses import *
 import pathlib
 import ipaddress
-# from utils import *
-# from widget_base import EditableWidgetBase
-# from string_buffer import StringBuffer
-# import validator
+from utils import *
+from widget_base import EditableWidgetBase
+from string_buffer import StringBuffer
+import validator
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
@@ -32,7 +31,7 @@ class TextWidget(EditableWidgetBase):
 
         # self.attributes = attributes
         self.app = app
-        self.validator = validator.Text()
+        # self.validator = validator.Text()
         tmp = width + len(self.label)
         # self.win = curses.newwin(1, width + len(self.label) + 2, row, col, )
         self.string_buffer = StringBuffer("", self.width)
@@ -101,19 +100,21 @@ class TextWidget(EditableWidgetBase):
     def get_key(self):
         return self.id
 
-    def get_value(self) -> validator.WidgetSingleValue:
+    def get_value(self) -> str:
         str_value = self.string_buffer.content
-        widget_value = self.validator.validate(str_value)
-        return widget_value
+        return str_value
+        # widget_value = self.validator.validate(str_value)
+        # return widget_value
 
     def set_value(self, value):
-        if isinstance(value, validator.WidgetSingleValue):
-            v:validator.WidgetSingleValue = value
-            vv = v.str_value
-            self.string_buffer.clear()
-            self.string_buffer.add_string(vv)
+        
+        # if isinstance(value, validator.WidgetSingleValue):
+        #     v:validator.WidgetSingleValue = value
+        #     vv = v.str_value
+        #     self.string_buffer.clear()
+        #     self.string_buffer.add_string(vv)
 
-        elif type(value) == str:
+        if type(value) == str:
             self.string_buffer.clear()
             self.string_buffer.add_string(value)
             pass
@@ -128,12 +129,13 @@ class TextWidget(EditableWidgetBase):
     def invalid_input(self):
         pass
 
-    # When a Widget has the focus every keystroke (with some small exceptions)
-    # get passed to this function.
-    # If the Widget handles the keystroke then it should return true
-    # else should return false
-    # 
     def handle_input(self, ch) -> bool:
+        """
+        When a Widget has the focus every keystroke (with some small exceptions)
+        get passed to this function.
+        If the Widget handles the keystroke then it should return true
+        else should return false
+        """
         did_handle_ch = True
         if (ch <= 255) and (chr(ch) in string.printable):
             self.string_buffer.handle_character(chr(ch))
@@ -155,10 +157,10 @@ class TextWidget(EditableWidgetBase):
 class IntegerWidget(TextWidget):
     def __init__(self, app, key, label, width, data): #, initial_value="0"):
         super().__init__(app, key, label, width, data)#, initial_value)
-        self.validator = validator.Integer()
+        # self.validator = validator.Integer()
 
     def set_value(self, value):
-        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
+        if type(value) == str :#or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif type(value) == int:
             super().set_value("{}".format(value))
@@ -169,10 +171,10 @@ class IntegerWidget(TextWidget):
 class FloatWidget(TextWidget):
     def __init__(self, app, key, label, width,  data): #, initial_value="0.0"):
         super().__init__(app, key, label, width,  data)#, initial_value)
-        self.validator = validator.Float()
+        # self.validator = validator.Float()
 
     def set_value(self, value):
-        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
+        if type(value) == str :#or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif type(value) == float:
             super().set_value("{}".format(value))
@@ -183,10 +185,10 @@ class FloatWidget(TextWidget):
 class IPAddressWidget(TextWidget):
     def __init__(self, app, key, label, width,  data): #, initial_value="192.168.0.1"):
         super().__init__(app, key, label, width,  data)#, initial_value)
-        self.validator = validator.IPAddress()
+        # self.validator = validator.IPAddress()
 
     def set_value(self, value):
-        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
+        if type(value) == str :#or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, ipaddress.IPv4Address) or isinstance(value, ipaddress.IPv6Address):
             super().set_value("{}".format(value))
@@ -197,10 +199,10 @@ class IPAddressWidget(TextWidget):
 class IPNetworkWidget(TextWidget):
     def __init__(self, app, key, label, width,  data): #, initial_value="192.168.0.1"):
         super().__init__(app, key, label, width,  data)#, initial_value)
-        self.validator = validator.IPNetwork()
+        # self.validator = validator.IPNetwork()
 
     def set_value(self, value):
-        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
+        if type(value) == str :#or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, ipaddress.IPv4Network ) or isinstance(value, ipaddress.IPv6Network):
             super().set_value("{}".format(value))
@@ -211,9 +213,9 @@ class IPNetworkWidget(TextWidget):
 class TimeOfDayWidget(TextWidget):
     def __init__(self, app, key, label, width,  data): #, initial_value="13:55"):
         super().__init__(app, key, label, width,  data)#, initial_value)
-        self.validator = validator.TimeOfDay24()
+        # self.validator = validator.TimeOfDay24()
     def set_value(self, value):
-        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
+        if type(value) == str :#or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, time.struct_time):
             super().set_value("{}".format(time.strf("%H:%M", value)))
@@ -224,10 +226,10 @@ class TimeOfDayWidget(TextWidget):
 class PathWidget(TextWidget):
     def __init__(self, app, key, label, width,  data): #, initial_value="/fred"):
         super().__init__(app, key, label, width,  data)#, initial_value)
-        self.validator = validator.Path()
+        # self.validator = validator.Path()
 
     def set_value(self, value):
-        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
+        if type(value) == str :#or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, pathlib.PosixPath):
             super().set_value("{}".format(value))
@@ -238,10 +240,10 @@ class PathWidget(TextWidget):
 class PathExistsWidget(TextWidget):
     def __init__(self, app, key, label, width,  data): #, initial_value=" /home/robertblackwell"):
         super().__init__(app, key, label, width,  data)#, initial_value)
-        self.validator = validator.PathExists()
+        # self.validator = validator.PathExists()
 
     def set_value(self, value):
-        if type(value) == str or isinstance(value, validator.WidgetSingleValue):
+        if type(value) == str :#or isinstance(value, validator.WidgetSingleValue):
             super().set_value(value)
         elif isinstance(value, pathlib.PosixPath):
             super().set_value("{}".format(value))

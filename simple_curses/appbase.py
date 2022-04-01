@@ -136,11 +136,11 @@ class AppBase:
         while True:
             ch = self.stdscr.getch()
             if ch == curses.ERR:
-                break;
+                break
             if ch == curses.KEY_MOUSE:
                 dev_id, y, x, z, buttonevent = curses.getmouse()
                 self.message_widget.msg_info(
-                    "handle_input.mouse event id:{} y:{} x:{} button:{}".format(dev_id, y, x, z, hex(buttonevent)))
+                    "handle_input.mouse event id:{} y:{} x:{} z:{} button:{}".format(dev_id, y, x, z, hex(buttonevent)))
 
             self.stdscr.timeout(100)
 

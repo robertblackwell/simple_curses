@@ -1,7 +1,11 @@
 import pathlib
 import os
+from typing import Any 
 
 class AorcState:
+    """
+    State object for the aorc application
+    """
     def __init__(self):
         self.cust_name = ""
         self.bus_org_id = ""
@@ -28,10 +32,11 @@ class AorcState:
         # self.config_pid_file = "{}/stuff/ddos2_script.pid".format(aorc_dir)
         # self.config_policy_name = "ddos2-dynamic-check"
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Any:
         return getattr(self, key)
 
-    def __setitem__(self, key, value: any):
+
+    def __setitem__(self, key, value: Any):
         setattr(self, key, value)
 
 

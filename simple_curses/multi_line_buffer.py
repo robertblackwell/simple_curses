@@ -254,12 +254,12 @@ class MultiLineBuffer:
         tmp = len(self.content[self.cpos_y_content]) > (self.width - 1)
         return tmp
 
-    # cursor is over the contents first character
     def _is_cursor_at_line_start(self):
+        """# cursor is over the contents first character"""
         return self.cpos_x_content == 0
 
-    # cursor is over the current lines last character
     def _is_cursor_at_line_end(self):
+        """cursor is over the current lines last character"""
         return self.cpos_x_content == len(self.content[self.cpos_y_content]) - 1
 
     def __is_cursor_after_line_end(self):
@@ -267,9 +267,11 @@ class MultiLineBuffer:
         return self.cpos_x_content == len(self.content[self.cpos_y_content])
 
     def _is_cursor_at_last_line(self):
+        """Is the cursor on the last line"""
         return self.cpos_y_content == len(self.content) - 1
 
     def _is_cursor_at_empty_line(self):
+        """Is the cursor on an empty line"""
         return self.content[self.cpos_y_content] == ""
 
     ############################################################################################################

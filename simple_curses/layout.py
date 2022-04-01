@@ -1,7 +1,6 @@
 from typing import List
 import curses
-from simple_curses import *
-# from widget_base import WidgetBase
+from widget_base import WidgetBase
 
 
 class HStack:
@@ -238,12 +237,12 @@ class VerticalStack:
         if excess_rows <= 0:
             raise ValueError(
                 "LayoutVerticcalStack.required_space  requires too many rows rows required : {}  rows available rows "
-                "{}}".format( 
+                "{}".format( 
                     rows, available_rows))
         if excess_width <= 0:
             raise ValueError(
                 "LayoutVerticcalStack.required_space  requires too much width  width required : {}  width available "
-                "rows {}}".format( 
+                "rows {}".format( 
                     max_width, available_width))
 
         start_row = self.begin_row + (2 if excess_rows > 2 else excess_rows)
@@ -285,12 +284,12 @@ class HorizontalStack:
         if excess_cols < 0:
             raise ValueError(
                 "LayoutHorizontalStack.required_space  requires too many cols   cols_required  : {}  cols available   "
-                "{}}".format( 
+                "{}".format( 
                     cols, available_cols))
         if excess_height < 0:
             raise ValueError(
                 "LayoutVerticcalStack.required_space  requires too much height  height_required : {}  available "
-                "height {}}".format( 
+                "height {}".format( 
                     max_height, available_height))
 
         n = len(self.widgets)

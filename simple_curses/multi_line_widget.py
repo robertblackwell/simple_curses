@@ -1,41 +1,48 @@
 import curses
 import curses.textpad
+from typing import List, Any
 # from simple_curses import *
 from colors import Colors
 from utils import *
-from widget_base import *
+from widget_base import WidgetBase, EditableWidgetBase
 from multi_line_buffer import MultiLineBuffer
 from kurses_ex import make_subwin
-import validator
 
-xlines = [
-    "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "1  02-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "2  03-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "3  04-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "4  05-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "5  06-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "6  07-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "7  08-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "8  09-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "9  10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "A  0A-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "B  0B-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "C  0C-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "D  0D-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "E  0E-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "F  0F-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "10 10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-    "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-]
+# xlines = [
+#     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "1  02-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "2  03-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "3  04-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "4  05-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "5  06-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "6  07-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "7  08-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "8  09-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "9  10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "A  0A-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "B  0B-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "C  0C-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "D  0D-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "E  0E-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "F  0F-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "10 10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+#     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
+# ]
 
 class MultiLineWidget(EditableWidgetBase):
-
+    """
+    A multiline widget consists of :
+    -    an outter box
+    -    a title in the middile of the top box line
+    -    a content area of height equal to the content_height argument
+    -    a separator line bwteen the content area and the info area
+    -    an info area of 4 lines 
+    """
     @classmethod
     def classmeth(cls):
         pass
 
-    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:any):
+    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:Any):
         self.info_win = None
         self.content_win = None
         self.line_number_win = None
@@ -48,12 +55,6 @@ class MultiLineWidget(EditableWidgetBase):
         self.content_width = content_width
         self.width: int = content_width + 2
         self.line_number_width: int = 4
-        # A multiline widget consists of :
-        # - an outter box
-        # - a title in the middile of the top box line
-        # - a content area of height equal to the content_height argument
-        # - a separator line bwteen the content area and the info area
-        # - an info area of 4 lines 
         self.box_height = 2 #extra height for boxing the outter of the widget
         self.info_separator_line_height = 1 # extra height for the divider line between the content and the info box
         self.info_area_height = 4
@@ -62,7 +63,7 @@ class MultiLineWidget(EditableWidgetBase):
         self.start_row: int = 0
         self.start_col: int = 0
         self.paste_mode: bool = False
-        self.validator = validator.ArrayOf(validator.Text())
+        # self.validator = validator.ArrayOf(validator.Text())
 
         # self.attributes = attributes
         self.app = app
@@ -103,19 +104,22 @@ class MultiLineWidget(EditableWidgetBase):
     def get_key(self) -> str:
         return self.id
 
-    def get_value(self) -> validator.WidgetListOfValues:
+    def get_value(self) -> List[str]:
+        """Returns the values in the widget in the form of list of strings"""
         values = self.mu_lines_buffer.get_value()
         str_result = [] if len(values) == 1 and values[0] == "" else values
-        failed = False
-        # list_of_values = validator.WidgetListOfValues()
-        list_of_values = self.validator.validate(str_result)
-        # for v in str_result:
-        #     widget_single_value = self.validator.validate(v)
-        #     list_of_values.append(widget_single_value)
+        return str_result
+        # failed = False
+        # # list_of_values = validator.WidgetListOfValues()
+        # list_of_values = self.validator.validate(str_result)
+        # # for v in str_result:
+        # #     widget_single_value = self.validator.validate(v)
+        # #     list_of_values.append(widget_single_value)
 
-        return list_of_values
+        # return list_of_values
 
-    def set_value(self, value):
+    def set_value(self, value: List[str]):
+        """Sets the values in the widget - expects a List of strings"""
         self.clear()
         if type(value) is list:
             for ln in value:
@@ -133,7 +137,7 @@ class MultiLineWidget(EditableWidgetBase):
         should merge witht he box of the content window"""
         self.info_win.bkgd(" ", Colors.white_black())
         # self.info_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
-        self.info_win.addstr(1, 3, "Navigate these lines with arrow keys ".format(self.paste_mode), curses.A_BOLD)
+        self.info_win.addstr(1, 3, "Navigate these lines with arrow keys ", curses.A_BOLD)
         self.info_win.addstr(2, 3, "Type characters or Paste to insert.", curses.A_BOLD)
         self.info_win.addstr(3, 3, "Del and BS keys to delete", curses.A_BOLD)
         pass
@@ -236,6 +240,6 @@ class MultiLineWidget(EditableWidgetBase):
 
 
 class IPNetworkCIDR(MultiLineWidget):
-    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:any):
+    def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:Any):
         super().__init__(app, key, label, content_width, content_height, data)
-        self.validator = validator.ArrayOf(validator.IPNetwork())
+        # self.validator = validator.ArrayOf(validator.IPNetwork())

@@ -10,7 +10,7 @@ from widget_base import WidgetBase
 class MessageWidget(WidgetBase, ABC):
     """This widget provides a box into which messsages can be written.
     Each message is a single line.
-    -   The message is truncated to fit into a line
+    -   The message is truncated to fit into a line or contoinued onto the next line
     -   The messages are visible through a view window
     -   Only the last N messages are visible
     -   The most recent message is at the bottom

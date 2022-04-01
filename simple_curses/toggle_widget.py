@@ -1,9 +1,9 @@
 import curses.textpad
 from typing import List
-from simple_curses import *
-# from utils import *
-# from validator import *
-# from widget_base import EditableWidgetBase
+
+from utils import *
+from validator import *
+from widget_base import EditableWidgetBase
 
 
 # A widget that is either ON or OFF
@@ -58,14 +58,16 @@ class ToggleWidget(EditableWidgetBase):
     def get_key(self):
         return self.id
 
-    def get_value(self) -> WidgetSingleValue:
-        return WidgetSingleValue(self.content[self.current_index], self.current_index == 1, True)
+    def get_value(self) -> bool:
+        return self.current_index == 1
+        # return WidgetSingleValue(self.content[self.current_index], self.current_index == 1, True)
 
     def set_value(self, onoff):
-        if isinstance(onoff, WidgetSingleValue):
-            value = onoff.str_value
-        else:
-            value = onoff
+        # if isinstance(onoff, WidgetSingleValue):
+        #     value = onoff.str_value
+        # else:
+        #     value = onoff
+        value = onoff
         if type(value) == str and onoff in self.content:
             self.current_index = self.content.index(onoff)
         elif type(value) == bool:

@@ -1,10 +1,9 @@
 import curses
-from typing import List
-from simple_curses import *
+from typing import List, Union, Any
 
-# from widget_base import WidgetBase
-# from kurses_ex import make_subwin
-# from colors import Colors
+from widget_base import WidgetBase
+from kurses_ex import make_subwin
+from colors import Colors
 
 banner_lines_01 = [
     "**********************************************************************************",
@@ -57,7 +56,7 @@ class BlockTextWidget(WidgetBase):
         self.text_block = text_block
         self.app = app
         self.parent_view = None
-        self.outter_win = None
+        self.outter_win:Union[curses.window, None] = None
         self.banner_win = None
         self.has_focus = False
 

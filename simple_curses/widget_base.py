@@ -8,7 +8,7 @@ from simple_curses.multi_line_buffer import MultiLineBuffer
 from kurses_ex import *
 
 
-class WidgetBase:  # (ABC):
+class WidgetBase(ABC):
     """A basic widget that can display fixed text on the screen"""
 
     # @classmethod
@@ -63,11 +63,11 @@ class EditableWidgetBase(FocusableWidgetBase):
     """A widget that contains one of more variable fields that can be edited by the user"""
 
     @abstractmethod
-    def get_value(self) -> str:
+    def get_value(self):
         raise NotImplementedError()
 
     @abstractmethod
-    def set_value(self, v) -> str:
+    def set_value(self, v):
         raise NotImplementedError()
 
     @abstractmethod

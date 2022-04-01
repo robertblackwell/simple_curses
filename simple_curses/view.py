@@ -1,14 +1,14 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Any
 import curses
 import curses.textpad
 from kurses_ex import make_subwin
 
 # import simple_curses.menu as M
-from menu import *
-from widget_base import *
-from layout import *
+from widget_base import WidgetBase, MenuItem, is_editable, is_focusable
+from layout import Rectangle, ColumnLayout
 from validator import *
 from title_widget import TitleWidget
+from menu import *
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
@@ -175,8 +175,7 @@ class ViewBody:
         # how many columns that wide could we make - leaving 2 spaces on each side of a widget
         max_columns = self.width // (max_widget_width + 1)
 
-        required_columns = (widgets_total_height // self.height) if (widgets_total_height % self.height) == 0 else (
-                                                                                                                               widgets_total_height // self.height) + 1
+        required_columns = (widgets_total_height // self.height) if (widgets_total_height % self.height) == 0 else (widgets_total_height // self.height) + 1
 
         if required_columns > max_columns:
             raise ValueError("cannot fit {}  widgets in window of size y: {} x:{}".format(len(widgets), yh, xw))
@@ -231,23 +230,6 @@ class View:
         self.ident = ident
         self.app = app
 
-    def _verify_dependencies(self):
-        if self.app is None:
-            raise RuntimeError("instamce of class {} is not linked to an app".format(self.__class__.__name__))
-        if self.app is None:
-            raise RuntimeError("instamce of class {} is not linked to any widgets".format(self.__class__.__name__))
-        if self.app is None:
-            raise RuntimeError("instamce of class {} is not linked to any menu items".format(self.__class__.__name__))
-
-    def inject_widgets(self, widgets: List[WidgetBase]):
-        pass
-
-    def inject_menu_items(self, menu_items: List[MenuItem]):
-        pass
-
-    def inject_app(self, app):
-        pass
-
     def setup(self):
         self.menu_height = 5
         self.data_entry_height = self.height - self.menu_height  # - self.title_height - self.msg_height + 2
@@ -275,25 +257,23 @@ class View:
         self.view_menu = ViewMenu(self.app, self, self.stdscr, self.menu_win, self.menu_items)
         self.set_values(self.app.state)
 
-    def get_values(self) -> ViewValues:
+    def get_values(self) -> Dict[str, Any]:
         """
-        @return A ViewValues object for the view.
+        @return A dictionary object for the view.
         This consists of a dictionary:
         -   Which has an entry for each EditableWidget in the view.
         -   The keys are obtained from the widgets with the get_key() method
-        -   and the values are WidgetValue isnstances obtained with widget.get_value()
+        -   and the values are most often of type str but can be Any and are obtained from  widget.get_value()
         Plus a boolean to indicate whether all the strings validated correctly.
         If any one widget value did not parse correctly the valid/ok boolean is set to false
 
         """
-        v = ViewValues()
+        v = {}
         ok = True
         for w in self.widgets:
             if is_editable(w):
                 k = w.get_key()
-                # v1 = w.get_value()
                 v[k] = w.get_value()
-                v.ok = v.ok and v[k].is_ok()
         return v
 
     def set_values(self, state_values):
