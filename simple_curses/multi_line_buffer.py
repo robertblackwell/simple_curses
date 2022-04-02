@@ -68,28 +68,31 @@ def join_lines(lines: List[str], index: int):
     return lines2
 
 
-#
-# This class provides  
-# -     fixed width multi-line buffer that acts as a display window or view into an arbitary length array string,
-# -     together with the position of a cursor within that buffer window.
-# 
-# Methods are provided for the buffer content and cursor position as a result of:
-# -     appending characters
-# -     backspacing to delete the last character
-# -     up/down arrow keys for navigating within the array entries
-# -     left and right arrow navigation within thestring
-# -     deleting an internal character 
-# 
 class MultiLineBuffer:
-    STATE_APPENDING = 1
-    STATE_EDITING = 2
+    """
+    This class provides  
+    -   fixed width, fixed length multi-line buffer that acts as a display window or view into an arbitary length array of string.
+    -   it maintains two cursor positions:
+            - cpos_y_content, cpos_x_content is the position of the cursor within the array of sttrings
+            - cpos_y_buffer, cpos_x_buffer is the position within the fixed width, fixed height display buffer
+
+    -   There is an auxilliary class MultiLineView which uses the two cursor positions to compute
+        the text that should be displayed by a MultiLineWidget 
+     
+    Methods are provided for the buffer content and cursor position as a result of:
+    -     appending/inserting characters
+    -     backspacing to delete the previous character
+    -     delete key to delete the character under the cursor
+    -     up/down arrow keys for navigating between lines in the array of strings
+    -     left and right arrow navigation within a single line
+     
+    """
+
     EOSPAD = " "
 
     def __init__(self, lines: List[str], height: int, width: int):
 
-        self.state = self.STATE_APPENDING
         self.content = [""]
-
         # width of the display buffer
         self.width = width
         self.view_height = height
@@ -107,16 +110,12 @@ class MultiLineBuffer:
         # index of the current array element
         self.cpos_y_content = 0
 
-        # The string that will appear in the buffer window
-        # self.display_string = ""
-        # self._compute_display_string()
-
         for line in lines:
             self.append_line(line)
 
     ############################################################################################################
     # increment descrement -
-    # These functions increment and decrement the cursor offsets without allowiing them to run
+    # These functions increment and decrement the cursor offsets without allowing them to run
     # off the end of the self.content or the view window
     ############################################################################################################
     def _incr_cpos_x_buffer(self):
@@ -152,59 +151,9 @@ class MultiLineBuffer:
         """makes both cpos_x offsets point to the start of the current line """
         self.cpos_x_content = 0
         self.cpos_x_buffer = 0
-        if len(self.content[self.cpos_y_content]) > 0:
-            self.state = self.STATE_EDITING
-        else:
-            self.state = self.STATE_APPENDING
-
-    def x_cursor_set_to_end(self):
-        """moves the cursor to the first empty space after end of the content but on the same
-        line as the last line"""
-
-        def _cursor_x_set_to_end():
-            """moves the x cursor to the first empty position past the end of the current line
-            and sets the state to STATE_APPEND"""
-            if len(self.content[self.cpos_y_content]) > self.width:
-                self.cpos_x_content = len(self.content[self.cpos_y_content])
-                self.cpos_x_buffer = self.width - 1
-            else:
-                self.cpos_x_content = len(self.content[self.cpos_y_content])
-                self.cpos_x_buffer = len(self.content[self.cpos_y_content])
-            pass
-
-        def _cursor_y_set_to_end():
-            """moves the y content cursor to the last line in self.content"""
-            self.cpos_y_content = len(self.content) - 1
-            self.cpos_y_buffer = self.view_height - 1
-            pass
-
-        _cursor_y_set_to_end()
-        _cursor_x_set_to_end()
-
-    def cursor_set_at_end(self):
-        if len(self.content) == 1 and self.content[0] == "":
-            return
-        if self.state == self.STATE_APPENDING and self.cpos_y_content == (len(self.content) - 1):
-            return
-        self.state = self.STATE_APPENDING
-        self.cpos_y_content = len(self.content) - 1
-        self.cpos_y_buffer = self.view_height - 1
-        self.cpos_x_content = len(self.content[self.cpos_y_content])
-        self.cpos_x_buffer = self.width if self.cpos_x_content > self.width else self.cpos_x_content
-
-    def _cursor_set_after_end(self):
-        if len(self.content) == 1 and self.content[0] == "":
-            return
-        if self.content[len(self.content) - 1] != "":
-            self.content.append("")
-        self.state = self.STATE_APPENDING
-        self.cpos_y_content = len(self.content) - 1
-        self.cpos_y_buffer = self.view_height - 1
-        self.cpos_x_content = 0
-        self.cpos_x_buffer = 0
 
     def _update_cursor_x(self):
-        """called whenever the cpos_y values are updated to ensure the cpos_x values are consistent  
+        """called whenever the cpos_y values are updated to ensure the cpos_x values are consistent with the width of the buffer
         used by the up arrow and down arrow processing to ensure
         the x position of the cursor is always valid regardless of the length of the current line"""
         old_cpos_x = self.cpos_x_content
@@ -213,12 +162,8 @@ class MultiLineBuffer:
             self.cpos_x_content = len_new_line
             change_cpos_x = self.cpos_x_content - old_cpos_x
             self.cpos_x_buffer += change_cpos_x
-            self.state = self.STATE_APPENDING
         else:
-            self.state = self.STATE_EDITING
-
-    def deduce_state(self):
-        pass
+            pass
 
     ############################################################################################################
     # content manipulation for insert and delete of content characters
@@ -226,7 +171,7 @@ class MultiLineBuffer:
     def _content_insert_character(self, pos, ch):
         """ insert a character into the self.content string at the given position
         does not modify any properties"""
-        if self.state == self.STATE_APPENDING:
+        if self._is_cursor_after_line_end():
             assert False, "content insert character only for edit mode"
 
         assert (0 <= pos <= len(self.content[self.cpos_y_content]) and len(
@@ -236,7 +181,7 @@ class MultiLineBuffer:
     def _content_remove_character(self, pos):
         """# delete a character from within the self.content string and return the new string
         does not modify any properties"""
-        if self.state == self.STATE_APPENDING:
+        if self._is_cursor_after_line_end():
             assert False, "content remove character only for edit mode"
         return _string_delete_character(self.content[self.cpos_y_content], pos)
 
@@ -244,15 +189,15 @@ class MultiLineBuffer:
     # cursor and content condition tests - test various aspects of the cursor position and the content relative
     # to the view window
     ############################################################################################################
-    # returns true if the content is larger than the buffer window in append mode
     def _is_content_overflow_append(self):
+        """returns true if the current line is widther than the buffer window in append mode"""
         tmp = len(self.content[self.cpos_y_content] + self.EOSPAD) > (self.width - 1)
         return tmp
 
     # returns true if the content is larger than the buffer window in edit mode
-    def _is_content_overflow_edit(self):
-        tmp = len(self.content[self.cpos_y_content]) > (self.width - 1)
-        return tmp
+    # def _is_content_overflow_edit(self):
+    #     tmp = len(self.content[self.cpos_y_content]) > (self.width - 1)
+    #     return tmp
 
     def _is_cursor_at_line_start(self):
         """# cursor is over the contents first character"""
@@ -262,7 +207,7 @@ class MultiLineBuffer:
         """cursor is over the current lines last character"""
         return self.cpos_x_content == len(self.content[self.cpos_y_content]) - 1
 
-    def __is_cursor_after_line_end(self):
+    def _is_cursor_after_line_end(self):
         """cursor is immerdiately to the right of the current lines last character """
         return self.cpos_x_content == len(self.content[self.cpos_y_content])
 
@@ -273,33 +218,48 @@ class MultiLineBuffer:
     def _is_cursor_at_empty_line(self):
         """Is the cursor on an empty line"""
         return self.content[self.cpos_y_content] == ""
+    ##############################################################################
+    # utility methods for back space and delete
+    ##############################################################################
+    
+    def content_is_single_blank_line(self) -> bool:
+        return len(self.content) == 0 or (len(self.content) == 1 and len(self.content[0]) == 0)
 
-    ############################################################################################################
-    # past mode setter and getter
-    ############################################################################################################
-    def toggle_paste_mode(self):
-        before = self.paste_mode
-        after = not self.paste_mode
-        self.set_paste_mode(after)
-        self.form.msg_info("toggle_paste_mode from:{} to:{}".format(before, after))
+    def current_line_is_blank_and_not_last(self) -> bool:
+        return self._is_cursor_at_empty_line() and not self._is_cursor_at_last_line()
 
-    def set_paste_mode(self, on_off):
-        if on_off:
-            self.set_paste_mode_on()
+    def current_line_is_blank_and_last(self) -> bool:
+        return self.cpos_y_content == len(self.content) - 1 and self.content[len(self.content)-1] == ""
+
+    def current_line_is_blank_and_first(self) -> bool:
+        return self.cpos_y_content == 0 and self.content[0] == ""
+
+    def current_line_remove_last_char(self) -> None:
+        self.content[self.cpos_y_content] = self.content[self.cpos_y_content][
+                                            0: len(self.content[self.cpos_y_content]) - 1]
+    def remove_last_line(self) -> None:
+        self.content = self.content[0: self.cpos_y_content]
+
+    def remove_current_line(self) -> None:
+        self.content.pop(self.cpos_y_content)
+
+    def set_cursor_x_eol(self) -> None:
+        if self._is_content_overflow_append():
+            self.cpos_x_buffer = self.width - 1
+            self.cpos_x_content = len(self.content[self.cpos_y_content])
         else:
-            self.set_paste_mode_off()
+            self.cpos_x_buffer = len(self.content[self.cpos_y_content])
+            self.cpos_x_content = len(self.content[self.cpos_y_content])
 
-    def set_paste_mode_off(self):
-        self.paste_mode = False
-
-    def set_paste_mode_on(self):
-        self.paste_mode = True
-        self._cursor_set_after_end()
-        self.handle_newline()
-        self.paste_mode = True
-
-    def handle_paste(self):
-        pass
+    def set_cursor_at_end_of_previous_line(self) -> None:
+        self._decr_cpos_y_content()
+        self._decr_cpos_y_buffer()
+        # self.cpos_y_content = self.cpos_y_content - 1
+        # self.cpos_y_buffer = self.cpos_y_buffer - 1
+        self.set_cursor_x_eol()
+    ##############################################################################
+    # END utility methods for back space and delete
+    ##############################################################################
 
     ############################################################################################################
     # get_view
@@ -334,7 +294,7 @@ class MultiLineBuffer:
         into a new next line.
         The cursor position will be updated to the start of the next line and the buffer position will move down 
         and the buffer will go to state STATE_EDIT"""
-        if self.state == self.STATE_APPENDING:
+        if self._is_cursor_after_line_end():
             if self.cpos_y_content == len(self.content) - 1:
                 self.content.append("")
             else:
@@ -345,26 +305,21 @@ class MultiLineBuffer:
             self._incr_cpos_y_content()
             self._incr_cpos_y_buffer()
             self._cursor_x_set_to_zero()
-            # self._compute_y_view()
-            pass
         else:
             self.content = _list_split_at_line_pos(self.content, self.cpos_y_content, self.cpos_x_content)
             self._incr_cpos_y_content()
             self._incr_cpos_y_buffer()
             self._cursor_x_set_to_zero()
-        self.set_paste_mode_off()
 
     def handle_up(self):
         self._decr_cpos_y_content()
         self._decr_cpos_y_buffer()
         self._update_cursor_x()
-        self.set_paste_mode_off()
 
     def handle_down(self):
         self._incr_cpos_y_content()
         self._incr_cpos_y_buffer()
         self._update_cursor_x()
-        self.set_paste_mode_off()
 
     def append_line(self, line):
         if len(self.content) == 1 and self.content[0] == "":
@@ -376,7 +331,6 @@ class MultiLineBuffer:
             self._incr_cpos_y_content()
             self._incr_cpos_y_buffer()
         self._cursor_x_set_to_zero()
-        self.set_paste_mode_off()
 
     def handle_add_line(self, line):
         pass
@@ -388,153 +342,80 @@ class MultiLineBuffer:
         if self.cpos_y_content >= len(self.content):
             self.cpos_y_content = len(self.content) - 1
         self._cursor_x_set_to_zero()
-        self.set_paste_mode_off()
 
     # handle a new non editing and non navigation character. Add to the buffer and update state variables
     def handle_character(self, ch):
-
-        if self.state == self.STATE_APPENDING:
-            assert (self.cpos_x_content == len(self.content[self.cpos_y_content]))
+        if self._is_cursor_after_line_end():
             self.content[self.cpos_y_content] += ch
-            if self._is_content_overflow_append():
-                self.cpos_x_buffer = self.width - 1
-                self.cpos_x_content = len(self.content[self.cpos_y_content])
-            else:
-                self.cpos_x_buffer = len(self.content[self.cpos_y_content] + self.EOSPAD) - 1
-                self.cpos_x_content = len(self.content[self.cpos_y_content] + self.EOSPAD) - 1
-                # self._compute_display_string()
         else:
-            pos = self.cpos_x_content
-            self._incr_cpos_x_content()
-            self._incr_cpos_x_buffer()
-            self.content[self.cpos_y_content] = self._content_insert_character(pos, ch)
-        # self.set_paste_mode_off()
+            self.content[self.cpos_y_content] = self._content_insert_character(self.cpos_x_content, ch)
+        self._incr_cpos_x_content()
+        self._incr_cpos_x_buffer()
+
 
     # handle a backspace character. Delete the character on the left of the cursor
     def handle_backspace(self):
-        def set_cursor_x_eol():
-            if self._is_content_overflow_append():
-                self.cpos_x_buffer = self.width - 1
-                self.cpos_x_content = len(self.content[self.cpos_y_content])
-            else:
-                self.cpos_x_buffer = len(self.content[self.cpos_y_content])
-                self.cpos_x_content = len(self.content[self.cpos_y_content])
 
-        if self.state == self.STATE_APPENDING:
-            if len(self.content) == 0 or (len(self.content) == 1 and len(self.content[0] == 0)):
-                # content has only one line and its a dummy/empty line - nothing to change
+        if self._is_cursor_after_line_end():
+            if self.content_is_single_blank_line() or self.current_line_is_blank_and_first():
                 return
-            if self.content[self.cpos_y_content] == "" and self.cpos_y_content < len(self.content) - 1:
-                # on an empty line and NOT at end of content
-                # delete the empty line and put cursor on end of previous line, if no previous start of next
-                cpos = self.cpos_y_content
-                self.content.pop(self.cpos_y_content)
-                self._decr_cpos_y_content()
-                self._decr_cpos_y_buffer()
-                if self.cpos_y_content == 0:
-                    self.cpos_x_content = 0
-                    self.cpos_x_buffer = 0
-                else:
-                    if self._is_content_overflow_append():
-                        self.cpos_x_buffer = self.width - 1
-                        self.cpos_x_content = len(self.content[self.cpos_y_content])
-                    else:
-                        self.cpos_x_buffer = len(self.content[self.cpos_y_content])
-                        self.cpos_x_content = len(self.content[self.cpos_y_content])
-
-
-            if self.cpos_y_content == len(self.content) - 1 and self.content[len(self.content)-1] == "":
-                # at the start of a dummy/empty last line. 
-                # Remove dummy last line
-                state = self.state
-                self.content = self.content[0: self.cpos_y_content]
-                # put cursor on previous line in both content and view buffer
-                self.cpos_y_content = self.cpos_y_content - 1
-                self.cpos_y_buffer = self.cpos_y_buffer - 1
-                # leave the cursor x position to the code farther down in this function
-                pass
-            else:
-                self.content[self.cpos_y_content] = self.content[self.cpos_y_content][
-                                                0: len(self.content[self.cpos_y_content]) - 1]
-            if self._is_content_overflow_append():
-                self.cpos_x_buffer = self.width - 1
-                self.cpos_x_content = len(self.content[self.cpos_y_content])
-            else:
-                self.cpos_x_buffer = len(self.content[self.cpos_y_content])
-                self.cpos_x_content = len(self.content[self.cpos_y_content])
+            elif self.current_line_is_blank_and_not_last():
+                self.remove_current_line()
+                self.set_cursor_at_end_of_previous_line()
+            elif self.current_line_is_blank_and_last():
+                self.remove_last_line()
+                self.set_cursor_at_end_of_previous_line()
+            else: # current line is not blank
+                self.current_line_remove_last_char()
+                self.set_cursor_x_eol()
         else:
-            if not self._is_cursor_at_line_start():
+            if self._is_cursor_at_line_start():
+                if self.cpos_y_content == 0:
+                    pass
+                else:
+                    len_previous_line = len(self.content[self.cpos_y_content - 1])
+                    self.content = join_lines(self.content, self.cpos_y_content)
+                    self._decr_cpos_y_content()
+                    self._decr_cpos_y_buffer()
+                    # self._update_cursor_x()
+                    self.cpos_x_content = len_previous_line
+                    self.cpos_x_buffer = self.cpos_x_content if self.cpos_x_content < self.width else self.width - 1 
+                    # self.cpos_x_buffer = len_previous_line
+            else:
                 del_pos = self.cpos_x_content - 1
                 self.content[self.cpos_y_content] = self._content_remove_character(del_pos)
-
                 if self.cpos_x_buffer == self.cpos_x_content:
                     self._decr_cpos_x_buffer()
                 self._decr_cpos_x_content()
-            else:
-                if self.cpos_y_content == 0:
-                    pass
-                else:
-                    x = self.cpos_y_buffer  # dummy statement to ensure this brach is visibly executed
-                    s = self.content[self.cpos_y_content - 1]
-                    cpos_y_content = self.cpos_y_content
-                    self.content = join_lines(self.content, self.cpos_y_content)
-                    self.cpos_y_content = cpos_y_content - 1
-                    self._decr_cpos_y_buffer()
-                    self.cpos_x_content = len(s) - 1
-                    self.cpos_x_buffer = len(s) - 1
-                    pass
-
-            if len(self.content[self.cpos_y_content]) == 0:
-                self.state = self.STATE_APPENDING
-        self.set_paste_mode_off()
 
     # handle delete - character under cursor
     def handle_delete(self):
-        if self.state == self.STATE_APPENDING:
-            s = self.content[self.cpos_y_content]
-            x = len(s)
-            if self.cpos_x_content < len(s) and len(s) > 0:
-                # inside a non empty line - just delete the character and if necessary move the x-cusror to a character position
-                 self._content = _string_delete_character(self.content, self.cpos_x_content)
-            elif self.cpos_x_content == len(s):
-                # either at the end of a line or on an empty line - combine with following line
-                # if no following line do nothing
-                if self.cpos_y_content < len(self.content) - 1:
-                    # not last line
-                    self.content = join_lines(self.content, self.cpos_y_content + 1)
-            # if self.cpos_y_content < len(s):
-            #     ix = self.cpos_y_content
-            #     new_lines = join_lines(self.content, ix + 1)
-            #     self.content = new_lines
-            return
-        if (self.cpos_x_buffer == self.width - 1) and (self.cpos_x_content == len(self.content[self.cpos_y_content])):
-            pass
-        else:
-            # self.set_paste_mode_off()
-            if len(self.content[self.cpos_y_content]) == 0:
+        if self._is_cursor_after_line_end():
+            if self.content_is_single_blank_line():
                 return
-            pos = self.cpos_x_content
-            self.content[self.cpos_y_content] = self._content_remove_character(pos)
-            if len(self.content[self.cpos_y_content]) == 0:
-                self.state = self.STATE_APPENDING
-            else:
-                pass
+            elif self.current_line_is_blank_and_last():
+                return
+            elif self.current_line_is_blank_and_not_last():
+                self.remove_current_line()
+            else: # current line is not blank and cursor is after last character
+                if self._is_cursor_at_last_line():
+                    return
+                else:
+                    self.content = join_lines(self.content, self.cpos_y_content + 1)
+        else:
+            self.content[self.cpos_y_content] = _string_delete_character(self.content[self.cpos_y_content], self.cpos_x_content)
 
     # handle left arrow -
     def handle_left(self):
-        if self.state == self.STATE_APPENDING:
-            self.state = self.STATE_EDITING
+        """@TODO should move to previous line from start of line"""
         self._decr_cpos_x_buffer()
         self._decr_cpos_x_content()
-        self.set_paste_mode_off()
 
     # handle right arrow key
     def handle_right(self):
-        if self.state == self.STATE_APPENDING:
+        """@TODO should go to next line after end of current line"""
+        if self._is_cursor_after_line_end():
             return
         self._incr_cpos_x_buffer()
         self._incr_cpos_x_content()
 
-        if self.__is_cursor_after_line_end():
-            self.state = self.STATE_APPENDING
-        self.set_paste_mode_off()

@@ -97,6 +97,7 @@ class MultiLineView2:
         position without worrying about index-out-of-range"""
 
         cursor_line = self.view_buffer[self.cpos_y_buffer]
+        ln = len(cursor_line)
         if cursor_line == "":
             self.char_under_cursor = " "
             self.view_buffer[self.cpos_y_buffer] += " "
@@ -105,8 +106,10 @@ class MultiLineView2:
             self.view_buffer[self.cpos_y_buffer] += " "
         elif self.cpos_x_buffer < len(cursor_line):
             self.char_under_cursor = cursor_line[self.cpos_x_buffer: self.cpos_x_buffer + 1]
+            if self.char_under_cursor == "":
+                raise RuntimeError("char under cursor cannot be ''")
         else:
-            raise RuntimeError("cpos_y_buffer {} is too big".format(self.cpos_y_buffer))
+            raise RuntimeError("cpos_x_buffer {} len(cursor_line): {} is too big".format(self.cpos_x_buffer, ln))
 
     def make_view_buffer(self):
         """make an array with the same number of rows as the view buffer

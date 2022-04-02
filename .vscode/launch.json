@@ -186,6 +186,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "mult-line-test/backspace ",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry" :true,
+            "program": "${workspaceFolder}/tests/test_multi_line/test_mlb_backspace.py",
+            "cwd": "${workspaceFolder}/tests",
+            "env": {"PYTHONPATH": "${workspaceFolder}/simple_curses:${workspaceFolder}: ${PYTHONPATH}"},
+            "args": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "mult-line-test/delete ",
             "type": "python",
             "request": "launch",
