@@ -1,7 +1,6 @@
 from typing import List, Tuple, Dict, Any, cast
 import curses
 import curses.textpad
-from kurses_ex import make_subwin
 
 # import simple_curses.menu as M
 from simple_curses.widget_base import EditableWidgetBase, WidgetBase, MenuItem, is_editable, is_focusable
@@ -9,6 +8,7 @@ from simple_curses.layout import Rectangle, ColumnLayout
 from simple_curses.validator import *
 from simple_curses.title_widget import TitleWidget
 from simple_curses.menu import *
+from simple_curses.kurses_ex import make_subwin
 
 def is_next_control(ch):
     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT

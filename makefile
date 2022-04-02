@@ -5,12 +5,15 @@ PROJECT_NAME="simple_curses"
 LICENSE=MIT
 PREFIX=$(HOME)/.local
 NEW_VERSION=
-PYTHON=python3
-# this is rag-tap collection of convenience options, without any systematic
+PYTHON=python3.9
+# this is rag-tagp collection of convenience options, without any systematic
 # set for buildiing and distributing. Sorry
 
 install:
 	$(PYTHON) setup.py install --prefix=$(PREFIX) 
+
+develop:
+	$(PYTHON) setup.py develop --prefix=$(PREFIX)
 
 clean:
 	$(PYTHON) setup.py clean

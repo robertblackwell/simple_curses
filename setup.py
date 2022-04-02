@@ -26,16 +26,13 @@ long_description = long_desc()
 
 version = re.search(
     r'^__version__\s*=\s*"(.*)"',
-    open('simple_cursesl/main.py').read(),
+    open('simple_curses/version.py').read(),
     re.M
 ).group(1)
 
 setup(
     name="simple_curses",
     packages=["simple_curses"],
-    entry_points={
-        "console_scripts": ['smpl = smpl.main:main']
-    },
     version=version,
     description="A python script implementing a framework for simple cli apps using curses. Personal tool only.",
     long_description=long_description,
@@ -54,7 +51,7 @@ setup(
 
     author="Robert Blackwell",
     author_email="rob@whiteacorn.com",
-    url="http://github.com/robertoblackwell/smpl.git",
+    url="http://github.com/robertoblackwell/simple_curses.git",
     license='MIT',
     zip_safe=False
 )
