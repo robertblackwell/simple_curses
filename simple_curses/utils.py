@@ -5,7 +5,7 @@ import curses
 import curses.textpad
 import time
 import string
-from .colors import Colors
+from simple_curses.colors import Colors
 
 getch_flag = True
 

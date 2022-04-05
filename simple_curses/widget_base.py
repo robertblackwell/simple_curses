@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod, abstractproperty
 import curses
 import curses.textpad
 from typing import Any
-# from simple_curses import *
+
 from simple_curses.colors import Colors
 from simple_curses.utils import *
 from simple_curses.multi_line_buffer import MultiLineBuffer
@@ -13,14 +13,6 @@ class WidgetBase(ABC):
     """A basic widget that can display fixed text on the screen"""
 
     # @classmethod
-    # @abstractmethod
-    # def classmeth(cls):
-    #     pass
-
-    # @abstractmethod
-    # def foobar(self):
-    #     pass
-
     @abstractmethod
     def get_height(self) -> int:
         raise NotImplementedError()
@@ -93,8 +85,6 @@ class MenuItem(MenuBase):
         self.app = app
         self.win = None
         self.has_focus = False
-        # self.row = relative_row
-        # self.col = relative_col
         self.height = height
         self.width = width
         self.start_row = 0
@@ -176,8 +166,6 @@ class DummyMultiLineWidget(EditableWidgetBase):
         self.line_number_win = None
         self.id: str = key
         self.has_focus: bool = False
-        # self.row: int = row
-        # self.col: int = col
         self.data = data
         self.label: str = label
         self.content_width = content_width
@@ -198,7 +186,6 @@ class DummyMultiLineWidget(EditableWidgetBase):
         self.start_col: int = 0
         self.paste_mode: bool = False
 
-        # self.attributes = attributes
         self.lines_view = None
         self.outter_win = None
         self.app = app
@@ -213,15 +200,11 @@ class DummyMultiLineWidget(EditableWidgetBase):
         self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 1,
                                     1)
 
-    # def set_app(self, app: app):
-    #     self.app = app
-
     def add_line(self, line: str):
         self.mu_lines_buffer.append_line(line)
 
     def focus_accept(self):
         self.has_focus = True
-        # self.position_cursor()
 
     def focus_release(self):
         self.has_focus = False

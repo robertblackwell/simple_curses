@@ -16,8 +16,6 @@ class TitleWidget(WidgetBase):
         self.title = label
         self.width = len(label) + 2
         self.height = 1
-
-        # self.attributes = attributes
         self.outter_win = None
         self.win = None
         self.app = app

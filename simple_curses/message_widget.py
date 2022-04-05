@@ -60,10 +60,6 @@ class MessageWidget(WidgetBase, ABC):
         self.content_win = self.win.subwin(h_sub, w_sub, r_sub, c_sub)
         pass
 
-    # def set_form(self, form):
-    #     self.form = form
-    #     pass
-
     def msg_error(self, msg):
         label = " ERROR: "
         self.msg_post(label, msg, Colors.msg_error_attr())

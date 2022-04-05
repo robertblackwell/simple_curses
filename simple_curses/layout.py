@@ -48,13 +48,6 @@ class WidgetLayout:
         if self.xmax < w.get_width():
             raise ValueError("xmax: {}, w.get_width(): {}".format(self.xmax, w.get_width()))
 
-    # def get_height(self):
-    #     return self.y_max
-
-    # def get_width(self):
-    #     return self.x_max
-
-
 class WidgetColumn:
     def __init__(self, height, width, widget_layouts: List[WidgetLayout]):
         # self.height = height

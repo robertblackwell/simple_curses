@@ -6,12 +6,9 @@ from .validator import *
 from .widget_base import EditableWidgetBase
 
 
-# A widget that is either ON or OFF
 class ToggleWidget(EditableWidgetBase):
-    @classmethod
-    def classmeth(cls):
-        print("hello")
-
+    """A widget that is either ON or OFF"""
+    
     def __init__(self, app, key, label, width, data, values: List[str]):
 
         def calc_width(svalues: List[str]):
@@ -26,25 +23,15 @@ class ToggleWidget(EditableWidgetBase):
         self.data = data
         self.content = values
         self.current_index = 0 #index into values[]
-        # self.initial_value = initial_value
-        # try:
-        #     self.current_index = values.index(initial_value)
-        # except ValueError:
-        #     raise ValueError("initial_value {} is not list of possible values {}".format(initial_value, ", ".join(values)))
         self.label = label + ": "
         self.width = calc_width(values)
         self.height = 1
         self.start_row = 0
         self.start_col = 0
-
-        # self.attributes = attributes
         self.app = app
 
     def set_enclosing_window(self, win: curses.window) -> None:
         self.win = win
-
-    # def set_app(self, app: app) -> None:
-    #     self.app = app
 
     def get_width(self) -> int:
         return len(self.label) + self.width + 2
@@ -60,13 +47,8 @@ class ToggleWidget(EditableWidgetBase):
 
     def get_value(self) -> bool:
         return self.current_index == 1
-        # return WidgetSingleValue(self.content[self.current_index], self.current_index == 1, True)
 
     def set_value(self, onoff):
-        # if isinstance(onoff, WidgetSingleValue):
-        #     value = onoff.str_value
-        # else:
-        #     value = onoff
         value = onoff
         if type(value) == str and onoff in self.content:
             self.current_index = self.content.index(onoff)
@@ -78,8 +60,8 @@ class ToggleWidget(EditableWidgetBase):
             raise ValueError("onoff is invalid {} {}".format(type(onoff), onoff))
 
 
-    # paint attributes for the content area so that it is visible to used
     def paint_content_area_background(self) -> None:
+        """paint attributes for the content area so that it is visible to used"""
         tmp = self.width + len(self.label) - 1
         for i in range(0, tmp):
             if self.has_focus:
@@ -87,8 +69,8 @@ class ToggleWidget(EditableWidgetBase):
             else:
                 self.win.addstr(0, i, "_")
 
-    # called by the containing app to paint/render the Widget
     def render(self) -> None:
+        """called by the containing app to paint/render the Widget"""
         self.paint_content_area_background()
         self.win.addstr(0, 0, self.label, curses.A_BOLD)
         display = self.content[self.current_index]
@@ -99,20 +81,20 @@ class ToggleWidget(EditableWidgetBase):
 
         self.win.noutrefresh()
 
-    # 
-    # Positions the cursor to the current active position and makes sure it blinks.
-    # The current active position is usually 1 space past the end of the currently input text
-    # 
     def position_cursor(self) -> None:
+        """ 
+        Positions the cursor to the current active position and makes sure it blinks.
+        The current active position is usually 1 space past the end of the currently input text
+        """
         ch_under_cursor = "Y" if self.content else "N"
         self.win.addnstr(0, len(self.label), ch_under_cursor, 1,
                          curses.A_REVERSE + curses.A_BOLD)
         self.win.noutrefresh()
 
-    # 
-    # called by the app instance to give this control focus
-    # 
     def focus_accept(self) -> None:
+        """ 
+        called by the app instance to give this control focus
+        """ 
         self.has_focus = True
         self.position_cursor()
 
@@ -120,20 +102,13 @@ class ToggleWidget(EditableWidgetBase):
         self.has_focus = False
 
 
-
-    # 
-    # Called by inpput handling functions to signal to user that the last keysttroke was
-    # invalid. Dont quite know what to do yet
-    # 
-    def invalid_input(self):
-        pass
-
-    # When a Widget has the focus every keystroke (with some small exceptions)
-    # get passed to this function.
-    # If the Widget handles the keystroke then it should return true
-    # else should return false
-    # 
     def handle_input(self, ch) -> bool:
+        """
+        When a Widget has the focus every keystroke (with some small exceptions)
+        get passed to this function.
+        If the Widget handles the keystroke then it should return true
+        else should return false
+        """ 
         did_handle_ch = True
         if (ch <= 255) and (chr(ch) in ["\n", "\r", " "]):
             self.current_index = (self.current_index + 1) % 2

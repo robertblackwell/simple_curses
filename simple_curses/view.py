@@ -232,13 +232,12 @@ class View:
     def setup(self):
         self.menu_height = 5
         self.data_entry_height = self.height - self.menu_height  # - self.title_height - self.msg_height + 2
-        body_start_col = 0
+        # body_start_col = 0
         self.data_entry_win = curses.newwin(self.data_entry_height, self.width, self.outter_y_begin + 1, 0)
         self.menu_win = curses.newwin(self.menu_height, self.width, self.outter_y_begin + self.data_entry_height, 0)
-        # self.msg_win.bkgd(" ", Colors.button_focus())
-        body_height = 0
-        col = body_start_col + 4
-        c = 1
+        # body_height = 0
+        # col = body_start_col + 4
+        # c = 1
         self.title_widget = TitleWidget(self, "", "SomeTitle", 10, 1, "")
         self.title_widget.set_enclosing_window(self.data_entry_win)
 

@@ -73,15 +73,15 @@ class MultiLineBuffer:
     This class provides  
     -   fixed width, fixed length multi-line buffer that acts as a display window or view into an arbitary length array of string.
     -   it maintains two cursor positions:
-            - cpos_y_content, cpos_x_content is the position of the cursor within the array of sttrings
+            - cpos_y_content, cpos_x_content is the position of the cursor within the array of strings
             - cpos_y_buffer, cpos_x_buffer is the position within the fixed width, fixed height display buffer
 
     -   There is an auxilliary class MultiLineView which uses the two cursor positions to compute
         the text that should be displayed by a MultiLineWidget 
      
-    Methods are provided for the buffer content and cursor position as a result of:
+    Methods are provided to calculate the buffer content and cursor positions as a result of:
     -     appending/inserting characters
-    -     backspacing to delete the previous character
+    -     backspacing to delete the character preceeding
     -     delete key to delete the character under the cursor
     -     up/down arrow keys for navigating between lines in the array of strings
     -     left and right arrow navigation within a single line
@@ -93,21 +93,11 @@ class MultiLineBuffer:
     def __init__(self, lines: List[str], height: int, width: int):
 
         self.content = [""]
-        # width of the display buffer
         self.width = width
         self.view_height = height
-
-        # 
-        # Next 4 properties specify the cursor position in the view buffer and in the 
-        #  content array and current content array element
-        # 
-        # the current cursor position in the current line of the buffer
         self.cpos_x_buffer = 0
-        # index of the current view line
         self.cpos_y_buffer = 0
-        # cursor position in the content string element of the content array
         self.cpos_x_content = 0
-        # index of the current array element
         self.cpos_y_content = 0
 
         for line in lines:
@@ -274,7 +264,7 @@ class MultiLineBuffer:
     def get_value(self):
         return self.content
 
-    def get_view(self):
+    def get_view(self) -> MultiLineView2:
         return MultiLineView2(
             content_lines=self.content,
             cpos_y_content=self.cpos_y_content,
