@@ -66,10 +66,9 @@ readme:
 
 .PHONY: dist
 dist:
-	rm -rfv smpl.egg*
-	make readme
-	make git_commit
-	make bumpminor
+	rm -rfv simple_curses.egg*
+	# make git_commit
+	# make bumpminor
 	$(PYTHON) setup.py sdist
 
 upload: 
