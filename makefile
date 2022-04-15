@@ -9,6 +9,9 @@ PYTHON=python3.9
 # this is rag-tagp collection of convenience options, without any systematic
 # set for buildiing and distributing. Sorry
 
+mkenv:
+	python3 -m virtualenv venv
+
 install:
 	$(PYTHON) setup.py install --prefix=$(PREFIX) 
 
