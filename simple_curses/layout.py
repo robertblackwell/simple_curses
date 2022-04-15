@@ -8,7 +8,7 @@ class HStack:
 
 
 class VStack:
-    def __init__(self, win: curses.window, widgets: List[WidgetBase]):
+    def __init__(self, win, widgets: List[WidgetBase]):
         pass
 
 

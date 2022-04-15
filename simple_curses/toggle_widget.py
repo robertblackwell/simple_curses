@@ -30,7 +30,7 @@ class ToggleWidget(EditableWidgetBase):
         self.start_col = 0
         self.app = app
 
-    def set_enclosing_window(self, win: curses.window) -> None:
+    def set_enclosing_window(self, win) -> None:
         self.win = win
 
     def get_width(self) -> int:

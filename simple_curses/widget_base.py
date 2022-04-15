@@ -30,7 +30,7 @@ class WidgetBase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def set_enclosing_window(self, win: curses.window) -> None:
+    def set_enclosing_window(self, win) -> None:
         raise NotImplementedError()
 
     def set_parent_view(self, view):
@@ -90,7 +90,7 @@ class MenuItem(MenuBase):
         self.start_row = 0
         self.start_col = 0
 
-    def set_enclosing_window(self, win: curses.window) -> None:
+    def set_enclosing_window(self, win) -> None:
         self.win = win
 
     def get_width(self) -> int:

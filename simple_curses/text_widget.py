@@ -33,7 +33,7 @@ class TextWidget(EditableWidgetBase):
         self.display_length = 0  # is width-1 if we are adding to the end of the string in which case the cursor is over the 'next' slot
         # Deprecated
 
-    def set_enclosing_window(self, win: curses.window) -> None:
+    def set_enclosing_window(self, win) -> None:
         self.win = win
 
     def get_width(self) -> int:

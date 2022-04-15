@@ -37,7 +37,7 @@ def fn_key_description(k1):
 class BannerView:
     """A class that implements a view that dispays a single banner or info widget in the middle of the Form body. """
 
-    def __init__(self, app, ident: str, label: str, stdscr, window: curses.window, widget: WidgetBase):
+    def __init__(self, app, ident: str, label: str, stdscr, window, widget: WidgetBase):
         # the outter_win will contain all the dataentry fields and across the bottom the view menu
         self.outter_win = window
         self.stdscr = stdscr
@@ -91,7 +91,7 @@ class TopMenu:
     to switch views
     """
 
-    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[MenuItem]):
+    def __init__(self, form, stdscr, menu_win, menu_items: List[MenuItem]):
         self.outter_win = menu_win
         self.height, self.width = menu_win.getmaxyx()
         ybeg, xbeg = menu_win.getbegyx()
@@ -120,7 +120,7 @@ class ViewMenu:
     """This is a Horizontal Stack, right justified, of menu items. Used to provide a menu inside a view
     """
 
-    def __init__(self, app, parent_view, stdscr, menu_win: curses.window, menu_items: List[MenuItem]):
+    def __init__(self, app, parent_view, stdscr, menu_win, menu_items: List[MenuItem]):
         self.app = app
         self.parent_view = parent_view
         self.outter_win = menu_win
@@ -149,7 +149,7 @@ class ViewMenu:
        
 class ViewBody:
 
-    def __init__(self, form, stdscr, win: curses.window, widgets: List[WidgetBase]):
+    def __init__(self, form, stdscr, win, widgets: List[WidgetBase]):
         self.outter_win = win
         yh, xw = win.getmaxyx()
         ybeg, xbeg = win.getbegyx()
@@ -200,7 +200,7 @@ class View:
 
     """
 
-    def __init__(self, app, ident: str, title: str, stdscr, window: curses.window, widgets: List[WidgetBase],
+    def __init__(self, app, ident: str, title: str, stdscr, window, widgets: List[WidgetBase],
                  menu_items: List[MenuItem]):
         # the outter_win will contain all the dataentry fields and across the bottom the view menu
         self.view_menu = None

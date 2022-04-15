@@ -59,7 +59,7 @@ def fn_key_description(k1):
 class HStack:
     pass
 class VStack:
-    def __init__(self, win: curses.window, widgets: List[WidgetBase]):
+    def __init__(self, win, widgets: List[WidgetBase]):
         pass
 class WidgetLayout:
     def __init__(self, w:WidgetBase, y_begin, x_begin):
@@ -83,7 +83,7 @@ class WidgetAlllocation:
 
 class ViewBody:
 
-    def __init__(self, form, stdscr, win:curses.window, widgets: List[WidgetBase]):
+    def __init__(self, form, stdscr, win, widgets: List[WidgetBase]):
         self.outter_win = win
         h, w = win.getmaxyx()
         ybeg, xbeg = win.getbegyx()
@@ -174,7 +174,7 @@ class TopMenu:
     """This is a Horizontal Stack, LEFT justified, of menu items. Used for a Form top menu
     to switch views
     """
-    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
+    def __init__(self, form, stdscr, menu_win, menu_items: List[M.MenuItem]):
         self.outter_win = menu_win
         self.height, self.width = menu_win.getmaxyx()
         ybeg, xbeg = menu_win.getbegyx()
@@ -202,7 +202,7 @@ class TopMenu:
 class ViewMenu:
     """This is a Horizontal Stack, right justified, of menu items. Used to provide a menu inside a view
     """
-    def __init__(self, form, stdscr, menu_win: curses.window, menu_items: List[M.MenuItem]):
+    def __init__(self, form, stdscr, menu_win, menu_items: List[M.MenuItem]):
         self.outter_win = menu_win
         self.height, self.width = menu_win.getmaxyx()
         ybeg, xbeg = menu_win.getbegyx()

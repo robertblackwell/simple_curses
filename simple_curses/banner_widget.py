@@ -56,7 +56,7 @@ class BlockTextWidget(WidgetBase):
         self.text_block = text_block
         self.app = app
         self.parent_view = None
-        self.outter_win:Union[curses.window, None] = None
+        self.outter_win = None
         self.banner_win = None
         self.has_focus = False
 
@@ -75,7 +75,7 @@ class BlockTextWidget(WidgetBase):
     def set_parent_view(self, view):
         self.parent_view = view
 
-    def set_enclosing_window(self, window: curses.window):
+    def set_enclosing_window(self, window):
         self.outter_win = window
         ybeg, xbeg = window.getbegyx()
         ym, xm = window.getmaxyx()

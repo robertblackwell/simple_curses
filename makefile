@@ -10,7 +10,7 @@ PYTHON=python3.9
 # set for buildiing and distributing. Sorry
 
 mkenv:
-	python3 -m virtualenv venv
+	python3 -m virtualenv env
 
 install:
 	$(PYTHON) setup.py install --prefix=$(PREFIX) 

@@ -21,7 +21,7 @@ class TitleWidget(WidgetBase):
         self.app = app
 
 
-    def set_enclosing_window(self, win: curses.window):
+    def set_enclosing_window(self, win):
         self.outter_win = win
         ym, xm = self.outter_win.getmaxyx()
         ybeg = (ym - self.width) // 2

@@ -22,7 +22,7 @@ class DummyMenuItem(MenuBase):
         self.start_col = 0
 
 
-    def set_enclosing_window(self, win: curses.window) -> None:
+    def set_enclosing_window(self, win) -> None:
         self.win = win
 
     def get_width(self) -> int:

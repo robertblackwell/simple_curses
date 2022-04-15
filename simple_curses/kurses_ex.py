@@ -3,13 +3,13 @@ import curses
 # 
 # Module which holds local extensions to curses
 # 
-def make_subwin(win: curses.window, nbr_rows: int, nbr_cols: int, y_begin_relative: int, x_begin_relative: int): 
+def make_subwin(win, nbr_rows: int, nbr_cols: int, y_begin_relative: int, x_begin_relative: int): 
     """
     A slightly safer way of making a curses subwin - it checks that start and end points are inside the parent window
 
     Parameters
     ----------
-        win: curses.window     
+        win     
             parent window - the subwindow must be entirely within the parent window
         nbr_rows: int          
             number of rows in sub window
