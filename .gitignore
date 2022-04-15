@@ -1,7 +1,5 @@
 
-project_pig/
-smpl/project_pig/
-.DS*
+originals/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -43,6 +41,8 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+
+junk/
 
 # Unit test / coverage reports
 htmlcov/
