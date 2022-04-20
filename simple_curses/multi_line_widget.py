@@ -2,11 +2,11 @@ import curses
 import curses.textpad
 from typing import List, Any
 # from simple_curses import *
-from .colors import Colors
-from .utils import *
+from .keyboard import *
 from .widget_base import WidgetBase, EditableWidgetBase
 from .multi_line_buffer import MultiLineBuffer
 from .kurses_ex import make_subwin
+from simple_curses.theme import Theme
 
 # xlines = [
 #     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
@@ -130,21 +130,24 @@ class MultiLineWidget(EditableWidgetBase):
         """Print the title in the middle of the top row - inside the top line of the box"""
         tl = len(self.label)
         t_x_begin = (self.width - tl) // 2
-        self.outter_win.addstr(0, t_x_begin, self.label)
+        self.outter_win.addstr(0, t_x_begin, self.label, Theme.instance().label_attr(self.has_focus))
 
     def render_info(self):
         """render the info box underneath the list of strings. The box outline
         should merge witht he box of the content window"""
-        self.info_win.bkgd(" ", Colors.white_black())
+        self.info_win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
         # self.info_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
-        self.info_win.addstr(1, 3, "Navigate these lines with arrow keys ", curses.A_BOLD)
-        self.info_win.addstr(2, 3, "Type characters or Paste to insert.", curses.A_BOLD)
-        self.info_win.addstr(3, 3, "Del and BS keys to delete", curses.A_BOLD)
+        self.info_win.addstr(1, 3, "Navigate these lines with arrow keys ", Theme.instance().label_attr(self.has_focus))
+        self.info_win.addstr(2, 3, "Type characters or Paste to insert.", Theme.instance().label_attr(self.has_focus))
+        self.info_win.addstr(3, 3, "Del and BS keys to delete", Theme.instance().label_attr(self.has_focus))
         pass
 
     def render(self):
         self.outter_win.clear()
+        self.outter_win.attron(Theme.instance().label_attr(self.has_focus))
         self.outter_win.box()
+        self.outter_win.attron(Theme.instance().label_attr(self.has_focus))
+
         # self.outter_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
         self.render_title()
 
@@ -158,11 +161,11 @@ class MultiLineWidget(EditableWidgetBase):
             ln_str = "{0:>2} ".format(line_number)
             y1m, x1m = self.content_win.getmaxyx()
             y2m, x2m = self.line_number_win.getmaxyx()
-            self.content_win.addstr(r, 0, txt, Colors.green_black())
-            self.line_number_win.addstr(r, 0, ln_str, Colors.white_black())
+            self.content_win.addstr(r, 0, txt,  Theme.instance().value_attr(self.has_focus))
+            self.line_number_win.addstr(r, 0, ln_str, Theme.instance().value_attr(False))
             if view.cpos_y_buffer == r and self.has_focus:
                 self.content_win.addstr(r, view.cpos_x_buffer, view.char_under_cursor,
-                                        Colors.green_black() + curses.A_REVERSE + curses.A_STANDOUT)
+                                        Theme.instance().cursor_attr())
             r += 1
 
         self.render_info()

@@ -3,34 +3,38 @@ import curses
 import curses.textpad
 
 from simple_curses.message_widget import MessageWidget
-from simple_curses.utils import is_control_v
+from simple_curses.keyboard import is_control_v
+from simple_curses.colors import Colors
+from simple_curses.theme import Theme
+from simple_curses.keyboard import is_next_control, is_prev_control
 
-def is_next_control(ch):
-    return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
-
-
-def is_prev_control(ch):
-    return ch == "KEY_LEFT" or ch == curses.KEY_LEFT
-
-
-def is_function_key(ch):
-    tmp = ch[0:6]
-    return tmp == "KEY_F("
+# def is_next_control(ch):
+#     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
 
 
-def fn_key_match(k1, k2):
-    return k1 == k2
+# def is_prev_control(ch):
+#     return ch == "KEY_LEFT" or ch == curses.KEY_LEFT
 
 
-def fn_key_description(k1):
-    s1 = k1.replace("KEY_F(", "")
-    s2 = s1.replace(")", "")
-    s3 = "F" + s2
-    return s3
+# def is_function_key(ch):
+#     tmp = ch[0:6]
+#     return tmp == "KEY_F("
+
+
+# def fn_key_match(k1, k2):
+#     return k1 == k2
+
+
+# def fn_key_description(k1):
+#     s1 = k1.replace("KEY_F(", "")
+#     s2 = s1.replace(")", "")
+#     s3 = "F" + s2
+#     return s3
 
 
 class AppBase:
     def __init__(self, stdscr, body_height, width, context, input_timeout_ms=2):
+        self.theme = Theme.instance()
         self.width = width
         self.views = None
         self.data = None
@@ -171,10 +175,17 @@ class AppBase:
                 #     self.handle_menu(ch)
 
     def box_form(self):
+        self.stdscr.bkgd(" ", Colors.black_white())
         self.stdscr.border(0, 0, 0, 0, 0, 0, 0)
 
     def make_boxes(self):
+        # a1 = Colors.black_white()
+        # a11 = Colors.white_black()
+        # a2 = Theme.bkgd_attr()
+        # raise RuntimeError()
+        self.title_win.bkgd(" ", Theme.instance().bkgd_attr());
         self.title_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
+        self.body_win.bkgd(" ", Theme.instance().bkgd_attr());
         self.body_win.border(0, 0, " ", " ", curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
 
     def render(self):

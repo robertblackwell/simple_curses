@@ -2,7 +2,7 @@ import curses
 import curses.textpad
 
 from .colors import Colors
-from .utils import *
+from .keyboard import *
 
 
 class DummyWidget:

@@ -4,7 +4,7 @@ import curses.textpad
 from typing import Any
 
 from simple_curses.colors import Colors
-from simple_curses.utils import *
+from simple_curses.keyboard import *
 from simple_curses.multi_line_buffer import MultiLineBuffer
 from simple_curses.kurses_ex import *
 

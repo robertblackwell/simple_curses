@@ -25,7 +25,6 @@ class Rectangle:
         self.y_begin = y_beg
         self.x_begin = x_beg
 
-
 class WidgetLayout:
     """
     represents the rectangle allocated to contain a widget
@@ -63,7 +62,6 @@ class WidgetColumn:
     def widget_count(self):
         return len(self.widget_layouts)
 
-
 class WidgetAlllocation:
     def __init__(self):
         self.widget_columns: List[WidgetColumn] = []
@@ -81,7 +79,6 @@ class WidgetAlllocation:
 
     def column_count(self):
         return len(self.widget_columns)
-
 
 class ColumnLayout:
     """Takes a list of widgets and arranges them into columns so that they will fit into
@@ -197,13 +194,11 @@ class ColumnLayout:
                 self.add_widget_to_layout(w)
             self.w_index += 1
 
-
 class WidgetPosition:
     def __init__(self, beg_y, beg_x, widget):
         self.beg_y = beg_y
         self.beg_x = beg_x
         self.widget = widget
-
 
 class VerticalStack:
     def __init__(self, begin_pos, max_pos, widgets):
@@ -249,7 +244,6 @@ class VerticalStack:
     def compute_layout(self):
         self.vertical_space()
         return self.widget_positions
-
 
 class HorizontalStack:
     def __init__(self, max_pos, widgets):

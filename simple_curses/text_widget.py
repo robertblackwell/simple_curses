@@ -2,9 +2,10 @@ import curses.textpad
 import pathlib
 import ipaddress
 from typing import Any
-from .utils import *
+from .keyboard import *
 from .widget_base import EditableWidgetBase
 from .string_buffer import StringBuffer
+from simple_curses.theme import Theme
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls
@@ -46,32 +47,41 @@ class TextWidget(EditableWidgetBase):
         self.string_buffer.clear()
 
     def paint_content_area_background(self) -> None:
-        """paint attributes for the content area so that it is visible to used"""
+        """paint attributes for the content area so that it is visible to use"""
         tmp = self.width + len(self.label) - 1
         for i in range(0, tmp):
             if self.has_focus:
-                self.win.addstr(0, i, "_")
+                self.win.addstr(0, i, "_", Theme.instance().value_attr(True))
             else:
-                self.win.addstr(0, i, "_")
+                self.win.addstr(0, i, "_", Theme.instance().value_attr(False))
 
     def render(self) -> None:
         self.paint_content_area_background()
-        self.win.addstr(0, 0, self.label, curses.A_BOLD)
-        self.win.addstr(0, len(self.label), self.string_buffer.display_string)
+        self.win.addstr(0, 0, self.label, Theme.instance().label_attr(self.has_focus))
         if self.has_focus:
+            self.win.addstr(0, len(self.label), self.string_buffer.display_string, Theme.instance().value_attr(self.has_focus))
             self.position_cursor()
+        else:
+            self.win.addstr(0, len(self.label), self.string_buffer.display_string, Theme.instance().value_attr(self.has_focus))
+            
         self.win.noutrefresh()
 
     def position_cursor(self) -> None:
         """
-        Positions the cursor to the current active position and makes sure it blinks.
-        The current active position is usually 1 space past the end of the currently input text
+        Move the cursor to the current active position and makes sure it blinks.
+        Should do nothing when this widget does not have focus
         """
+        # cur_attr = Colors.yellow_black() + curses.A_REVERSE + curses.A_BLINK if False else Theme.instance().cursor_attr()
+        cur_attr = Theme.instance().cursor_attr()
 
         ch_under_cursor = self.string_buffer.display_string[self.string_buffer.cpos_buffer]
-        self.win.addnstr(0, len(self.label) + self.string_buffer.cpos_buffer, ch_under_cursor, 1,
-                         curses.A_REVERSE + curses.A_BLINK)
-        self.win.noutrefresh()
+        if self.has_focus:
+            self.win.addnstr(0, len(self.label) + self.string_buffer.cpos_buffer, ch_under_cursor, 1, cur_attr)
+        # else:
+        #     self.win.addnstr(0, len(self.label) + self.string_buffer.cpos_buffer, ch_under_cursor, 1,
+        #                     curses.A_REVERSE + curses.A_BLINK)
+
+        # self.win.noutrefresh()
 
     def focus_accept(self) -> None:
         """called by the app instance to give this control focus"""
@@ -104,7 +114,7 @@ class TextWidget(EditableWidgetBase):
         else should return false
         """
         did_handle_ch = True
-        if (ch <= 255) and (chr(ch) in string.printable):
+        if (ch <= 255) and is_printable(ch) : 
             self.string_buffer.handle_character(chr(ch))
         elif is_edit_back(ch):
             self.string_buffer.handle_backspace()

@@ -4,7 +4,7 @@ import textwrap
 from abc import ABC
 from .colors import Colors
 from .widget_base import WidgetBase
-
+from simple_curses.theme import Theme
 
 class MessageWidget(WidgetBase, ABC):
     """This widget provides a box into which messsages can be written.
@@ -62,15 +62,15 @@ class MessageWidget(WidgetBase, ABC):
 
     def msg_error(self, msg):
         label = " ERROR: "
-        self.msg_post(label, msg, Colors.msg_error_attr())
+        self.msg_post(label, msg, Theme.instance().msg_error_attr())
 
     def msg_warn(self, msg):
         label = " WARNING: "
-        self.msg_post(label, msg, Colors.msg_warn_attr())
+        self.msg_post(label, msg, Theme.instance().msg_warn_attr())
 
     def msg_info(self, msg):
         label = " INFO: "
-        self.msg_post(label, msg, Colors.msg_info_attr())
+        self.msg_post(label, msg, Theme.instance().msg_info_attr())
 
     def msg_post(self, label, msg, attr):
         self.msg_count += 1
@@ -93,7 +93,10 @@ class MessageWidget(WidgetBase, ABC):
 
     def render(self):
         self.win.clear()
+        self.win.bkgd(" ", Theme.instance().bkgd_attr())
+        # self.win.attron(Theme.instance().cursor_attr())
         self.win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
+        # self.win.attron(Theme.instance().label_attr(False))
         active_msgs = self.messages[len(self.messages) - self.height + 2:len(self.messages)]
         r = 1
         for msg in active_msgs:

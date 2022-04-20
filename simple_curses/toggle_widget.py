@@ -1,10 +1,10 @@
 import curses.textpad
 from typing import List
 
-from .utils import *
+from .keyboard import *
 from .validator import *
 from .widget_base import EditableWidgetBase
-
+from simple_curses import Theme 
 
 class ToggleWidget(EditableWidgetBase):
     """A widget that is either ON or OFF"""
@@ -29,12 +29,13 @@ class ToggleWidget(EditableWidgetBase):
         self.start_row = 0
         self.start_col = 0
         self.app = app
+        self.help_message = "Hit space key to toggle"
 
     def set_enclosing_window(self, win) -> None:
         self.win = win
 
     def get_width(self) -> int:
-        return len(self.label) + self.width + 2
+        return len(self.label) + self.width + 2 + len(self.help_message)
 
     def get_height(self) -> int:
         return 1
@@ -70,14 +71,19 @@ class ToggleWidget(EditableWidgetBase):
                 self.win.addstr(0, i, "_")
 
     def render(self) -> None:
+        self.win.clear()
         """called by the containing app to paint/render the Widget"""
         self.paint_content_area_background()
-        self.win.addstr(0, 0, self.label, curses.A_BOLD)
+        self.win.addstr(0, 0, self.label, Theme.instance().label_attr(self.has_focus))
         display = self.content[self.current_index]
         if self.has_focus:
-            self.win.addstr(0, len(self.label), display, curses.A_REVERSE)
+            self.win.addstr(0, len(self.label), display, Theme.instance().cursor_attr())
+            self.win.addstr(0, len(self.label) + len(display) + 1, self.help_message, 
+                Theme.instance().value_attr(self.has_focus))
         else:
-            self.win.addstr(0, len(self.label), display)
+            self.win.addstr(0, len(self.label), display, Theme.instance().value_attr(self.has_focus))
+            # self.win.addstr(0, len(self.label) + len(display) + 1, "   ", 
+            #     Theme.instance().value_attr(self.has_focus))
 
         self.win.noutrefresh()
 

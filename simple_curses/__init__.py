@@ -1,6 +1,6 @@
 print("RB importing simple_curses package")
 from .colors            import *
-from .utils             import *
+from .keyboard             import *
 from .kurses_ex         import *
 from .validator         import *
 from .action_base       import *

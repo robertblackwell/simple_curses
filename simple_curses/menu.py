@@ -3,7 +3,7 @@ import curses
 import curses.textpad
 from .colors import Colors
 from .widget_base import MenuBase
-from .utils import  is_return, is_space, is_linefeed
+from .keyboard import  is_return, is_space, is_linefeed
 
 class DummyMenuItem(MenuBase):
     def __init__(self, app, label, width, height, attributes, function, context):
