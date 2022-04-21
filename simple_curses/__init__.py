@@ -9,7 +9,7 @@ from .multi_line_view   import *
 from .multi_line_buffer import *
 from .widget_base       import *
 from .banner_widget     import *
-# from .dropdown_widget   import *
+from .dropdown_widget   import *
 from .dummy_windget     import *
 from .layout            import *
 from .lines_buffer      import *

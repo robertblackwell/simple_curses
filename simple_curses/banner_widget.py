@@ -52,7 +52,9 @@ help_lines = [
 class BlockTextWidget(WidgetBase):
     def __init__(self, app, text_block: List[str]):
         self.height = len(text_block)
-        self.width = len(text_block[0])
+        self.width = 0
+        for line in text_block:
+            self.width = len(line) if len(line) > self.width else self.width
         self.text_block = text_block
         self.app = app
         self.parent_view = None
@@ -102,7 +104,7 @@ class BlockTextWidget(WidgetBase):
         for line in self.text_block:
             ln = len(line)
             ym, xm = self.banner_win.getmaxyx()
-            self.banner_win.addstr(r, 0, line)
+            self.banner_win.addstr(r, 0, line[0:xm-1], Colors.yellow_black())
             r += 1
 
         self.banner_win.noutrefresh()

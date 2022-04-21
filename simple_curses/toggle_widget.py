@@ -12,6 +12,7 @@ class ToggleWidget(EditableWidgetBase):
     def __init__(self, app, key, label, width, data, values: List[str]):
 
         def calc_width(svalues: List[str]):
+            """calc width of the toggle strings"""
             w = 0
             for v in svalues:
                 w = len(v) if len(v) > w else w

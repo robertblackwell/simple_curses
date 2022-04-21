@@ -33,7 +33,7 @@ from simple_curses.keyboard import is_next_control, is_prev_control
 
 
 class AppBase:
-    def __init__(self, stdscr, body_height, width, context, input_timeout_ms=2):
+    def __init__(self, stdscr, body_height, width, msg_height=20, context=None, input_timeout_ms=2):
         self.theme = Theme.instance()
         self.width = width
         self.views = None
@@ -49,7 +49,7 @@ class AppBase:
         self.input_timeout_ms = input_timeout_ms
 
         # self.menu_height = 5
-        self.msg_height = 20
+        self.msg_height = msg_height
         self.title_height = 5
         self.body_height = body_height
         self.height = self.body_height + self.title_height + self.msg_height + 2

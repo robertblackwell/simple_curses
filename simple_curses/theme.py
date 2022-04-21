@@ -24,7 +24,7 @@ class WhiteBackground:
 class BlackBackground:
     def __init__(self):
         self._bkgd_attr = Colors.white_black()
-        self._cursor_attr = Colors.yellow_black() + curses.A_BLINK  + curses.A_REVERSE #+ curses.A_STANDOUT
+        self._cursor_attr = Colors.yellow_black() + curses.A_REVERSE #+ curses.A_STANDOUT
         self._label_focus_attr = Colors.green_black()
         self._label_nofocus_attr = Colors.white_black()
         self._value_focus_attr = Colors.green_black()
