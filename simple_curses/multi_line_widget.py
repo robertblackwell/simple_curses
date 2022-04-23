@@ -2,10 +2,10 @@ import curses
 import curses.textpad
 from typing import List, Any
 # from simple_curses import *
-from .keyboard import *
-from .widget_base import WidgetBase, EditableWidgetBase
-from .multi_line_buffer import MultiLineBuffer
-from .kurses_ex import make_subwin
+from simple_curses.keyboard import *
+from simple_curses.widget_base import WidgetBase, EditableWidgetBase
+from simple_curses.multi_line_buffer import MultiLineBuffer
+from simple_curses.kurses_ex import make_subwin
 from simple_curses.theme import Theme
 
 # xlines = [

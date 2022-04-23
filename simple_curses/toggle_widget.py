@@ -1,9 +1,9 @@
 import curses.textpad
 from typing import List
 
-from .keyboard import *
-from .validator import *
-from .widget_base import EditableWidgetBase
+from simple_curses.keyboard import *
+from simple_curses.validator import *
+from simple_curses.widget_base import EditableWidgetBase
 from simple_curses import Theme 
 
 class ToggleWidget(EditableWidgetBase):

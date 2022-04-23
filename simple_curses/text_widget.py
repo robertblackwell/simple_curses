@@ -1,10 +1,11 @@
 import curses.textpad
 import pathlib
 import ipaddress
+import time
 from typing import Any
-from .keyboard import *
-from .widget_base import EditableWidgetBase
-from .string_buffer import StringBuffer
+from simple_curses.keyboard import *
+from simple_curses.widget_base import EditableWidgetBase
+from simple_curses.string_buffer import StringBuffer
 from simple_curses.theme import Theme
 
 # A basic text widget that allows the entry of printable characters.

@@ -1,6 +1,6 @@
 from typing import List
 import curses
-from .widget_base import WidgetBase
+from simple_curses.widget_base import WidgetBase
 
 
 class HStack:
@@ -12,18 +12,30 @@ class VStack:
         pass
 
 
-PAD_X_START = 4
+PAD_X_START = 1
 PAD_X_BETWEEN = 1
-PAD_Y_START = 2
-PAD_Y_BETWEEN = 1
+PAD_X_END = 1
+PAD_Y_START = 1
+PAD_Y_BETWEEN = 0
+PAD_Y_END = 1
+
 
 
 class Rectangle:
-    def __init__(self, nbr_rows, nbr_cols, y_beg, x_beg):
+    """
+    A rectangular sub-region of the screen or window
+    """
+
+    def __init__(self, nbr_rows, nbr_cols, y_beg=0, x_beg=0):
         self.nbr_rows = nbr_rows
         self.nbr_cols = nbr_cols
         self.y_begin = y_beg
         self.x_begin = x_beg
+    def get_height(self):
+        return self.height
+    def get_width(self):
+        return self.width
+
 
 class WidgetLayout:
     """
@@ -31,15 +43,15 @@ class WidgetLayout:
     y_begin and x_begin attributes are relative starting coordinates
     good for use with the kurses_ex function make_subwin()
 
+    relative to what ?
+
     """
 
     def __init__(self, w: WidgetBase, y_begin, x_begin, y_max, x_max):
         self.widget = w
 
-        self.y_begin = y_begin
-        "y_begin - is relative to the rectangle used in ColumnLayout"
-        self.x_begin = x_begin
-        "x_begin - is relative to the rectangle used in ColumnLayout"
+        self.y_begin = y_begin #"y_begin - is relative to the rectangle used in ColumnLayout"
+        self.x_begin = x_begin #"x_begin - is relative to the rectangle used in ColumnLayout"
         self.ymax = y_max
         self.xmax = x_max
         if self.ymax < w.get_height():
@@ -47,22 +59,43 @@ class WidgetLayout:
         if self.xmax < w.get_width():
             raise ValueError("xmax: {}, w.get_width(): {}".format(self.xmax, w.get_width()))
 
+    def get_width(self):
+        return self.xmax
+    def get_height(self):
+        return self.ymax
+
+
 class WidgetColumn:
     def __init__(self, height, width, widget_layouts: List[WidgetLayout]):
-        # self.height = height
-        # self.width = width
+        self.height = height
+        self.width = width
         self.widget_layouts = widget_layouts
 
-    def get_ymax(self):
-        h = 0
-        for wl in self.widget_layouts:
-            h += wl.ymax
-        return h
+    def get_height(self):
+        return self.height
+    def get_width(self):
+        return self.width
+    # def get_ymax(self):
+    #     h = 0
+    #     for wl in self.widget_layouts:
+    #         h += wl.get_height()
+    #     return h
+    # def get_height(self):
+    #     h = 0
+    #     for wl in self.widget_layouts:
+    #         h += wl.get_height()
+    #     return h
+
+    # def get_width(self):
+    #     max = 0
+    #     for wl in self.widget_layouts:
+    #         max = wl.get_width() if wl.get_width() > max else max
+    #     return max
 
     def widget_count(self):
         return len(self.widget_layouts)
 
-class WidgetAlllocation:
+class WidgetAllocation:
     def __init__(self):
         self.widget_columns: List[WidgetColumn] = []
         pass
@@ -73,12 +106,62 @@ class WidgetAlllocation:
     def get_ymax(self):
         m = 0
         for wc in self.widget_columns:
-            h = wc.get_ymax()
+            h = wc.get_height()
             m = h if h > m else m
         return m
+    def get_height(self):
+        return self.get_ymax()
+
+    def get_width(self):
+        width = 0
+        for col in self.widget_columns:
+            width += col.get_width()
+        return width
 
     def column_count(self):
         return len(self.widget_columns)
+
+def single_column(widgets : List[WidgetBase]):
+    """
+    Computes the smallest rectangle that will contain the given
+    list of widget as a single column
+    """
+    layouts = []
+    rows = PAD_Y_START
+    cols = 0
+    for w in widgets:
+        lout = WidgetLayout(w, rows, PAD_X_START, w.get_height(), w.get_width())
+        layouts.append(lout)
+        rows += w.get_height() + PAD_Y_BETWEEN
+        tmp = PAD_X_START + w.get_width() + PAD_X_END
+        cols = tmp if tmp > cols else cols
+
+    return WidgetColumn(rows + PAD_Y_END - PAD_Y_BETWEEN, cols, layouts)
+
+def allocate_multiple_columns(columns: List[List[WidgetBase]]):
+    wth = 0
+    h = 0
+    walloc = WidgetAllocation()
+    cols = 0
+    xbeg = PAD_X_START
+    for column in columns:
+        layouts = []
+        rows = PAD_Y_START
+        for w in column:
+            lout = WidgetLayout(w, rows, xbeg, w.get_height(), w.get_width())
+            layouts.append(lout)
+            rows += w.get_height() + PAD_Y_BETWEEN
+            tmp2 = w.get_width()
+            tmp = PAD_X_START + w.get_width() + PAD_X_END
+            cols = tmp if tmp > cols else cols
+        wc = WidgetColumn(rows + PAD_Y_END - PAD_Y_BETWEEN, cols, layouts)
+        xbeg += cols
+        wth += cols
+        h = rows if rows > h else h
+        walloc.add_widget_column(wc)
+    return walloc
+
+
 
 class ColumnLayout:
     """Takes a list of widgets and arranges them into columns so that they will fit into
@@ -90,7 +173,7 @@ class ColumnLayout:
     """
 
     def __init__(self, max_height, max_widget_width):
-        self.widget_allocation = WidgetAlllocation()
+        self.widget_allocation = WidgetAllocation()
         self.current_column = []
         self.col_width = 0
         self.col_height = PAD_Y_START
