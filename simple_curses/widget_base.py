@@ -3,7 +3,7 @@ import curses
 import curses.textpad
 from typing import Any
 
-from simple_curses.colors import Colors
+from simple_curses.theme import Theme
 from simple_curses.keyboard import *
 from simple_curses.multi_line_buffer import MultiLineBuffer
 from simple_curses.kurses_ex import *
@@ -122,12 +122,14 @@ class MenuItem(MenuBase):
         self.function(self.app, self.app.get_current_view(), self.context)
 
     def render(self) -> None:
-        if self.has_focus:
-            self.win.bkgd(" ", Colors.button_focus())
-            self.win.addstr(1, 1, self.label, Colors.button_focus())
-        else:
-            self.win.bkgd(" ", Colors.button_no_focus())
-            self.win.addstr(1, 1, self.label, Colors.button_no_focus())
+        self.win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
+        self.win.addstr(1, 1, self.label, Theme.instance().label_attr(self.has_focus))
+        # if self.has_focus:
+        #     self.win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
+        #     self.win.addstr(1, 1, self.label, Theme.instance().label_attr(self.has_focus))
+        # else:
+        #     self.win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
+        #     self.win.addstr(1, 1, self.label, Theme.instance().label_attr(self.has_focus))
 
         self.win.noutrefresh()
 

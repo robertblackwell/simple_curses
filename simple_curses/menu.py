@@ -4,7 +4,7 @@ import curses.textpad
 from .colors import Colors
 from .widget_base import MenuBase
 from .keyboard import  is_return, is_space, is_linefeed
-
+from simple_curses.theme import Theme
 class DummyMenuItem(MenuBase):
     def __init__(self, app, label, width, height, attributes, function, context):
         self.label = label
@@ -55,10 +55,10 @@ class DummyMenuItem(MenuBase):
     
     def render(self) -> None:
         if self.has_focus:
-            self.win.bkgd(" ", Colors.button_focus())
+            self.win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
             self.win.addstr(1, 1, self.label, Colors.button_focus())
         else:
-            self.win.bkgd(" ", Colors.button_no_focus())
+            self.win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
             self.win.addstr(1, 1, self.label, Colors.button_no_focus())
 
         self.win.noutrefresh()

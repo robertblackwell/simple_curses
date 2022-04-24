@@ -64,9 +64,11 @@ def test_screen_size(stdscr, height, width):
 
 class AppBase:
     def __init__(self, stdscr, body_height, width, msg_height=10, context=None, input_timeout_ms=2):
+        curses.curs_set(0)
         self.theme = Theme.instance()
         self.width = width
         self.views = None
+        self.topmenu_view = None
         self.data = None
         self.log_keystrokes = True
         self.context = context
@@ -93,7 +95,8 @@ class AppBase:
 
         #create a vertical stack of windows inside outter window. These will be the 'frame' for the application
         mark_territory = False
-        self.top_menu_win  = Window.newwin_inside(self.outter_win, self.top_menu_height, self.body_width, 1, 1)
+        tmh = self.topmenu_view.get_height()
+        self.top_menu_win  = Window.newwin_inside(self.outter_win, tmh, self.body_width, 1, 1)
         if mark_territory:
             self.top_menu_win.bkgd("1")
             self.top_menu_win.refresh()
@@ -108,6 +111,7 @@ class AppBase:
             self.msg_win.bkgd("3")
             self.msg_win.refresh()
 
+        self.topmenu_view.set_enclosing_window(self.top_menu_win)
 
         self.message_widget = MessageWidget(self, "msg_01", "Message Box", self.body_width, self.msg_height, "", context)
 
@@ -128,14 +132,19 @@ class AppBase:
 
         raise NotImplementedError()
 
+    def view_make_current(self, view):
+        vi = self.views.index(view)
+        self.current_view_index = vi
+        self.show_current_view()
+
     def get_current_view(self):
         return self.views[self.current_view_index]
 
     def show_current_view(self):
         self.views[self.current_view_index].show()
-        self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
-        self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
-            self.message_widget]
+        self.focus_widgets = self.topmenu_view.get_focus_widgets() + self.views[self.current_view_index].get_focus_widgets()
+        # self.render_widgets = self.topmenu_view.get_render_widgets() + self.views[self.current_view_index].get_render_widgets() + [
+        #     self.message_widget]
 
     def hide_current_view(self):
         self.views[self.current_view_index].hide()
@@ -145,18 +154,18 @@ class AppBase:
         self.current_view_index = next_view % len(self.views)
         self.focus_index = 0
         self.views[self.current_view_index].show()
-        self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
-        self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
-            self.message_widget]
+        self.focus_widgets = self.topmenu_view.get_focus_widgets() + self.views[self.current_view_index].get_focus_widgets()
+        # self.render_widgets = self.topmenu_view.get_render_widgets() + self.views[self.current_view_index].get_render_widgets() + [
+        #     self.message_widget]
 
     def next_view(self):
         self.views[self.current_view_index].hide()
         self.current_view_index = (self.current_view_index + 1) % len(self.views)
         self.focus_index = 0
         self.views[self.current_view_index].show()
-        self.focus_widgets = self.top_menu_items + self.views[self.current_view_index].get_focus_widgets()
-        self.render_widgets = self.top_menu_items + self.views[self.current_view_index].get_render_widgets() + [
-            self.message_widget]
+        self.focus_widgets = self.topmenu_view.get_focus_widgets() + self.views[self.current_view_index].get_focus_widgets()
+        # self.render_widgets = self.topmenu_view.get_render_widgets() + self.views[self.current_view_index].get_render_widgets() + [
+        #     self.message_widget]
 
     def enable(self):
         pass
@@ -183,6 +192,15 @@ class AppBase:
     def mouse_in_widget(self, w, y, x):
         """Tests whether the mouse position y,x is inside the widget w"""
         return w.rectangle().contains(y, x)
+
+    def handle_accelerator(self, key):
+        for w in self.topmenu_view.get_focus_widgets():
+            if w.get_accelerator() == key:
+                self.view_make_current(w.get_view())
+                ix = self.focus_widgets.index(w)
+                self.shift_focus_to(ix)
+                return w
+        return None
 
     def handle_input(self):
         # enable getch wait 
@@ -216,6 +234,11 @@ class AppBase:
                     self.shift_focus_to(w_index)
                 elif is_control_v(ch):
                     self.next_view()
+                elif ch in [0x109, 0x10a, 0x10b, 0x10c, 0x10d, 0x10e]:
+                    w = self.handle_accelerator(ch)
+                    if w is not None:
+                        self.view_make_current(w.get_view())
+
                 # elif is_function_key(ch):
                 #     self.handle_menu(ch)
 
@@ -225,6 +248,7 @@ class AppBase:
         Window.draw_hline(self.bottom_hline)
 
     def render_contents(self):
+        self.topmenu_view.render()
         self.views[self.current_view_index].render()
         self.message_widget.render()
         return

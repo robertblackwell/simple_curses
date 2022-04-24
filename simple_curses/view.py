@@ -3,10 +3,12 @@ import curses
 import curses.textpad
 
 # import simple_curses.menu as M
-from simple_curses.widget_base import EditableWidgetBase, WidgetBase, MenuItem, is_editable, is_focusable
-from simple_curses.layout import Rectangle, ColumnLayout, allocate_multiple_columns
+from simple_curses.widget_base import *
+from simple_curses.topmenu_widget import *
+from simple_curses.layout import Rectangle, ColumnLayout, allocate_multiple_columns, TopmenuLayout
 from simple_curses.validator import *
 from simple_curses.title_widget import TitleWidget
+from simple_curses.fig_widget import *
 from simple_curses.menu import *
 from simple_curses.kurses_ex import make_subwin
 import simple_curses.window as Window
@@ -108,37 +110,56 @@ class BannerView:
     def render(self):
         self.widget.render()
 
+class DummyView:
+    def _init__(self, figlet_icon: List[str], menu_widgets: List[TopMenuWidget]):
+        pass
+
+class TopmenuView:
+    def __init__(self, app, figlet_widget: FigletWidget, menu_widgets: List[TopMenuWidget]):
+        self.app = app
+        self.icon = figlet_widget
+        self.menu_items = menu_widgets
+        self.widgets = [self.icon] + menu_widgets
+        self.layout = TopmenuLayout(self.widgets)
+        self.height, self.width = self.layout.get_size()
+        self.has_focus = False
+
+    def get_height(self):
+        return self.height 
+    
+    def get_width(self):
+        return self.width 
+    
+    def get_render_widgets(self):
+        return self.widgets
+
+    def get_focus_widgets(self):
+        return self.menu_items
+
+    def set_enclosing_window(self, win) -> None:
+        self.win = win
+        ybeg, xbeg = win.getbegyx()
+        ym, xm     = win.getmaxyx()
+        for layout in self.layout.widget_positions:
+            ybeg, xbeg = layout.get_begin()
+            h, w = (layout.widget.get_height(), layout.widget.get_width())
+            subwin = make_subwin(win, layout.widget.get_height(), layout.widget.get_width(), ybeg, xbeg)
+            layout.widget.set_enclosing_window(subwin)
 
 
-class TopMenu:
-    """This is a Horizontal Stack, LEFT justified, of menu items. Used for a Form top menu
-    to switch views
-    """
 
-    def __init__(self, form, stdscr, menu_win, menu_items: List[MenuItem]):
-        self.outter_win = menu_win
-        self.height, self.width = menu_win.getmaxyx()
-        ybeg, xbeg = menu_win.getbegyx()
-        max_item_width = 0
-        total_width = 0
-        item_width = None
-        for m in menu_items:
-            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
-            total_width += m.get_width() + 4
-        if (max_item_width + 2) * len(menu_items) < self.width:
-            item_width = max_item_width + 2
-        else:
-            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
-        xpos = xbeg + self.width - item_width
-        rectangles = []
-        for m in menu_items:
-            r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
-            rectangles.append(r)
-            xpos += item_width
-            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
-            m.set_enclosing_window(tmp_win)
-            m.has_focus = False
+    def focus_accept(self):
+        selfhas_focus = True
 
+    def focus_release(self):
+        self.has_focus = False
+
+    def handle_input(self, ch) -> bool:
+        return False
+
+    def render(self) -> None:
+        for w in self.widgets:
+            w.render()
 
 class ViewMenu:
     """This is a Horizontal Stack, right justified, of menu items. Used to provide a menu inside a data entry view
@@ -214,134 +235,6 @@ class ViewBody:
         self.widget_allocation = clayout.widget_allocation
 
 
-
-class View:
-    def validate_widgets(widgets):
-        """Validate is a tow level list of list of WidgetBase"""
-        pass
-
-    def min_body_size(widgets):
-        pass
-
-    def flatten(widgets):
-        """Flatten a list of lists into a list"""
-        pass
-
-    """A class that implements the detailed layout and function of a data entry view body body. A single app typically has a number of views
-    that are swapped by the top menu or keyboard short cuts. This class represents the type of view that has data entry fields
-    and an action menu at the bottom.
-    
-    This view and its companions ViewMenu and ViewBody perform the layout calculations
-
-    """
-
-    def __init__(self, app, ident: str, title: str, stdscr, window, widgets: List[WidgetBase],
-                 menu_items: List[MenuItem]):
-        self.view_menu = None
-        self.view_body = None
-        self.menu_win = None
-        self.data_entry_win = None
-        self.data_entry_height = None
-        self.menu_height = None
-        self.outter_win = window
-        self.stdscr = stdscr
-        self.height, self.width = window.getmaxyx()
-        ym, xm = window.getmaxyx()
-        yb, xb = window.getbegyx()
-        self.outter_y_begin, self.outter_x_begin = window.getbegyx()
-        self.widgets = widgets
-        self.menu_items = menu_items
-        self.focus_widgets = [w for w in (self.widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
-        # for w in (self.menu_items + self.widgets):
-        #     klass = w.__class__
-        #     bases = klass.__bases__
-        #     if is_focusable(w):
-        #     # if isinstance(w, FocusableWidgetBase) or isinstance(w, MenuItem): #@TODO this is a hack find problem and fix
-        #         self.focus_widgets.append(w)
-        self.title = title
-        self.title_widget = None
-        self.ident = ident
-        self.app = app
-
-    def set_enclosing_window(self, win):
-        self.outter_win = win
-
-    def setup(self):
-        self.menu_height = 5
-        self.data_entry_height = self.height - self.menu_height  # - self.title_height - self.msg_height + 2
-        # body_start_col = 0
-        self.data_entry_win = curses.newwin(self.data_entry_height, self.width, self.outter_y_begin + 1, 0)
-        self.menu_win = curses.newwin(self.menu_height, self.width, self.outter_y_begin + self.data_entry_height, 0)
-        # body_height = 0
-        # col = body_start_col + 4
-        # c = 1
-        self.title_widget = TitleWidget(self, "", "SomeTitle", 10, 1, "")
-        self.title_widget.set_enclosing_window(self.data_entry_win)
-
-        self.view_body = ViewBody(self.app, self.stdscr, self.data_entry_win, self.widgets)
-
-        yb, xb = self.data_entry_win.getbegyx()
-        for cols in self.view_body.widget_allocation.widget_columns:
-            for wlo in cols.widget_layouts:
-                w = wlo.widget
-                x_begin = wlo.x_begin + xb
-                y_begin = wlo.y_begin + yb
-                sw = make_subwin(self.data_entry_win, w.get_height(), w.get_width(), wlo.y_begin, wlo.x_begin)
-                w.set_enclosing_window(sw)
-
-        self.view_menu = ViewMenu(self.app, self, self.stdscr, self.menu_win, self.menu_items)
-        self.set_values(self.app.state)
-
-    def get_values(self) -> Dict[str, Any]:
-        """
-        @return A dictionary object for the view.
-        This consists of a dictionary:
-        -   Which has an entry for each EditableWidget in the view.
-        -   The keys are obtained from the widgets with the get_key() method
-        -   and the values are most often of type str but can be Any and are obtained from  widget.get_value()
-        Plus a boolean to indicate whether all the strings validated correctly.
-        If any one widget value did not parse correctly the valid/ok boolean is set to false
-
-        """
-        v = {}
-        ok = True
-        for w in self.widgets:
-            if is_editable(w):
-                k = w.get_key()
-                v[k] = cast(EditableWidgetBase, w).get_value()
-        return v
-
-    def set_values(self, state_values):
-        
-        vals = state_values
-        for w in self.widgets:
-            if is_editable(w):
-                k = w.get_key()
-                v = getattr(vals, k)
-                w.set_value(v)
-
-    def show(self):
-        self.setup()
-
-    def hide(self):
-        self.outter_win.clear()
-
-    def get_focus_widgets(self):
-        widgets = self.focus_widgets if len(self.focus_widgets) != 0 else self.widgets + self.menu_items
-        return widgets
-        return self.widgets + self.menu_items
-
-    def get_render_widgets(self):
-        return [self.title_widget] + self.widgets + self.menu_items
-
-    def render(self):
-        for w in self.widgets + self.menu_items:
-            w.render()
-        ym, xm = self.outter_win.getmaxyx()
-        xpos = (xm - len(self.title)) // 2
-        self.outter_win.addstr(0, xpos, self.title, curses.A_BOLD)
-        self.outter_win.noutrefresh()
-
 def menu_layout_and_enclose(menu_win, menu_items: List[MenuItem]):
     """
     Computes layout position of menus, makes subwindows for each menu item, and set_enclosing_window
@@ -370,7 +263,6 @@ def menu_layout_and_enclose(menu_win, menu_items: List[MenuItem]):
         tmp_win = menu_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
         m.set_enclosing_window(tmp_win)
         m.has_focus = False
-
 
 class DataEntryView:
 
@@ -438,9 +330,9 @@ class DataEntryView:
         excess_width  = xm - self.width
         excess_after_title = 1
         excess_after_widgets = 1
-        if excess_height > 0:
-            excess_after_title = 1 + excess_height // 2
-            excess_after_widgets = 1 + excess_height // 2
+        # if excess_height > 0:
+        #     excess_after_title = 1 + excess_height // 2
+        #     excess_after_widgets = 1 + excess_height // 2
 
 
         # self.menu_win = curses.newwin(self.menu_height, self.width, self.outter_y_begin + self.data_entry_height, 0)
@@ -472,7 +364,6 @@ class DataEntryView:
                 sw = make_subwin(self.widgets_win, w.get_height(), w.get_width(), wlo.y_begin, wlo.x_begin)
                 w.set_enclosing_window(sw)
 
-        # self.view_menu = ViewMenu(self.app, self, self.stdscr, self.menu_win, self.menu_items)
         menu_layout_and_enclose(self.menu_win, self.menu_items)
         self.set_values(self.app.state)
 

@@ -2,7 +2,6 @@ from typing import List
 import curses
 from simple_curses.widget_base import WidgetBase
 
-
 class HStack:
     pass
 
@@ -282,6 +281,8 @@ class WidgetPosition:
         self.beg_y = beg_y
         self.beg_x = beg_x
         self.widget = widget
+    def get_begin(self):
+        return (self.beg_y, self.beg_x)
 
 class VerticalStack:
     def __init__(self, begin_pos, max_pos, widgets):
@@ -327,6 +328,27 @@ class VerticalStack:
     def compute_layout(self):
         self.vertical_space()
         return self.widget_positions
+
+class TopmenuLayout:
+    def __init__(self, menuiwidgets: List[WidgetBase]):
+        self.height = 0
+        for m in menuiwidgets:
+            self.height = m.get_height() if m.get_height() > self.height else self.height
+        
+        self.widget_positions = []
+        col = PAD_X_START
+        for m in menuiwidgets:
+            self.widget_positions.append(WidgetPosition(0, col, m))
+            col += m.get_width() + PAD_X_BETWEEN
+            self.height = m.get_height() if m.get_height() > self.height else self.height
+        self.width = col
+
+    def get_height(self):
+        return self.height
+    def get_width(self):
+        return self.width
+    def get_size(self):
+        return (self.get_height(), self.get_width())
 
 class HorizontalStack:
     def __init__(self, max_pos, widgets):
