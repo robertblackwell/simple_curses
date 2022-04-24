@@ -186,41 +186,45 @@ class App(AppBase):
         # start of customization
         self.data = "data context"
         data = self.data
-        view_banner = BannerView(self, "bview_01", "Banner View", self.stdscr, self.body_win, BannerWidget(self))
-        view_help = BannerView(self, "help_01", "Help   View", self.stdscr, self.body_win, HelpWidget(self))
+        view_banner = BannerView(self, "bview_01", "Banner View", self.stdscr, BannerWidget(self))
+        view_help = BannerView(self, "help_01", "Help   View", self.stdscr, HelpWidget(self))
         view_widgets_01 = [
-
-            IPNetworkWidget(self, "ipnet_01", "IPNetwork         ", 23, data),
-            IntegerWidget(self, "int_val_01", "Integer           ", 23, data),
-            FloatWidget(self, "float_val_01", "Float             ", 23, data),
-            IPAddressWidget(self, "ipaddr_01", "IPAddr            ", 23, data),
-            TimeOfDayWidget(self, "tod_01", "Time Of Day (24h) ", 23, data),
-            TextWidget(self, "text_01", "Text              ", 23, data),
-            ToggleWidget(self, "toggle_01", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
-            IPNetworkWidget(self, "ipnet_02", "IPNetwork         ", 23, data),
-            IntegerWidget(self, "int_val_02", "Integer           ", 23, data),
-            FloatWidget(self, "float_val_02", "Float             ", 23, data),
-            IPAddressWidget(self, "ipaddr_02", "IPAddr            ", 23, data),
-            TimeOfDayWidget(self, "tod_02", "Time Of Day (24h) ", 23, data),
-            TextWidget(self, "text_02", "Text              ", 23, data),
-            ToggleWidget(self, "toggle_02", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
-            IPNetworkWidget(self, "ipnet_03", "IPNetwork         ", 23, data),
-            IntegerWidget(self, "int_val_03", "Integer           ", 23, data),
-            FloatWidget(self, "float_val_03", "Float             ", 23, data),
-            IPAddressWidget(self, "ipaddr_03", "IPAddr            ", 23, data),
-            TimeOfDayWidget(self, "tod_03", "Time Of Day (24h) ", 23, data),
-            TextWidget(self, "text_03", "Text              ", 23, data),
-            ToggleWidget(self, "toggle_03", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
-            IPNetworkWidget(self, "ipnet_04", "IPNetwork         ", 23, data),
-            IntegerWidget(self, "int_val_04", "Integer           ", 23, data),
-            FloatWidget(self, "float_val_04", "Float             ", 23, data),
-            IPAddressWidget(self, "ipaddr_04", "IPAddr            ", 23, data),
-            TimeOfDayWidget(self, "tod_04", "Time Of Day (24h) ", 23, data),
-            TextWidget(self, "text_04", "Text              ", 23, data),
-            ToggleWidget(self, "toggle_04", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
-            MultiLineWidget(app=self, key="sc_01", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50,
-                            content_height=10, data=data),
-            # DropdownWidget (    "dd_01", "Selection",   55, 10, "", data, ["one","two","three","four"], "three"),
+            [
+                IPNetworkWidget(self, "ipnet_01", "IPNetwork         ", 23, data),
+                IntegerWidget(self, "int_val_01", "Integer           ", 23, data),
+                FloatWidget(self, "float_val_01", "Float             ", 23, data),
+                IPAddressWidget(self, "ipaddr_01", "IPAddr            ", 23, data),
+                TimeOfDayWidget(self, "tod_01", "Time Of Day (24h) ", 23, data),
+                TextWidget(self, "text_01", "Text              ", 23, data),
+                ToggleWidget(self, "toggle_01", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
+            ],[
+                IPNetworkWidget(self, "ipnet_02", "IPNetwork         ", 23, data),
+                IntegerWidget(self, "int_val_02", "Integer           ", 23, data),
+                FloatWidget(self, "float_val_02", "Float             ", 23, data),
+                IPAddressWidget(self, "ipaddr_02", "IPAddr            ", 23, data),
+                TimeOfDayWidget(self, "tod_02", "Time Of Day (24h) ", 23, data),
+                TextWidget(self, "text_02", "Text              ", 23, data),
+                ToggleWidget(self, "toggle_02", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
+            ],[
+                IPNetworkWidget(self, "ipnet_03", "IPNetwork         ", 23, data),
+                IntegerWidget(self, "int_val_03", "Integer           ", 23, data),
+                FloatWidget(self, "float_val_03", "Float             ", 23, data),
+                IPAddressWidget(self, "ipaddr_03", "IPAddr            ", 23, data),
+                TimeOfDayWidget(self, "tod_03", "Time Of Day (24h) ", 23, data),
+                TextWidget(self, "text_03", "Text              ", 23, data),
+                ToggleWidget(self, "toggle_03", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
+            ],[
+                IPNetworkWidget(self, "ipnet_04", "IPNetwork         ", 23, data),
+                IntegerWidget(self, "int_val_04", "Integer           ", 23, data),
+                FloatWidget(self, "float_val_04", "Float             ", 23, data),
+                IPAddressWidget(self, "ipaddr_04", "IPAddr            ", 23, data),
+                TimeOfDayWidget(self, "tod_04", "Time Of Day (24h) ", 23, data),
+                TextWidget(self, "text_04", "Text              ", 23, data),
+                ToggleWidget(self, "toggle_04", "Toggle            ", 3, data, ['ENABLED', "DISABLED"]),
+                MultiLineWidget(app=self, key="sc_01", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50,
+                                content_height=10, data=data),
+                # DropdownWidget (    "dd_01", "Selection",   55, 10, "", data, ["one","two","three","four"], "three"),
+            ]
         ]
 
         view_menu_items_01 = [
@@ -228,25 +232,27 @@ class App(AppBase):
             MenuItem(self, "Cancel", 7, 3, 0, menu_action_12, "context for menu 2"),
             MenuItem(self, "Ok-Run", 7, 3, 0, menu_action_13, "context for menu 3")
         ]
-        view_data_entry_01 = View(self, "view_01", "First View", self.stdscr, self.body_win, view_widgets_01,
-                                  view_menu_items_01)
+        # view_data_entry_01 = DataEntryView(self, "view_01", "First View", self.stdscr, 
+        #                         view_widgets_01,
+        #                         view_menu_items_01)
 
         view_widgets_02 = [
-
-            IPNetworkWidget(self, "ipnet_11",      "IPNetwork          ", 23, data),
-            IntegerWidget(self,   "int_val_11",    "Integer            ", 23, data),
-            FloatWidget(self,     "float_val_11",  "Float              ", 23, data),
-            IPAddressWidget(self, "ipaddr_11",     "IPAddr             ", 23, data),
-            TimeOfDayWidget(self, "tod_11",        "Time Of Day (24h)  ", 23, data),
-            TextWidget(self,      "text_11",       "Text               ", 23, data),
-            ToggleWidget(self,    "toggle_11",     "Toggle             ", 3, data, ['ENABLED', "DISABLED"]),
-            PathWidget(self,      "path_22",       "File path          ", 23, data),
-            PathExistsWidget(self,"path_exists_22","Existing File path ", 23, data),
-            # IntegerWidget(self, "int_val_22", "Integer           ", 20, data),
-            # FloatWidget(self, "float_val_22", "Float             ", 20, data),
-            MultiLineWidget(app=self, key="sc_11", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50,
-                            content_height=10, data=data),
-            # DropdownWidget ("dd_01", "Selection",   55, 10, "", data, ["one","two","three","four"], "three"),
+            [
+                IPNetworkWidget(self, "ipnet_11",      "IPNetwork          ", 23, data),
+                IntegerWidget(self,   "int_val_11",    "Integer            ", 23, data),
+                FloatWidget(self,     "float_val_11",  "Float              ", 23, data),
+                IPAddressWidget(self, "ipaddr_11",     "IPAddr             ", 23, data),
+                TimeOfDayWidget(self, "tod_11",        "Time Of Day (24h)  ", 23, data),
+                TextWidget(self,      "text_11",       "Text               ", 23, data),
+                ToggleWidget(self,    "toggle_11",     "Toggle             ", 3, data, ['ENABLED', "DISABLED"]),
+                PathWidget(self,      "path_22",       "File path          ", 23, data),
+                PathExistsWidget(self,"path_exists_22","Existing File path ", 23, data),
+                # IntegerWidget(self, "int_val_22", "Integer           ", 20, data),
+                # FloatWidget(self, "float_val_22", "Float             ", 20, data),
+                MultiLineWidget(app=self, key="sc_11", label="IPv4 and IPv6 Networks in CIDR Format", content_width=50,
+                                content_height=10, data=data),
+                # DropdownWidget ("dd_01", "Selection",   55, 10, "", data, ["one","two","three","four"], "three"),
+            ]
         ]
 
         view_menu_items_02 = [
@@ -254,26 +260,34 @@ class App(AppBase):
             MenuItem(self, "Cancel", 7, 3, 0, self.action01.cancel, "context for menu 2"),
             MenuItem(self, "Ok-Run", 7, 3, 0, self.action01.run, "context for menu 3")
         ]
-        view_data_entry_02 = View(self, "view_02", "Second View", self.stdscr, self.body_win, 
-            view_widgets_02,
-            view_menu_items_02
-        )
+        # view_data_entry_02 = DataEntryView(self, "view_02", "Second View", self.stdscr, 
+        #     view_widgets_02,
+        #     view_menu_items_02
+        # )
 
-        view_widgets_03 = [
+        view_03_widgets_01 = [
 
             IPNetworkWidget(self, "ipnet_21",      "IPNetwork          ", 23, data),
             IntegerWidget(self,   "int_val_21",    "Integer            ", 23, data),
             FloatWidget(self,     "float_val_21",  "Float              ", 23, data),
             IPAddressWidget(self, "ipaddr_21",     "IPAddr             ", 23, data),
         ]
+        view_03_widgets_02 = [
+
+            IPNetworkWidget(self, "ipnet_21",      "IPNetwork          ", 23, data),
+            IntegerWidget(self,   "int_val_21",    "Integer            ", 23, data),
+            FloatWidget(self,     "float_val_21",  "Float              ", 23, data),
+            IPAddressWidget(self, "ipaddr_21",     "IPAddr             ", 23, data),
+        ]
+        view_03_widgets = [view_03_widgets_01, view_03_widgets_02]
 
         view_menu_items_03 = [
             MenuItem(self, "Validate", 13, 3, 0, self.action01.validate, "context for menu 1"),
             MenuItem(self, "Cancel", 7, 3, 0, self.action01.cancel, "context for menu 2"),
             MenuItem(self, "Ok-Run", 7, 3, 0, self.action01.run, "context for menu 3")
         ]
-        view_data_entry_03 = View(self, "view_02", "Second View", self.stdscr, self.body_win, 
-            view_widgets_03,
+        view_data_entry_03 = DataEntryView(self, "view_02", "Second View", self.stdscr, 
+            view_03_widgets,
             view_menu_items_03
         )
 
@@ -282,17 +296,17 @@ class App(AppBase):
 
         # the next line is required - do not change
         self.views = [
-            # view_banner, 
-            view_help, 
+            # view_help, 
             # view_data_entry_01, 
             # view_data_entry_02
-            view_data_entry_03
+            view_data_entry_03,
+            view_banner, 
         ]
 
 
 def main(stdscr):
     data = "dummy context"
-    test_screen_size(stdscr)
+    # test_screen_size(stdscr)
     curses.curs_set(2)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 

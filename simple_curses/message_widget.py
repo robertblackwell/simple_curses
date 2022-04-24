@@ -22,12 +22,10 @@ class MessageWidget(WidgetBase, ABC):
     def classmeth(cls):
         pass
 
-    def __init__(self, app, row, col, key, label, width, height, attributes, data):
+    def __init__(self, app, key, label, width, height, attributes, data):
         self.app = app
         self.content_win = None
         self.win = None
-        self.row = row
-        self.col = col
         self.key = key
         self.label = label
         self.width = width
@@ -57,7 +55,7 @@ class MessageWidget(WidgetBase, ABC):
         c_sub = c + 1
         h_sub = h - 2
         w_sub = w - 2
-        self.content_win = self.win.subwin(h_sub, w_sub, r_sub, c_sub)
+        # self.content_win = self.win.subwin(h_sub, w_sub, r_sub, c_sub)
         pass
 
     def msg_error(self, msg):
@@ -95,17 +93,23 @@ class MessageWidget(WidgetBase, ABC):
         self.win.clear()
         self.win.bkgd(" ", Theme.instance().bkgd_attr())
         # self.win.attron(Theme.instance().cursor_attr())
-        self.win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
+        # self.win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
         # self.win.attron(Theme.instance().label_attr(False))
-        active_msgs = self.messages[len(self.messages) - self.height + 2:len(self.messages)]
+        lenmsgs = len(self.messages)
+        if lenmsgs <= self.height:
+            active_messages = self.messages
+        else:
+            k = lenmsgs - self.height
+            active_messages = self.messages[k: lenmsgs]
+
         r = 1
-        for msg in active_msgs:
+        for msg in active_messages:
             astring = " {0:>3}:{1}{2}".format(msg[0], msg[1], msg[2])
             if len(astring) > self.width - 10:
                 astring = astring[0:self.width - 10]+".."
             else:
                 astring.ljust(self.width - 10)
-            self.content_win.addstr(r - 1, 0, astring, msg[3])
+            self.win.addstr(r - 1, 0, astring, msg[3])
             r += 1
 
         self.win.noutrefresh()

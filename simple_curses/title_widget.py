@@ -24,8 +24,8 @@ class TitleWidget(WidgetBase):
     def set_enclosing_window(self, win):
         self.outter_win = win
         ym, xm = self.outter_win.getmaxyx()
-        ybeg = (ym - self.width) // 2
-        self.win = make_subwin(self.outter_win, 1, self.width, ybeg, 1)
+        xbeg = (xm - self.width) // 2
+        self.win = make_subwin(self.outter_win, 1, self.width, 0, xbeg)
 
     def set_form(self, form):
         self.form = form

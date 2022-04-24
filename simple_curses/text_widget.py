@@ -57,6 +57,8 @@ class TextWidget(EditableWidgetBase):
                 self.win.addstr(0, i, "_", Theme.instance().value_attr(False))
 
     def render(self) -> None:
+        y,x = self.win.getbegyx()
+        ym, xm = self.win.getmaxyx()
         self.paint_content_area_background()
         self.win.addstr(0, 0, self.label, Theme.instance().label_attr(self.has_focus))
         if self.has_focus:

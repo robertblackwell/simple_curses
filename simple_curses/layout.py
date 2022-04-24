@@ -15,9 +15,9 @@ class VStack:
 PAD_X_START = 1
 PAD_X_BETWEEN = 1
 PAD_X_END = 1
-PAD_Y_START = 1
+PAD_Y_START = 0
 PAD_Y_BETWEEN = 0
-PAD_Y_END = 1
+PAD_Y_END = 0
 
 
 

@@ -1,13 +1,14 @@
 from typing import List
 import curses
 import curses.textpad
+from time import sleep
 
 from simple_curses.message_widget import MessageWidget
 from simple_curses.keyboard import is_control_v
 from simple_curses.colors import Colors
 from simple_curses.theme import Theme
 from simple_curses.keyboard import is_next_control, is_prev_control
-
+import simple_curses.window as Window
 # def is_next_control(ch):
 #     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
 
@@ -31,9 +32,38 @@ from simple_curses.keyboard import is_next_control, is_prev_control
 #     s3 = "F" + s2
 #     return s3
 
+def min_size_for_views(views):
+    h = 0
+    w = 0
+    for v in views:
+        h = v.get_height() if v.get_height() > h else h
+        w = v.get_width() if v.get_width() > w else w
+    return (h, w)
+
+def test_screen_size(stdscr, height, width):
+    h, w = stdscr.getmaxyx()
+    pair = curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    color = curses.color_pair(1) + curses.A_BOLD
+    while h < height or w < width:
+    
+        stdscr.addstr(0, 0, "                              ")
+        stdscr.addstr(1, 0, "                                                                     " )
+        stdscr.addstr(2, 0, "                                                                     ")
+        stdscr.refresh()
+        sleep(.3)
+        stdscr.addstr(0, 0, "The screen window is too small", color)
+        stdscr.addstr(1, 0, "Must be at least {} high and {} wide currently is high: {} wide: {}".format(height, width, h, w), color)
+        stdscr.addstr(2, 0, "To quit hit Cntrl C/Z otherwise enlarge the screen and hit y/Y+Return", color)
+        stdscr.refresh()
+        ch = " "
+        while not(ch == ord('y') or ch == ord('Y')):
+            ch = stdscr.getch()
+            char = chr(ch)
+        h, w = stdscr.getmaxyx()
+
 
 class AppBase:
-    def __init__(self, stdscr, body_height, width, msg_height=20, context=None, input_timeout_ms=2):
+    def __init__(self, stdscr, body_height, width, msg_height=10, context=None, input_timeout_ms=2):
         self.theme = Theme.instance()
         self.width = width
         self.views = None
@@ -47,36 +77,55 @@ class AppBase:
         self.render_widgets = []
         self.title = "This is a data entry form"
         self.input_timeout_ms = input_timeout_ms
-
-        # self.menu_height = 5
-        self.msg_height = msg_height
-        self.title_height = 5
-        self.body_height = body_height
-        self.height = self.body_height + self.title_height + self.msg_height + 2
-
-        self.outter_win = curses.newwin(self.height + 2, self.width + 2, 0, 0)
-        y_outter, x_outter = self.outter_win.getbegyx()
-        y_outter_m, x_outter_m = self.outter_win.getmaxyx()
-        self.title_win = curses.newwin(self.title_height, self.width, y_outter, 0)
-
-        curses.mousemask(curses.ALL_MOUSE_EVENTS + curses.REPORT_MOUSE_POSITION)
-
-        self.body_win = curses.newwin(self.body_height, self.width, y_outter + self.title_height, 0)
-        # self.body_win.bkgd(" ", Colors.button_focus())
-        ybdy, xbdy = self.body_win.getbegyx()
-        ybdym, xbdym = self.body_win.getmaxyx()
-        self.message_widget = MessageWidget(self, ybdy + ybdym - 1, 0, "", "", self.width, self.msg_height, "", context)
-        msg_win = curses.newwin(self.msg_height, self.width, ybdy + ybdym - 1, 0)
-        self.message_widget.set_enclosing_window(msg_win)
-        # self.message_widget.set_form(self)
-        # ymsg, xmsg = msg_win.getbegyx()
-        # ymsgm, xmsgm = msg_win.getmaxyx()
         self.register_views()
+
+        # Now calculate the size of the full display of the app
+        self.body_height, self.body_width = min_size_for_views(self.views)
+        self.width = 1 + self.body_width + 1 #allow for border on both sides 
+        self.msg_height = msg_height
+        self.top_menu_height = 5
+        
+        #allow for top and bottom border plus horizontal lines after the top menu and after the body
+        self.height = 1 + self.top_menu_height + 1 + self.body_height + 1 + self.msg_height + 1
+        test_screen_size(stdscr, self.height, self.width)
+        # Create an outter window that will have all content inside it
+        self.outter_win = curses.newwin(self.height, self.width, 0, 0)
+
+        #create a vertical stack of windows inside outter window. These will be the 'frame' for the application
+        mark_territory = False
+        self.top_menu_win  = Window.newwin_inside(self.outter_win, self.top_menu_height, self.body_width, 1, 1)
+        if mark_territory:
+            self.top_menu_win.bkgd("1")
+            self.top_menu_win.refresh()
+        self.top_hline_win = Window.hline_after(self.top_menu_win)
+        self.body_win      = Window.newwin_after(self.top_hline_win, self.body_height, self.body_width, 1)
+        if mark_territory:
+            self.body_win.bkgd("2")
+            self.body_win.refresh()
+        self.bottom_hline  = Window.hline_after(self.body_win)
+        self.msg_win       = Window.newwin_after(self.bottom_hline, self.msg_height, self.body_width, 1)
+        if mark_territory:
+            self.msg_win.bkgd("3")
+            self.msg_win.refresh()
+
+
+        self.message_widget = MessageWidget(self, "msg_01", "Message Box", self.body_width, self.msg_height, "", context)
+
+        #connect the widgets to their enclosing windows
+        for v in self.views:
+            v.set_enclosing_window(self.body_win)
+
+        self.message_widget.set_enclosing_window(self.msg_win)
         self.current_view_index = 0
         self.show_current_view()
 
     def register_views(self):
-        # this method should be overridden by a derived class when buildign an actual app
+        """
+        this method should be overridden by a derived class when buildign an actual app
+        should set self.views
+        """
+
+
         raise NotImplementedError()
 
     def get_current_view(self):
@@ -143,10 +192,6 @@ class AppBase:
             ch = self.stdscr.getch()
             if ch == curses.ERR:
                 break
-            if ch == curses.KEY_MOUSE:
-                dev_id, y, x, z, buttonevent = curses.getmouse()
-                self.message_widget.msg_info(
-                    "handle_input.mouse event id:{} y:{} x:{} z:{} button:{}".format(dev_id, y, x, z, hex(buttonevent)))
 
             self.stdscr.timeout(100)
 
@@ -174,6 +219,32 @@ class AppBase:
                 # elif is_function_key(ch):
                 #     self.handle_menu(ch)
 
+    def render_frame(self):
+        self.outter_win.box()
+        Window.draw_hline(self.top_hline_win)
+        Window.draw_hline(self.bottom_hline)
+
+    def render_contents(self):
+        self.views[self.current_view_index].render()
+        self.message_widget.render()
+        return
+        self.top_menu_win.bkgd(" ", curses.color_pair(2))
+        self.top_menu_win.addstr(0, 0, "This is top menu", curses.A_BOLD)
+        self.body_win.bkgd(" ", curses.color_pair(2))
+        self.body_win.addstr(0, 0, "This is body win", curses.A_BOLD)
+        self.msg_win.bkgd(" ", curses.color_pair(2))
+        self.msg_win.addstr(0, 0, "This is msgwin", curses.A_BOLD)
+
+    def noutrefresh_frame(self):    
+        self.stdscr.noutrefresh()
+        self.outter_win.noutrefresh()
+        self.top_menu_win.noutrefresh()
+        self.top_hline_win.noutrefresh()
+        self.body_win.noutrefresh()
+        self.bottom_hline.noutrefresh()
+        self.msg_win.noutrefresh()
+
+
     def box_form(self):
         self.stdscr.bkgd(" ", Colors.black_white())
         self.stdscr.border(0, 0, 0, 0, 0, 0, 0)
@@ -189,6 +260,11 @@ class AppBase:
         self.body_win.border(0, 0, " ", " ", curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
 
     def render(self):
+        self.render_frame()
+        self.noutrefresh_frame()
+        self.render_contents()
+        curses.doupdate()
+        return
         self.make_boxes()
         self.title_win.noutrefresh()
         self.body_win.noutrefresh()
