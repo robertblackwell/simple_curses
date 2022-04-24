@@ -1,16 +1,17 @@
+☐ repeatable unit tests and cleanup of same
+☐ code cleanup - particularly view.py
 ☐ dropdown widget needs to be implemented
 ☐ top menu needs implementing
-☐ work out how to run the example using simple_curses as a package imstalled locally
-☐ investigate venv
 ☐ prepare a presentation for Richard on how it works
 ☐ complete the implementation of Aorc_app processing
 
-Upgrades to MultiLineBuffer:
-    ☐ back arrow needs to move to previous line once it gets to start of line
-    ☐ right arrow needs to move to next line from end of line
-    ☐ adding space to the end of the line should not happen in multilinebuffer - remove EOSPAD from MultiLineBuffer
-
 Archive:
+  ✔ back arrow needs to move to previous line once it gets to start of line @done(22-04-24 14:50) @project(Upgrades to MultiLineBuffer)
+  ✔ right arrow needs to move to next line from end of line @done(22-04-24 14:50) @project(Upgrades to MultiLineBuffer)
+  ✔ adding space to the end of the line should not happen in multilinebuffer - remove EOSPAD from MultiLineBuffer @done(22-04-24 14:50) @project(Upgrades to MultiLineBuffer)
+  ✔ @done(22-04-24 14:50)
+  ✔ investigate venv @done(22-04-24 14:50)
+  ✔ work out how to run the example using simple_curses as a package imstalled locally @done(22-04-24 14:49)
   ✔ treat empty lines more formally - they are not only at the end or for empty content, they can exist any where @done(22-04-02 17:32) @project(Remove state Appending/Editing State)
   ✔ the state is ambiguous and is causing a bug in the handling of the delete key as it forgets to update the state. @done(22-04-02 17:31) @project(Remove state Appending/Editing State)
   ✔ specifically handling of the following characters needds to change newline, backspace, delete, printables @done(22-04-02 17:32) @project(Remove state Appending/Editing State)
