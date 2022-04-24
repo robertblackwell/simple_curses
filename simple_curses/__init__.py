@@ -20,4 +20,5 @@ from .string_buffer     import *
 from .text_widget       import *
 from .toggle_widget     import *
 from .view              import *
+from .version           import simple_curses_version
 from .appbase           import *

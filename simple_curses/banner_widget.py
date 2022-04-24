@@ -1,29 +1,23 @@
 import curses
 from typing import List, Union, Any
 
-from .widget_base import WidgetBase
-from .kurses_ex import make_subwin
-from .colors import Colors
+from simple_curses.widget_base import WidgetBase
+from simple_curses.kurses_ex import make_subwin
+from simple_curses.colors import Colors
+import simple_curses.version as V
 
 banner_lines_01 = [
     "**********************************************************************************",
-    "*                       _                                                        *",
-    "*                      | |                                                       *",
-    "*                      | |    _   _ _ __ ___   ___ _ __                          *",
-    "*                      | |   | | | | '_ ` _ \ / _ \ '_ \                         *",
-    "*                      | |___| |_| | | | | | |  __/ | | |                        *",
-    "*                      \_____/\__,_|_| |_| |_|\___|_| |_|                        *",
     "*              ****************************************************              *",
-    "*              *                      Lumen                       *              *",
-    "*              *                     Security                     *              *",
+    "*              *                      AORC                        *              *",
     "*              *                                                  *              *",
-    "*              *      DDoS 2.0 Always On Prefix List Script       *              *",
     "*              *                                                  *              *",
     "*              *    For issues with this script, please reach     *              *",
-    "*              *              out to Chris Jensen                 *              *",
+    "*              *              out to Fred TheCoder                *              *",
     "*              *                                                  *              *",
-    "*              *             jensen.christian@lumen.com           *              *",
-    "*              *               DL-SPIDDOSWAF@lumen.com            *              *",
+    "*              *             fred@the_coder.io                    *              *",
+    "*              *             simple_curses v{}              *              *".format(V.__version__),
+    "*              *             fred@the_coder.io                    *              *",
     "*              ****************************************************              *",
     "*                                                                                *",
     "**********************************************************************************",
