@@ -409,6 +409,12 @@ class DataEntryView:
     def get_render_widgets(self):
         return [self.title_widget] + self.flattened_widgets + self.menu_items
 
+    def handle_input(self, key):
+        if curses.KEY_F25 <= key <= curses.KEY_F30:
+            for m in self.menu_items:
+                if m.get_accelerator_key() == key:
+                    m.invoke()
+
     def render(self):
         ym, xm = self.outter_win.getmaxyx()
         xpos = (xm - len(self.title)) // 2

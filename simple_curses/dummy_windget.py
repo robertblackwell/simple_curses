@@ -1,7 +1,7 @@
 import curses
 import curses.textpad
 
-from .colors import Colors
+from simple_curses.theme import Theme
 from .keyboard import *
 
 
@@ -54,7 +54,7 @@ class DummyWidget:
         return False
 
     def position_cursor(self):
-        self.outter_win.bkgd(" ", Colors.button_focus())
+        self.outter_win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
         self.outter_win.noutrefresh()
         curses.doupdate()
 

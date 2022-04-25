@@ -4,6 +4,7 @@ import curses.textpad
 from typing import Any
 
 from simple_curses.theme import Theme
+from simple_curses.colors import Colors
 from simple_curses.keyboard import *
 from simple_curses.multi_line_buffer import MultiLineBuffer
 from simple_curses.kurses_ex import *
@@ -77,7 +78,7 @@ class MenuBase(FocusableWidgetBase):
 
 
 class MenuItem(MenuBase):
-    def __init__(self, app, label, width, height, attributes, function, context):
+    def __init__(self, app, label, width, height, accelerator_key, function, context):
         self.label = label
         self.function = function
         self.context = context
@@ -87,6 +88,7 @@ class MenuItem(MenuBase):
         self.has_focus = False
         self.height = height
         self.width = width
+        self.accelerator_key = accelerator_key
         self.start_row = 0
         self.start_col = 0
 
@@ -98,6 +100,9 @@ class MenuItem(MenuBase):
 
     def get_height(self) -> int:
         return 3
+
+    def get_accelerator_key(self):
+        return self.accelerator_key
 
     def position_cursor(self) -> None:
         pass
@@ -119,7 +124,7 @@ class MenuItem(MenuBase):
         return did_handle_ch
 
     def invoke(self) -> None:
-        self.function(self.app, self.app.get_current_view(), self.context)
+        self.function(self.app, self.app.get_current_view())#, self.context)
 
     def render(self) -> None:
         self.win.bkgd(" ", Theme.instance().label_attr(self.has_focus))

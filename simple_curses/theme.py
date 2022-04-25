@@ -30,6 +30,7 @@ class BlackBackground:
         self._value_focus_attr = Colors.green_black()
         self._value_nofocus_attr = Colors.white_black()
         c: Colors = Colors.instance()
+        self._app_attr = curses.color_pair(c.COLOR_APP) + curses.A_BOLD
         self._msg_label_attr = curses.color_pair(c.COLOR_GREEN_BLACK) + curses.A_BOLD
         self._msg_error_attr = curses.color_pair(c.COLOR_RED_BLACK) + curses.A_BOLD
         self._msg_warn_attr = curses.color_pair(c.COLOR_YELLOW_BLACK) + curses.A_BOLD
@@ -50,6 +51,9 @@ class Theme():
         else:
             pass
         return cls._instance
+
+    def app_attr(self):
+        return self.attributes._app_attr
 
     def bkgd_attr(self):
         return self.attributes._bkgd_attr

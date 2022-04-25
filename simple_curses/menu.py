@@ -21,7 +21,9 @@ class DummyMenuItem(MenuBase):
         self.start_row = 0
         self.start_col = 0
 
-
+    def get_accelerator_key(self):
+        return self.get_accelerator_key
+        
     def set_enclosing_window(self, win) -> None:
         self.win = win
 

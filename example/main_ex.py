@@ -142,6 +142,7 @@ class ActionsForFirstView(ActionBase):
 
         app.msg_info("menu action 0-1 {}".format(v))
         self.execute_command(["ls", "-al", "/"])
+        app.msg_info("menu action 0-1 {}".format(v))
 
 
 def menu_action_11(form, context):
@@ -155,12 +156,12 @@ def menu_action_11(form, context):
     # run a command with elements of v as arguments
 
 
-def menu_action_12(form, context):
-    form.msg_info("menu action 1-2")
+def menu_action_12(app, view, context):
+    app.msg_info("menu action 1-2")
 
 
-def menu_action_13(form, context):
-    form.msg_info("menu action 1-3")
+def menu_action_13(app, view, context):
+    app.msg_info("menu action 1-3")
 
 
 #######################################################################################################################
@@ -239,9 +240,9 @@ class App(AppBase):
         ]
 
         view_menu_items_01 = [
-            MenuItem(self, "Validate", 13, 3, 0, menu_action_11, "context for menu 1"),
-            MenuItem(self, "Cancel", 7, 3, 0, menu_action_12, "context for menu 2"),
-            MenuItem(self, "Ok-Run", 7, 3, 0, menu_action_13, "context for menu 3")
+            MenuItem(self, "Validate ^F1", 13, 3, curses.KEY_F25,  menu_action_11, "context for menu 1"),
+            MenuItem(self, "Cancel ^F2",    7, 3, curses.KEY_F26,  menu_action_12, "context for menu 2"),
+            MenuItem(self, "Ok-Run ^F3",    7, 3, curses.KEY_F27,  menu_action_13, "context for menu 3")
         ]
         view_data_entry_01 = DataEntryView(self, "view_01", "First View", self.stdscr, 
                                 view_01_widgets,
@@ -269,9 +270,9 @@ class App(AppBase):
         ]
 
         view_menu_items_02 = [
-            MenuItem(self, "Validate", 13, 3, 0, self.action01.validate, "context for menu 1"),
-            MenuItem(self, "Cancel", 7, 3, 0, self.action01.cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run", 7, 3, 0, self.action01.run, "context for menu 3")
+            MenuItem(self, "Validate ^F1", 13, 3, curses.KEY_F25,  self.action01.validate, "context for menu 1"),
+            MenuItem(self, "Cancel ^F2", 7, 3,    curses.KEY_F26,  self.action01.cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run ^F3", 7, 3,    curses.KEY_F27,  self.action01.run, "context for menu 3")
         ]
         view_data_entry_02 = DataEntryView(self, "view_02", "Second View", self.stdscr, 
             view_02_column_01,
@@ -297,9 +298,9 @@ class App(AppBase):
         view_03_widgets = [view_03_column_01, view_03_column_02]
 
         view_menu_items_03 = [
-            MenuItem(self, "Validate", 13, 3, 0, self.action01.validate, "context for menu 1"),
-            MenuItem(self, "Cancel", 7, 3, 0, self.action01.cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run", 7, 3, 0, self.action01.run, "context for menu 3")
+            MenuItem(self, "Validate ^F1", 13, 3, curses.KEY_F25, self.action01.validate, "context for menu 1"),
+            MenuItem(self, "Cancel ^F2",    7, 3, curses.KEY_F26, self.action01.cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run ^F3",    7, 3, curses.KEY_F27, self.action01.run, "context for menu 3")
         ]
         view_data_entry_03 = DataEntryView(self, "view_02", "Second View", self.stdscr, 
             view_03_widgets,
@@ -309,10 +310,10 @@ class App(AppBase):
         # topmenu start
         #####################################
         topmenu_items = [ 
-            TopMenuWidget(self, "tm01", "View01 F1", 0x109, view_data_entry_01),
-            TopMenuWidget(self, "tm02", "View02 F2", 0x10a, view_data_entry_02),
-            TopMenuWidget(self, "tm03", "View03 F3", 0x10b, view_data_entry_03),
-            TopMenuWidget(self, "tm04", "View04 F4", 0x10c, view_banner),
+            # TopMenuWidget(self, "tm01", "View01 F1", curses.KEY_F1, view_data_entry_01),
+            TopMenuWidget(self, "tm02", "View02 F2", curses.KEY_F2, view_data_entry_02),
+            TopMenuWidget(self, "tm03", "View03 F3", curses.KEY_F3, view_data_entry_03),
+            TopMenuWidget(self, "tm04", "View04 F4", curses.KEY_F4, view_banner),
         ]
         topmenu = TopmenuView(self, FigletWidget("Test"), topmenu_items)
         #####################################
@@ -321,7 +322,7 @@ class App(AppBase):
         self.topmenu_view = topmenu
         self.views = [
             # view_help, 
-            view_data_entry_01, 
+            # view_data_entry_01, 
             view_data_entry_02,
             view_data_entry_03,
             view_banner, 

@@ -3,7 +3,7 @@ from typing import List, Union, Any
 
 from simple_curses.widget_base import WidgetBase
 from simple_curses.kurses_ex import make_subwin
-from simple_curses.colors import Colors
+from simple_curses.theme import Theme
 import simple_curses.version as V
 
 banner_lines_01 = [
@@ -90,15 +90,12 @@ class BlockTextWidget(WidgetBase):
     def render(self):
         if self.banner_win is None:
             raise RuntimeError("banner_win is none")
-        if self.has_focus:
-            self.banner_win.bkgd(" ", Colors.green_black())
-        else:
-            self.banner_win.bkgd(" ", Colors.white_black())
+        self.banner_win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
         r = 0
         for line in self.text_block:
             ln = len(line)
             ym, xm = self.banner_win.getmaxyx()
-            self.banner_win.addstr(r, 0, line[0:xm-1], Colors.yellow_black())
+            self.banner_win.addstr(r, 0, line[0:xm-1], Theme.instance().cursor_attr())
             r += 1
 
         self.banner_win.noutrefresh()

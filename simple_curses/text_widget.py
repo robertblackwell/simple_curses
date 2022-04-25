@@ -74,7 +74,6 @@ class TextWidget(EditableWidgetBase):
         Move the cursor to the current active position and makes sure it blinks.
         Should do nothing when this widget does not have focus
         """
-        # cur_attr = Colors.yellow_black() + curses.A_REVERSE + curses.A_BLINK if False else Theme.instance().cursor_attr()
         cur_attr = Theme.instance().cursor_attr()
 
         ch_under_cursor = self.string_buffer.display_string[self.string_buffer.cpos_buffer]

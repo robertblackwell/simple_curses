@@ -7,7 +7,6 @@ from simple_curses.kurses_ex import make_subwin
 from simple_curses.widget_base import WidgetBase, FocusableWidgetBase
 from simple_curses.layout import TopmenuLayout
 from simple_curses.theme import Theme
-from simple_curses.colors import Colors
 from simple_curses.keyboard import *
 from typing import List
 
@@ -67,7 +66,7 @@ class FigletWidget(WidgetBase):
         for line in self.lines:
             # pad line to be xm wide
             s = pad(line, xm-1)
-            self.win.addstr(r, 0, line)
+            self.win.addstr(r, 0, line, Theme.instance().app_attr())
             self.win.refresh()
             r += 1
         self.win.refresh()

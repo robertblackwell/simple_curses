@@ -6,7 +6,6 @@ from pyfiglet import Figlet
 from simple_curses.kurses_ex import make_subwin
 from simple_curses.widget_base import WidgetBase, FocusableWidgetBase
 from simple_curses.theme import Theme
-from simple_curses.colors import Colors
 from simple_curses.keyboard import *
 from typing import List
 
@@ -59,12 +58,5 @@ class TopMenuWidget(WidgetBase):
     def render(self) -> None:
         self.win.bkgd(" ", Theme.instance().label_attr(self.has_focus))
         self.win.addstr(1, 1, self.label, Theme.instance().label_attr(self.has_focus))
-        # if self.has_focus:
-        #     self.win.bkgd(" ", Colors.button_focus())
-        #     self.win.addstr(1, 1, self.label, Colors.button_focus())
-        # else:
-        #     self.win.bkgd(" ", Colors.button_no_focus())
-        #     self.win.addstr(1, 1, self.label, Colors.button_no_focus())
-
         self.win.refresh()
 

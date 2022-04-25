@@ -196,6 +196,7 @@ class AppBase:
     def handle_accelerator(self, key):
         for w in self.topmenu_view.get_focus_widgets():
             if w.get_accelerator() == key:
+                v = w.get_view()
                 self.view_make_current(w.get_view())
                 ix = self.focus_widgets.index(w)
                 self.shift_focus_to(ix)
@@ -218,7 +219,7 @@ class AppBase:
             if chstr in ['\n', '\r', '\t']:
                 chstr = "??"
             if self.log_keystrokes:    
-                self.message_widget.msg_info("handle_input ch: {} hex: {}".format(chstr, hex(ch)))
+                self.message_widget.msg_info("handle_input ch: {} hex: {} dec: {}".format(chstr, hex(ch), ch))
 
             focus_widget = self.focus_widgets[self.focus_index]
             focus_widget.focus_accept()
@@ -232,9 +233,15 @@ class AppBase:
                 elif is_prev_control(ch):
                     w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
                     self.shift_focus_to(w_index)
+                # view menu accelerator shift-F1 -- shift-F6 
+                elif curses.KEY_F25 <= ch <= curses.KEY_F30:
+                    self.get_current_view().handle_input(ch)
+
+                #view rotate
                 elif is_control_v(ch):
                     self.next_view()
-                elif ch in [0x109, 0x10a, 0x10b, 0x10c, 0x10d, 0x10e]:
+                # top menu accelerator key processing
+                elif ch in [curses.KEY_F1, curses.KEY_F2, curses.KEY_F3, curses.KEY_F4, curses.KEY_F5, curses.KEY_F6]:
                     w = self.handle_accelerator(ch)
                     if w is not None:
                         self.view_make_current(w.get_view())
