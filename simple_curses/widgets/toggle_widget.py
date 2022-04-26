@@ -3,8 +3,8 @@ from typing import List
 
 from simple_curses.keyboard import *
 from simple_curses.validator import *
-from simple_curses.widget_base import EditableWidgetBase
-from simple_curses import Theme 
+from simple_curses.widget_base import *
+from simple_curses.theme import Theme 
 
 class ToggleWidget(EditableWidgetBase):
     """A widget that is either ON or OFF"""

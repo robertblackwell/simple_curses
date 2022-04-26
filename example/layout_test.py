@@ -2,7 +2,7 @@ import curses
 from linecache import lazycache
 
 from layout import VerticalStack, HorizontalStack, WidgetPosition
-from dummy_windget import DummyWidget, DummyShortWidget
+from dummy_widget import DummyWidget, DummyShortWidget
 
 def subwin_relative(win, row_count, col_count, relative_begin_y, relative_begin_x):
     win_top_left_abs = win.getbegyx()

@@ -1,40 +1,21 @@
 from typing import List, Tuple, Dict, Any, cast
+import sys
 import curses
 import curses.textpad
 
-# import simple_curses.menu as M
-from simple_curses.widget_base import *
-from simple_curses.topmenu_widget import *
-from simple_curses.layout import Rectangle, ColumnLayout, allocate_multiple_columns, TopmenuLayout
-from simple_curses.validator import *
-from simple_curses.title_widget import TitleWidget
-from simple_curses.fig_widget import *
-from simple_curses.menu import *
-from simple_curses.kurses_ex import make_subwin
-import simple_curses.window as Window
+from simple_curses.widget_base    import is_editable, is_focusable, WidgetBase, FocusableWidgetBase, EditableWidgetBase
+from simple_curses.layout         import Rectangle, allocate_multiple_columns, TopmenuLayout
+from simple_curses.validator      import *
+from simple_curses.kurses_ex      import make_subwin
+import simple_curses.window       as     Window
+from simple_curses.keyboard       import FunctionKeys
 
-def is_next_control(ch):
-    return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
+from simple_curses.widgets.topmenu_widget   import *
+from simple_curses.widgets.blocktext_widget import HelpWidget
+from simple_curses.widgets.title_widget     import TitleWidget
+from simple_curses.widgets.blocktext_widget import *
+from simple_curses.widgets.fig_widget       import *
 
-
-def is_prev_control(ch):
-    return ch == "KEY_LEFT" or ch == curses.KEY_LEFT
-
-
-def is_function_key(ch):
-    tmp = ch[0:6]
-    return tmp == "KEY_F("
-
-
-def fn_key_match(k1, k2):
-    return k1 == k2
-
-
-def fn_key_description(k1):
-    s1 = k1.replace("KEY_F(", "")
-    s2 = s1.replace(")", "")
-    s3 = "F" + s2
-    return s3
 
 def validate_widgets(widgets):
     """Validate is a tow level list of list of WidgetBase"""
@@ -53,7 +34,6 @@ def flatten(list_of_lists):
         return flatten(list_of_lists[0]) + flatten(list_of_lists[1:])
     return list_of_lists[:1] + flatten(list_of_lists[1:])
 
-
 class BannerView:
     """A class that implements a view that dispays a single banner or info widget in the middle of the Form body. """
 
@@ -62,6 +42,7 @@ class BannerView:
         self.stdscr = stdscr
         self.height, self.width = (widget.get_height(), widget.get_width())
         self.widget = widget
+        self.menu_items = []
         self.label = label
         self.ident = ident
         self.app = app
@@ -107,6 +88,9 @@ class BannerView:
     def get_render_widgets(self):
         return [self.widget]
 
+    def handle_input(self, key):
+        return False
+
     def render(self):
         self.widget.render()
 
@@ -114,6 +98,11 @@ class DummyView:
     def _init__(self, figlet_icon: List[str], menu_widgets: List[TopMenuWidget]):
         pass
 
+class HelpView(BannerView):
+    def __init__(self, app, ident, label, stdscr):
+        super().__init__(app, ident, label, stdscr, HelpWidget(app))
+
+    
 class TopmenuView:
     def __init__(self, app, figlet_widget: FigletWidget, menu_widgets: List[TopMenuWidget]):
         self.app = app
@@ -123,6 +112,7 @@ class TopmenuView:
         self.layout = TopmenuLayout(self.widgets)
         self.height, self.width = self.layout.get_size()
         self.has_focus = False
+        self.focus_index = 0
 
     def get_height(self):
         return self.height 
@@ -146,7 +136,14 @@ class TopmenuView:
             subwin = make_subwin(win, layout.widget.get_height(), layout.widget.get_width(), ybeg, xbeg)
             layout.widget.set_enclosing_window(subwin)
 
+    def get_menu_by_view(self, view):
+        for m in self.menu_items:
+            if m.view is view:
+                return m
+        raise ValueError("failed to find view {} in top menu".format(view.ident))
 
+    def handle_input(self, key):
+        return False
 
     def focus_accept(self):
         selfhas_focus = True
@@ -160,80 +157,6 @@ class TopmenuView:
     def render(self) -> None:
         for w in self.widgets:
             w.render()
-
-class ViewMenu:
-    """This is a Horizontal Stack, right justified, of menu items. Used to provide a menu inside a data entry view
-    """
-
-    def __init__(self, app, parent_view, stdscr, menu_win, menu_items: List[MenuItem]):
-        self.app = app
-        self.parent_view = parent_view
-        self.outter_win = menu_win
-        self.height, self.width = menu_win.getmaxyx()
-        ybeg, xbeg = menu_win.getbegyx()
-        max_item_width = 0
-        total_width = 0
-        item_width = None
-        for m in menu_items:
-            max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
-            total_width += m.get_width() + 4
-        if (max_item_width + 2) * len(menu_items) < self.width:
-            item_width = max_item_width + 2
-        else:
-            raise ValueError("cannot fit the menu items in a single line  with nice spacing")
-        xpos = xbeg + self.width - item_width
-        rectangles = []
-        for m in reversed(menu_items):
-            r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
-            rectangles.append(r)
-            xpos += -item_width
-            tmp_win = self.outter_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
-            m.set_enclosing_window(tmp_win)
-            m.has_focus = False
-
-       
-class ViewBody:
-
-    def __init__(self, form, stdscr, win, widgets: List[WidgetBase]):
-        self.outter_win = win
-        yh, xw = win.getmaxyx()
-        ybeg, xbeg = win.getbegyx()
-        require_borders = True
-        if require_borders:
-            self.height = yh - 2
-            self.width = xw - 2
-            ybeg = ybeg + 1
-            xbeg = xbeg + 1
-
-        max_widget_width = 0
-        total_width = 0
-        item_width = None
-        widgets_total_height = 0
-        # calculate the widests widget and the total height required with 1 row between
-        for w in widgets:
-            max_widget_width = w.get_width() if max_widget_width < w.get_width() else max_widget_width
-            total_width += w.get_width() + 4
-            widgets_total_height += w.get_height() + 1
-            
-
-        # how many columns that wide could we make - leaving 2 spaces on each side of a widget
-        max_columns = self.width // (max_widget_width + 1)
-
-        required_columns = (widgets_total_height // self.height) if (widgets_total_height % self.height) == 0 else (widgets_total_height // self.height) + 1
-
-        if required_columns > max_columns:
-            raise ValueError("cannot fit {}  widgets in window of size y: {} x:{}".format(len(widgets), yh, xw))
-
-        self.nbr_columns = required_columns
-
-        nbr_widgets_per_column = len(widgets) // required_columns
-
-        nbr_columns_with_one_extra = len(widgets) % required_columns
-
-        clayout = ColumnLayout(self.height, max_widget_width)
-        clayout.add_widgets(widgets)
-        self.widget_allocation = clayout.widget_allocation
-
 
 def menu_layout_and_enclose(menu_win, menu_items: List[MenuItem]):
     """
@@ -281,6 +204,7 @@ class DataEntryView:
                 stdscr, 
                 widgets: List[List[WidgetBase]],
                 menu_items: List[MenuItem]):
+        self.app = app
         self.menu_height = 5
         self.title_height = 1
         self.view_menu = None
@@ -290,6 +214,10 @@ class DataEntryView:
         self.stdscr = stdscr
 
         self.menu_items = menu_items
+        self.function_keys = FunctionKeys()
+        for m in self.menu_items:
+            self.function_keys.add_accelerator(m.accelerator_key, m)
+
         self.title = title
         self.title_widget = None
         self.ident = ident
@@ -309,7 +237,9 @@ class DataEntryView:
         #data_entry_height is height of the widgets without title or menus
         self.widgets_height = self.widget_allocation.get_height()
         self.flattened_widgets = flatten(widgets)
-        self.focus_widgets = [w for w in (self.flattened_widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
+        # self.focus_widgets = [w for w in (self.flattened_widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
+        self.focus_index = 0
+        self.focus_widgets = self.flattened_widgets
 
     def get_height(self):
         return self.height
@@ -395,6 +325,13 @@ class DataEntryView:
                 v = getattr(vals, k)
                 w.set_value(v)
 
+    def shift_focus_to(self, w_index):
+        old_focus_widget = self.focus_widgets[self.focus_index]
+        self.focus_index = w_index
+        old_focus_widget.focus_release()
+        focus_widget = self.focus_widgets[self.focus_index]
+        focus_widget.focus_accept()
+
     def show(self):
         self.setup()
 
@@ -410,10 +347,20 @@ class DataEntryView:
         return [self.title_widget] + self.flattened_widgets + self.menu_items
 
     def handle_input(self, key):
-        if curses.KEY_F25 <= key <= curses.KEY_F30:
-            for m in self.menu_items:
-                if m.get_accelerator_key() == key:
-                    m.invoke()
+        did_handle = True
+        if is_next_control(key):
+            w_index = (self.focus_index + 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
+            self.shift_focus_to(w_index)
+        elif is_prev_control(key):
+            w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
+            self.shift_focus_to(w_index)
+        elif self.function_keys.is_function_key(key):
+            m = self.function_keys.get_menu(key)
+            if m is not None:
+                m.invoke()
+        else: 
+            did_handle = self.flattened_widgets[self.focus_index].handle_input(key)
+        return did_handle
 
     def render(self):
         ym, xm = self.outter_win.getmaxyx()
@@ -425,3 +372,17 @@ class DataEntryView:
         self.widgets_win.refresh()
         self.menu_win.refresh()
 
+def quit_function(app, view):
+    sys.exit()
+
+class QuitView(DataEntryView):
+    def __init__(self, app, ident: str, title: str, stdscr):
+        widgets = [
+            [
+                BlockTextWidget(app, ["Are you sure you want to quit ??", "If so hit ^F1"])
+            ]
+        ]
+        menu_items = [
+            MenuItem(app, "quit_view_menu", 3, FKEY_CTRL_F1, quit_function, "")
+        ]
+        super().__init__(app, ident, title, stdscr, widgets, menu_items)

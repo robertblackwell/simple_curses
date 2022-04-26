@@ -6,6 +6,45 @@ This file implements the mapping from keycodes to actions
 """
 getch_flag = True
 
+FKEY_F1 = curses.KEY_F1
+FKEY_F2 = curses.KEY_F2
+FKEY_F3 = curses.KEY_F3
+FKEY_F4 = curses.KEY_F4
+FKEY_F5 = curses.KEY_F5
+FKEY_F6 = curses.KEY_F6
+FKEY_F7 = curses.KEY_F7
+FKEY_F8 = curses.KEY_F8
+# FKEY_F9 = curses.KEY_F9
+# FKEY_F10 = curses.KEY_F10
+# FKEY_F11 = curses.KEY_F11
+# FKEY_F12 = curses.KEY_F12
+
+FKEY_SHIFT_F1 = curses.KEY_F13
+FKEY_SHIFT_F2 = curses.KEY_F14
+FKEY_SHIFT_F3 = curses.KEY_F15
+FKEY_SHIFT_F4 = curses.KEY_F16
+FKEY_SHIFT_F5 = curses.KEY_F17
+FKEY_SHIFT_F6 = curses.KEY_F18
+FKEY_SHIFT_F7 = curses.KEY_F19
+FKEY_SHIFT_F8 = curses.KEY_F20
+# FKEY_SHIFTF_9 = curses.KEY_F9
+# FKEY_SHIFTF_10 = curses.KEY_F10
+# FKEY_SHIFTF_11 = curses.KEY_F11
+# FKEY_SHIFTF_12 = curses.KEY_F12
+
+FKEY_CTRL_F1 = curses.KEY_F25
+FKEY_CTRL_F2 = curses.KEY_F26
+FKEY_CTRL_F3 = curses.KEY_F27
+FKEY_CTRL_F4 = curses.KEY_F28
+FKEY_CTRL_F5 = curses.KEY_F29
+FKEY_CTRL_F6 = curses.KEY_F30
+FKEY_CTRL_F7 = curses.KEY_F31
+FKEY_CTRL_F8 = curses.KEY_F32
+# FKEY_CTRLF_9 = curses.KEY_F9
+# FKEY_CTRLF_10 = curses.KEY_F10
+# FKEY_CTRLF_11 = curses.KEY_F11
+# FKEY_CTRLF_12 = curses.KEY_F12
+
 
 def get_character(stdscr):
     ch = None
@@ -123,3 +162,114 @@ def is_move_down(ch):
 def is_move_up(ch):
     return ch == curses.KEY_UP
 
+def function_key_ord(key):
+    return key - curses.KEY_F0
+
+def function_key_number(key):
+    if curses.KEY_F0 <= key <= curses.KEY_F12:
+        n = key - curses.KEY_F0
+    elif curses.KEY_F12 <= key <= curses.KEY_F24:
+        n = key - curses.KEY_F12
+    elif curses.KEY_F24 <= key <= curses.KEY_F36:
+        n = key - curses.KEY_F24
+    else:
+        n = None
+    return n
+
+def function_key_description(key):
+    if curses.KEY_F0 <= key <= curses.KEY_F12:
+        prefix = "F"
+    elif curses.KEY_F13 <= key <= curses.KEY_F24:
+        prefix = "SF"
+    elif curses.KEY_F25 <= key <= curses.KEY_F36:
+        prefix = "^F"
+    else:
+        prefix = "??"
+    s = "{}{}".format(prefix, function_key_number(key))
+    return s
+
+
+class FunctionKeys:
+    def __init__(self):
+        self.accelerators = {}
+
+    def test_duplicate_error(self, key):
+        if key in self.accelerators:
+            msg = "Function key [{}, {}] is already being used.".format(key, function_key_description(key))
+            raise ValueError("Duplicate function key. {}  ".format(msg))
+
+    def add_accelerator(self, key, menu):
+        self.test_duplicate_error(key)
+        self.accelerators[key] = menu
+
+    def get_menu(self, key):
+        if key in self.accelerators:
+            return self.accelerators[key]
+        return None
+
+    def is_function_key(self, key):
+        return curses.KEY_F0 <= key <= curses.KEY_F36
+
+    def description(self, key):
+        return function_key_description(key)
+
+if __name__ == "__main__":
+    fkeys = [ 
+        (curses.KEY_F0, "FK_0"),
+        (curses.KEY_F1, "FK_1"),
+        (curses.KEY_F2, "FK_2"),
+        (curses.KEY_F3, "FK_3"),
+        (curses.KEY_F4, "FK_4"),
+        (curses.KEY_F5, "FK_5"),
+        (curses.KEY_F6, "FK_6"),
+        (curses.KEY_F7, "FK_7"),
+        (curses.KEY_F8, "FK_8"),
+        (curses.KEY_F9, "FK_9"),
+        (curses.KEY_F10,"FK_10"),
+        (curses.KEY_F11,"FK_11"),
+        (curses.KEY_F12,"FK_12"),
+        (curses.KEY_F13,"FK_13"), #also Shift F1
+        (curses.KEY_F14,"FK_14"),
+        (curses.KEY_F15,"FK_15"),
+        (curses.KEY_F16,"FK_16"),
+        (curses.KEY_F17,"FK_17"),
+        (curses.KEY_F18,"FK_18"),
+        (curses.KEY_F19,"FK_19"),
+        (curses.KEY_F20,"FK_20"),
+        (curses.KEY_F21,"FK_21"),
+        (curses.KEY_F22,"FK_22"),
+        (curses.KEY_F23,"FK_23"),
+        (curses.KEY_F24,"FK_24"),# also shift F12
+        (curses.KEY_F25,"FK_25"),# also cntrl F1
+        (curses.KEY_F26,"FK_26"),
+        (curses.KEY_F27,"FK_27"),
+        (curses.KEY_F28,"FK_28"),
+        (curses.KEY_F29,"FK_29"),
+        (curses.KEY_F30,"FK_30"),
+        (curses.KEY_F31,"FK_31"),
+        (curses.KEY_F32,"FK_32"),
+        (curses.KEY_F33,"FK_33"),
+        (curses.KEY_F34,"FK_34"),
+        (curses.KEY_F35,"FK_35"),
+        (curses.KEY_F36,"FK_36"),
+        (curses.KEY_F37,"FK_37"),# else cnttrl F12
+    ]
+    fk = FunctionKeys()
+    b1 = fk.is_function_key(curses.KEY_F1)
+    b2 = fk.is_function_key(curses.KEY_F13)    
+    b3 = fk.is_function_key(curses.KEY_F25)
+    s1 = fk.description(curses.KEY_F1)
+    s2 = fk.description(curses.KEY_F13)    
+    s3 = fk.description(curses.KEY_F25)
+    numbers = []
+    for i in range(0,37):
+        k = curses.KEY_F0 + i
+        numbers.append((function_key_description(k), k, function_key_number(k), fkeys[i]))
+    n1 = function_key_number(curses.KEY_F1)
+    n12 = function_key_number(curses.KEY_F12)
+    n2 = function_key_number(curses.KEY_F13)
+    n22 = function_key_number(curses.KEY_F24)
+    n3 = function_key_number(curses.KEY_F25)    
+    n32 = function_key_number(curses.KEY_F35)
+
+    print("hello")

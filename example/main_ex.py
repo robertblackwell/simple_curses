@@ -19,15 +19,6 @@ if not project_dir in sys.path:
 from simple_curses import *
 from simple_curses import TopmenuView, DummyView
 
-# from simple_curses.text_widget import TextWidget, IntegerWidget, FloatWidget, IPAddressWidget, IPNetworkWidget, \
-#     TimeOfDayWidget
-# from simple_curses.menu import MenuItem
-# from simple_curses.multi_line_widget import MultiLineWidget
-# from dropdown_widget import DropdownWidget
-# from simple_curses.toggle_widget import ToggleWidget
-# from simple_curses.view import AppBase, View, ViewBody, BannerView
-# from banner_widget import BannerWidget, HelpWidget
-
 from banner import aorc_banner
 
 def test_screen_size(stdscr):
@@ -77,16 +68,15 @@ class State:
 
         self.sc_01 = None
 
-
-        self.ipnet_11 =  "192.168.1.0/24"
-        self.int_val_11 = "11"
-        self.float_val_11 = "11.1"
+        self.ipnet_11 = "192.168.1.0/24"
+        self.int_val_11 = 11
+        self.float_val_11 = 11.1
         self.ipaddr_11 = "192.168.0.1"
-        self.tod_11 = None
-        self.text_11 = "some text"
-        self.toggle_11 = 1
-        self.path_22 = "/"
-        self.path_exists_22 = "/"
+        self.tod_11 = "7:30"
+        self.text_11 = "text 11"
+        self.toggle_11 = 0
+        self.path_22 ="/path_22"
+        self.path_exists_22 = "/path_exists_22"
         self.sc_11 = ""
 
         self.ipnet_21 =  "192.168.1.0/24"
@@ -240,9 +230,9 @@ class App(AppBase):
         ]
 
         view_menu_items_01 = [
-            MenuItem(self, "Validate ^F1", 13, 3, curses.KEY_F25,  menu_action_11, "context for menu 1"),
-            MenuItem(self, "Cancel ^F2",    7, 3, curses.KEY_F26,  menu_action_12, "context for menu 2"),
-            MenuItem(self, "Ok-Run ^F3",    7, 3, curses.KEY_F27,  menu_action_13, "context for menu 3")
+            MenuItem(self, "Validate", 3, FKEY_CTRL_F1,  menu_action_11, "context for menu 1"),
+            MenuItem(self, "Cancel",   3, FKEY_CTRL_F2,  menu_action_12, "context for menu 2"),
+            MenuItem(self, "Ok-Run",   3, FKEY_CTRL_F3,  menu_action_13, "context for menu 3")
         ]
         view_data_entry_01 = DataEntryView(self, "view_01", "First View", self.stdscr, 
                                 view_01_widgets,
@@ -270,9 +260,9 @@ class App(AppBase):
         ]
 
         view_menu_items_02 = [
-            MenuItem(self, "Validate ^F1", 13, 3, curses.KEY_F25,  self.action01.validate, "context for menu 1"),
-            MenuItem(self, "Cancel ^F2", 7, 3,    curses.KEY_F26,  self.action01.cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run ^F3", 7, 3,    curses.KEY_F27,  self.action01.run, "context for menu 3")
+            MenuItem(self, "Validate", 3, FKEY_CTRL_F1,  self.action01.validate, "context for menu 1"),
+            MenuItem(self, "Cancel",   3, FKEY_CTRL_F2,  self.action01.cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run",   3, FKEY_CTRL_F3,  self.action01.run, "context for menu 3")
         ]
         view_data_entry_02 = DataEntryView(self, "view_02", "Second View", self.stdscr, 
             view_02_column_01,
@@ -298,22 +288,26 @@ class App(AppBase):
         view_03_widgets = [view_03_column_01, view_03_column_02]
 
         view_menu_items_03 = [
-            MenuItem(self, "Validate ^F1", 13, 3, curses.KEY_F25, self.action01.validate, "context for menu 1"),
-            MenuItem(self, "Cancel ^F2",    7, 3, curses.KEY_F26, self.action01.cancel, "context for menu 2"),
-            MenuItem(self, "Ok-Run ^F3",    7, 3, curses.KEY_F27, self.action01.run, "context for menu 3")
+            MenuItem(self, "Validate", 3, FKEY_CTRL_F1, self.action01.validate, "context for menu 1"),
+            MenuItem(self, "Cancel",   3, FKEY_CTRL_F2, self.action01.cancel, "context for menu 2"),
+            MenuItem(self, "Ok-Run",   3, FKEY_CTRL_F3, self.action01.run, "context for menu 3")
         ]
-        view_data_entry_03 = DataEntryView(self, "view_02", "Second View", self.stdscr, 
+        view_data_entry_03 = DataEntryView(self, "view_02", "Third View", self.stdscr, 
             view_03_widgets,
             view_menu_items_03
         )
+        help_view = HelpView(self, "help_view", "Help", self.stdscr)
+        quit_view = QuitView(self, "quit_view", "Quit", self.stdscr)
         #####################################
         # topmenu start
         #####################################
         topmenu_items = [ 
             # TopMenuWidget(self, "tm01", "View01 F1", curses.KEY_F1, view_data_entry_01),
-            TopMenuWidget(self, "tm02", "View02 F2", curses.KEY_F2, view_data_entry_02),
-            TopMenuWidget(self, "tm03", "View03 F3", curses.KEY_F3, view_data_entry_03),
-            TopMenuWidget(self, "tm04", "View04 F4", curses.KEY_F4, view_banner),
+            TopMenuWidget(self, "tm02", "View02",  3, FKEY_F2, view_data_entry_02),
+            TopMenuWidget(self, "tm03", "View03",  3, FKEY_F3, view_data_entry_03),
+            TopMenuWidget(self, "tm04", "View04",  3, FKEY_F4, view_banner),
+            TopMenuWidget(self, "tmhelp", "Help",  3, FKEY_F7, help_view),
+            TopMenuWidget(self, "tmquit", "Quit?", 3, FKEY_F8, quit_view)
         ]
         topmenu = TopmenuView(self, FigletWidget("Test"), topmenu_items)
         #####################################
@@ -326,6 +320,8 @@ class App(AppBase):
             view_data_entry_02,
             view_data_entry_03,
             view_banner, 
+            help_view,
+            quit_view
         ]
 
 

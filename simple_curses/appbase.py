@@ -3,34 +3,13 @@ import curses
 import curses.textpad
 from time import sleep
 
-from simple_curses.message_widget import MessageWidget
-from simple_curses.keyboard import is_control_v
-from simple_curses.colors import Colors
-from simple_curses.theme import Theme
-from simple_curses.keyboard import is_next_control, is_prev_control
+from simple_curses.keyboard import *
+from simple_curses.theme import *
 import simple_curses.window as Window
-# def is_next_control(ch):
-#     return ch == "KEY_RIGHT" or ch == curses.KEY_RIGHT
+from simple_curses.view import *
+from simple_curses.keyboard import FunctionKeys
+from simple_curses.widgets import *
 
-
-# def is_prev_control(ch):
-#     return ch == "KEY_LEFT" or ch == curses.KEY_LEFT
-
-
-# def is_function_key(ch):
-#     tmp = ch[0:6]
-#     return tmp == "KEY_F("
-
-
-# def fn_key_match(k1, k2):
-#     return k1 == k2
-
-
-# def fn_key_description(k1):
-#     s1 = k1.replace("KEY_F(", "")
-#     s2 = s1.replace(")", "")
-#     s3 = "F" + s2
-#     return s3
 
 def min_size_for_views(views):
     h = 0
@@ -74,12 +53,16 @@ class AppBase:
         self.context = context
         self.stdscr = stdscr
         self.focus_index = 0
-        self.focus_widgets = []
+        # self.focus_widgets = []
         self.top_menu_items = []
-        self.render_widgets = []
+        # self.render_widgets = []
         self.title = "This is a data entry form"
         self.input_timeout_ms = input_timeout_ms
+
+        self.function_keys = FunctionKeys()
         self.register_views()
+        self.check_function_keys()
+        self.check_topmenu_views()
 
         # Now calculate the size of the full display of the app
         self.body_height, self.body_width = min_size_for_views(self.views)
@@ -121,6 +104,7 @@ class AppBase:
 
         self.message_widget.set_enclosing_window(self.msg_win)
         self.current_view_index = 0
+        self.current_top_menuitem = self.topmenu_view.get_menu_by_view(self.views[self.current_view_index])
         self.show_current_view()
 
     def register_views(self):
@@ -132,10 +116,36 @@ class AppBase:
 
         raise NotImplementedError()
 
+    def check_function_keys(self):
+        for v in self.views:
+            for m in v.menu_items:
+                self.function_keys.test_duplicate_error(m.accelerator_key)
+
+    def check_topmenu_views(self):
+        """
+        Tests that all views are referenced by the top menu, and
+        that all views referenced by the top menu are actually in self.views
+        """
+        tm_views = list(map(lambda m: m.view, self.topmenu_view.menu_items))
+        for v in self.views:
+            if not v in tm_views:
+                raise RuntimeError("view {} defined in register() but is not linked to a top menu item".format(v.ident))
+        for v in tm_views:
+            if not v in self.views:
+                raise RuntimeError("view {} is refenced by a menu but was not provided in register()".format(v.ident))
+
     def view_make_current(self, view):
         vi = self.views.index(view)
-        self.current_view_index = vi
-        self.show_current_view()
+        for m in self.topmenu_view.menu_items:
+            if m.get_view() is view:
+                if self.current_top_menuitem is not None:
+                    self.current_top_menuitem.focus_release()
+                self.current_top_menuitem = m
+                self.current_top_menuitem.focus_accept()
+                self.current_view_index = vi
+                self.show_current_view()
+                return
+        raise RuntimeError('Current view is not connected to a top menu item')
 
     def get_current_view(self):
         return self.views[self.current_view_index]
@@ -182,25 +192,26 @@ class AppBase:
     def msg_info(self, s):
         self.message_widget.msg_info(s)
 
-    def shift_focus_to(self, w_index):
-        old_focus_widget = self.focus_widgets[self.focus_index]
-        self.focus_index = w_index
-        old_focus_widget.focus_release()
-        focus_widget = self.focus_widgets[self.focus_index]
-        focus_widget.focus_accept()
+    # def shift_focus_to(self, w_index):
+    #     old_focus_widget = self.focus_widgets[self.focus_index]
+    #     self.focus_index = w_index
+    #     old_focus_widget.focus_release()
+    #     focus_widget = self.focus_widgets[self.focus_index]
+    #     focus_widget.focus_accept()
 
     def mouse_in_widget(self, w, y, x):
         """Tests whether the mouse position y,x is inside the widget w"""
         return w.rectangle().contains(y, x)
 
     def handle_accelerator(self, key):
-        for w in self.topmenu_view.get_focus_widgets():
-            if w.get_accelerator() == key:
-                v = w.get_view()
-                self.view_make_current(w.get_view())
-                ix = self.focus_widgets.index(w)
-                self.shift_focus_to(ix)
-                return w
+        # m_old = self.top_menu_items[self.focus_index]
+        m = self.function_keys.get_menu(key)
+        if m is not None:
+            v = m.get_view()
+            self.view_make_current(m.get_view())
+            # m_old.focus_release()
+            # m.focus_acquire()
+            return m
         return None
 
     def handle_input(self):
@@ -221,33 +232,19 @@ class AppBase:
             if self.log_keystrokes:    
                 self.message_widget.msg_info("handle_input ch: {} hex: {} dec: {}".format(chstr, hex(ch), ch))
 
-            focus_widget = self.focus_widgets[self.focus_index]
-            focus_widget.focus_accept()
-            
-            if focus_widget.handle_input(ch):
-                continue
-            else:
-                if is_next_control(ch):
-                    w_index = (self.focus_index + 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
-                    self.shift_focus_to(w_index)
-                elif is_prev_control(ch):
-                    w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
-                    self.shift_focus_to(w_index)
-                # view menu accelerator shift-F1 -- shift-F6 
-                elif curses.KEY_F25 <= ch <= curses.KEY_F30:
+
+            if is_next_control(ch) or is_prev_control(ch):
+                self.get_current_view().handle_input(ch)
+            elif is_control_v(ch):
+                self.next_view()
+            elif self.function_keys.is_function_key(ch):
+                w = self.handle_accelerator(ch)
+                if w is not None:
+                    self.view_make_current(w.get_view())
+                else:
                     self.get_current_view().handle_input(ch)
-
-                #view rotate
-                elif is_control_v(ch):
-                    self.next_view()
-                # top menu accelerator key processing
-                elif ch in [curses.KEY_F1, curses.KEY_F2, curses.KEY_F3, curses.KEY_F4, curses.KEY_F5, curses.KEY_F6]:
-                    w = self.handle_accelerator(ch)
-                    if w is not None:
-                        self.view_make_current(w.get_view())
-
-                # elif is_function_key(ch):
-                #     self.handle_menu(ch)
+            else:
+                self.get_current_view().handle_input(ch)
 
     def render_frame(self):
         self.outter_win.box()
@@ -277,14 +274,10 @@ class AppBase:
 
 
     def box_form(self):
-        self.stdscr.bkgd(" ", Colors.black_white())
+        self.stdscr.bkgd(" ", Theme.instance().border_attr())
         self.stdscr.border(0, 0, 0, 0, 0, 0, 0)
 
     def make_boxes(self):
-        # a1 = Colors.black_white()
-        # a11 = Colors.white_black()
-        # a2 = Theme.bkgd_attr()
-        # raise RuntimeError()
         self.title_win.bkgd(" ", Theme.instance().bkgd_attr());
         self.title_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
         self.body_win.bkgd(" ", Theme.instance().bkgd_attr());

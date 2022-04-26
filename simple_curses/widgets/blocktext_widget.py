@@ -25,20 +25,8 @@ banner_lines_01 = [
 
 help_lines = [
     "**********************************************************************************",
-    "*  Lumen application TEST                                                        *",
-    "*              ****************************************************              *",
-    "*              *                      Lumen                       *              *",
-    "*              *                     Security                     *              *",
-    "*              *                                                  *              *",
-    "*              *      DDoS 2.0 Always On Prefix List Script       *              *",
-    "*              *                                                  *              *",
-    "*              *    For issues with this script, please reach     *              *",
-    "*              *              out to Richard Blackwell            *              *",
-    "*              *                                                  *              *",
-    "*              *            richardr.blackwell@lumen.com          *              *",
-    "*              *               DL-SPIDDOSWAF@lumen.com            *              *",
-    "*              ****************************************************              *",
-    "*                                                                                 *",
+    "*  Help for simple_curses app                                                     *",
+    "*           Have not written it yet                                               *",
     "**********************************************************************************",
 ]
 
@@ -103,6 +91,9 @@ class BlockTextWidget(WidgetBase):
     def handle_input(self, ch):
         return False
 
+class HelpWidget(BlockTextWidget):
+    def __init__(self, app):
+        super().init(app, help_lines)
 
 class BannerWidget(BlockTextWidget):
     def __init__(self, app):

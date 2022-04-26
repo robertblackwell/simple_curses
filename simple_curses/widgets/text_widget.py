@@ -5,8 +5,9 @@ import time
 from typing import Any
 from simple_curses.keyboard import *
 from simple_curses.widget_base import EditableWidgetBase
-from simple_curses.string_buffer import StringBuffer
 from simple_curses.theme import Theme
+
+from simple_curses.widgets.string_buffer import StringBuffer
 
 # A basic text widget that allows the entry of printable characters.
 # A model upon which to base more complicated text controls

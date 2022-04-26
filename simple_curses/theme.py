@@ -57,6 +57,9 @@ class Theme():
 
     def bkgd_attr(self):
         return self.attributes._bkgd_attr
+    
+    def border_attr(self):
+        return self.attributes._bkgd_attr
 
     def cursor_attr(self):
         return self.attributes._cursor_attr

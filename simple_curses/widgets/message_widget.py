@@ -2,8 +2,8 @@ import curses
 import curses.textpad
 import textwrap
 from abc import ABC
-from .colors import Colors
-from .widget_base import WidgetBase
+
+from simple_curses.widget_base import WidgetBase
 from simple_curses.theme import Theme
 
 class MessageWidget(WidgetBase, ABC):
