@@ -32,7 +32,7 @@ version = re.search(
 
 setup(
     name="simple_curses",
-    packages=["simple_curses"],
+    packages=["simple_curses", "simple_curses/widgets"],
     version=version,
     description="A python script implementing a framework for simple cli apps using curses. Personal tool only.",
     long_description=long_description,
