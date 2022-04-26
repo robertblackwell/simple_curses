@@ -11,3 +11,4 @@ from .layout            import *
 from .view              import *
 from .version           import simple_curses_version
 from .appbase           import *
+from .widgets           import *
