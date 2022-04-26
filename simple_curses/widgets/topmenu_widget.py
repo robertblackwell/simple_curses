@@ -61,7 +61,7 @@ class TopMenuWidget(WidgetBase):
         self.win.addstr(1, 1, self.label, Theme.instance().label_attr(self.has_focus))
         self.win.refresh()
 
-class MenuItem(MenuBase):
+class MenuItem(WidgetBase):
     def __init__(self, app, label, height, accelerator_key, function, context):
         self.label = label
         self.function = function

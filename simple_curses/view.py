@@ -239,7 +239,7 @@ class DataEntryView:
         self.flattened_widgets = flatten(widgets)
         # self.focus_widgets = [w for w in (self.flattened_widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
         self.focus_index = 0
-        self.focus_widgets = self.flattened_widgets
+        self.focus_widgets = list(filter(lambda w: is_editable(w), self.flattened_widgets))
 
     def get_height(self):
         return self.height

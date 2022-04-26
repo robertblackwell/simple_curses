@@ -32,6 +32,7 @@ help_lines = [
 
 
 class BlockTextWidget(WidgetBase):
+    """A widget that displays a multi line block of text"""
     def __init__(self, app, text_block: List[str]):
         self.height = len(text_block)
         self.width = 0
@@ -83,7 +84,7 @@ class BlockTextWidget(WidgetBase):
         for line in self.text_block:
             ln = len(line)
             ym, xm = self.banner_win.getmaxyx()
-            self.banner_win.addstr(r, 0, line[0:xm-1], Theme.instance().cursor_attr())
+            self.banner_win.addstr(r, 0, line[0:xm-1], Theme.instance().label_attr(self.has_focus))
             r += 1
 
         self.banner_win.noutrefresh()
