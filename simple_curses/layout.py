@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Dict
 import curses
 from simple_curses.widget_base import WidgetBase
-
+from simple_curses.widgets.topmenu_widget import MenuItem
 class HStack:
     pass
 
@@ -160,6 +160,37 @@ def allocate_multiple_columns(columns: List[List[WidgetBase]]):
         walloc.add_widget_column(wc)
     return walloc
 
+
+def layout_viewmenu(menu_win, menu_items: List[MenuItem]) -> Dict[MenuItem, Rectangle]:
+    """
+    Computes layout position of menus, makes subwindows for each menu item, and set_enclosing_window
+    for each menu item
+
+    NOTE: updates menu items
+    NOTE: move to layout.py - modify to return something and perform set_enclosing_win in View
+    """
+    height, width = menu_win.getmaxyx()
+    ybeg, xbeg = menu_win.getbegyx()
+    max_item_width = 0
+    total_width = 0
+    item_width = None
+    for m in menu_items:
+        max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
+        total_width += m.get_width() + 4
+    if (max_item_width + 2) * len(menu_items) < width:
+        item_width = max_item_width + 2
+    else:
+        raise ValueError("cannot fit the menu items in a single line  with nice spacing")
+    xpos = xbeg + width - item_width
+    rectangles = {}
+    for m in reversed(menu_items):
+        r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
+        rectangles[m] = r
+        xpos += -item_width
+        # tmp_win = menu_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
+        # m.set_enclosing_window(tmp_win)
+        # m.has_focus = False
+    return rectangles
 
 
 # class ColumnLayout:

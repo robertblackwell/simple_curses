@@ -35,18 +35,6 @@ class MessageWidget(WidgetBase, ABC):
         self.msg_count = 0
         self.has_focus = False
 
-    def get_height(self):
-        return self.height
-
-    def get_width(self):
-        return self.width
-
-    def focus_accept(self):
-        pass
-
-    def focus_release(self):
-        pass
-
     def set_enclosing_window(self, win):
         self.win = win
         h, w = self.win.getmaxyx()

@@ -25,21 +25,19 @@ class ToggleWidget(EditableWidgetBase):
         self.content = values
         self.current_index = 0 #index into values[]
         self.label = label + ": "
-        self.width = calc_width(values)
+        self.help_message = "Hit space key to toggle"
+        self.width = calc_width(values) #+ len(self.label) + len(self.help_message)
         self.height = 1
         self.start_row = 0
         self.start_col = 0
         self.app = app
-        self.help_message = "Hit space key to toggle"
 
     def set_enclosing_window(self, win) -> None:
         self.win = win
 
     def get_width(self) -> int:
+        """TODO - fix this"""
         return len(self.label) + self.width + 2 + len(self.help_message)
-
-    def get_height(self) -> int:
-        return 1
 
     def clear(self):
         self.content = False
@@ -64,7 +62,7 @@ class ToggleWidget(EditableWidgetBase):
 
     def paint_content_area_background(self) -> None:
         """paint attributes for the content area so that it is visible to used"""
-        tmp = self.width + len(self.label) - 1
+        tmp = self.width# + len(self.label) - 1
         for i in range(0, tmp):
             if self.has_focus:
                 self.win.addstr(0, i, "_")
@@ -98,15 +96,14 @@ class ToggleWidget(EditableWidgetBase):
                          curses.A_REVERSE + curses.A_BOLD)
         self.win.noutrefresh()
 
-    def focus_accept(self) -> None:
-        """ 
-        called by the app instance to give this control focus
-        """ 
-        self.has_focus = True
-        self.position_cursor()
+    # def focus_accept(self) -> None:
+    #     """ 
+    #     called by the app instance to give this control focus
+    #     """ 
+    #     self.has_focus = True
 
-    def focus_release(self) -> None:
-        self.has_focus = False
+    # def focus_release(self) -> None:
+    #     self.has_focus = False
 
 
     def handle_input(self, ch) -> bool:
@@ -122,5 +119,4 @@ class ToggleWidget(EditableWidgetBase):
         else:
             did_handle_ch = False
 
-        self.position_cursor()
         return did_handle_ch

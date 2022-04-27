@@ -86,6 +86,11 @@ class State:
         self.tod_21 = None
         self.text_21 = "some text"
 
+        self.cust_name = ""
+        self.bus_org_id = ""
+        self.is_marvel_order = False
+        self.is_dm_order = False
+
 
 class ActionsForFirstView(ActionBase):
     """
@@ -272,6 +277,17 @@ class App(AppBase):
         # view 3 start 2 columns + 3 menu items
         #####################################
         view_03_column_01 = [
+            TextWidget(self, "cust_name", "Cust name           ", 23, data),
+            BlockTextWidget(self, [
+                    "Order Type:",
+                    "    Either enter a Business Org Id or", 
+                    "    select one of", 
+                    "    Marvel order or DM order"
+            ]),
+            TextWidget(self, "bus_org_id",        "Business Org ID ", 23, data),
+            ToggleWidget(self, "is_marvel_order", "Marvel Order ?  ", 3, data, ['No ', "Yes"]),
+            ToggleWidget(self, "is_dm_order",     "DM order     ?  ", 3, data, ['No ', "Yes"]),
+            BlockTextWidget(self, [" "," "]),
 
             IPNetworkWidget(self, "ipnet_21",      "IPNetwork          ", 23, data),
             IntegerWidget(self,   "int_val_21",    "Integer            ", 23, data),

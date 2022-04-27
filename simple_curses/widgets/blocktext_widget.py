@@ -1,7 +1,7 @@
 import curses
 from typing import List, Union, Any
 
-from simple_curses.widget_base import WidgetBase
+from simple_curses.widget_base import WidgetBase, FocusableWidgetBase
 from simple_curses.kurses_ex import make_subwin
 from simple_curses.theme import Theme
 import simple_curses.version as V
@@ -45,21 +45,6 @@ class BlockTextWidget(WidgetBase):
         self.banner_win = None
         self.has_focus = False
 
-    def focus_accept(self):
-        self.has_focus = True
-
-    def focus_release(self):
-        self.has_focus = False
-
-    def get_height(self):
-        return self.height  # +1# + 2
-
-    def get_width(self):
-        return self.width + 1  # + 2
-
-    def set_parent_view(self, view):
-        self.parent_view = view
-
     def set_enclosing_window(self, window):
         self.outter_win = window
         ybeg, xbeg = window.getbegyx()
@@ -71,10 +56,7 @@ class BlockTextWidget(WidgetBase):
         rbeg = 0  # ((ym - self.height) // 2)
         cbeg = 0  # ((xm - self.width) // 2)
         # self.banner_win = make_subwin(window, self.height+1, self.width+1, rbeg, cbeg)
-        self.banner_win = make_subwin(window, self.height, self.width + 1, rbeg, cbeg)
-
-    # def set_app(self, app):
-    #     self.app = app
+        self.banner_win = make_subwin(window, self.height, self.width, rbeg, cbeg)
 
     def render(self):
         if self.banner_win is None:
@@ -84,6 +66,7 @@ class BlockTextWidget(WidgetBase):
         for line in self.text_block:
             ln = len(line)
             ym, xm = self.banner_win.getmaxyx()
+            # TODO bug this next line chops off the last character - but without that it crashes why?
             self.banner_win.addstr(r, 0, line[0:xm-1], Theme.instance().label_attr(self.has_focus))
             r += 1
 
@@ -94,13 +77,13 @@ class BlockTextWidget(WidgetBase):
 
 class HelpWidget(BlockTextWidget):
     def __init__(self, app):
-        super().init(app, help_lines)
+        super().__init__(app, help_lines)
 
 class BannerWidget(BlockTextWidget):
     def __init__(self, app):
         super().__init__(app, banner_lines_01)
 
 
-class HelpWidget(BlockTextWidget):
-    def __init__(self, app):
-        super().__init__(app, help_lines)
+# class HelpWidget(BlockTextWidget):
+#     def __init__(self, app):
+#         super().__init__(app, help_lines)

@@ -198,7 +198,7 @@ class FunctionKeys:
             msg = "Function key [{}, {}] is already being used.".format(key, function_key_description(key))
             raise ValueError("Duplicate function key. {}  ".format(msg))
 
-    def add_accelerator(self, key, menu):
+    def add_fkey(self, key, menu):
         self.test_duplicate_error(key)
         self.accelerators[key] = menu
 

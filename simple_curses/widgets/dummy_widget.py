@@ -37,11 +37,11 @@ class DummyWidget:
     def focus_release(self):
         self.has_focus = False
 
-    def get_height(self):
-        return self.height
+    # def get_height(self):
+    #     return self.height
 
-    def get_width(self):
-        return self.width
+    # def get_width(self):
+    #     return self.width
 
     def render(self):
         self.outter_win.bkgd(" ", self.color_pair)

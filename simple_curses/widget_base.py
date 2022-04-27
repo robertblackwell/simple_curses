@@ -16,16 +16,13 @@ class WidgetBase(ABC):
     The basic widget only provides for display and includes no user interaction
     """
 
-    # @classmethod
-    @abstractmethod
     def get_height(self) -> int:
         """Returns the minimum height required to display the widget"""
-        raise NotImplementedError()
+        return self.height
 
-    @abstractmethod
     def get_width(self) -> int:
         """Returns the minimum width required to display the widget"""
-        raise NotImplementedError()
+        return self.width
 
     @abstractmethod
     def render(self) -> None:
@@ -69,24 +66,21 @@ class FocusableWidgetBase(WidgetBase):
     Focusable widgets do not contain values
     """
 
-    @abstractmethod
     def focus_accept(self) -> None:
         """This function is called by a 'higher' object to indicate that the focus is being passed to
         this widget. the widget shold probably remember this fact if it is required to 
         display the fact that it has the focus"""
-        raise NotImplementedError()
+        self.has_focus = True
 
-    @abstractmethod
     def focus_release(self) -> None:
         """called by a 'higher' object to indicate that the focus is moving away from this widget"""
-        raise NotImplementedError()
+        self.has_focus = False
 
 
 class EditableWidgetBase(FocusableWidgetBase):
     """A widget that contains a key or id and a value"""
 
     @abstractmethod
-    
     def get_key(self) -> str:
         """Returns the key or id string assigned during instance creation.
         The key is used outside the widget to associate the widgets value with
@@ -123,7 +117,7 @@ class MenuBase(FocusableWidgetBase):
     """
 
     @abstractmethod
-    def get_accelerator(self):
+    def get_fkey(self):
         """Returns the integer value provided by curses for the function key that has been
         associated with this menu item.
         Hitting a menu items accelerator key will have the effect of:

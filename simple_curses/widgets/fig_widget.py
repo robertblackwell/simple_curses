@@ -3,12 +3,9 @@ This file implements a top menu bar which consists of a an Icon (pfgitlet enlarg
 of menu items that select which view is being shown in the body of an app's screen
 """
 from pyfiglet import Figlet
-from simple_curses.kurses_ex import make_subwin
-from simple_curses.widget_base import WidgetBase, FocusableWidgetBase
-from simple_curses.layout import TopmenuLayout
+from simple_curses.widget_base import WidgetBase
 from simple_curses.theme import Theme
 from simple_curses.keyboard import *
-from typing import List
 
 
 class FigletWidget(WidgetBase):
@@ -26,12 +23,6 @@ class FigletWidget(WidgetBase):
         self.height = len(self.lines)
         self.width = w + 2
         self.win = None
-
-    def get_height(self):
-        return self.height 
-    
-    def get_width(self):
-        return self.width 
 
     def set_enclosing_window(self, win) -> None:
         self.win = win

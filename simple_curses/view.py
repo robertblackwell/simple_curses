@@ -2,9 +2,10 @@ from typing import List, Tuple, Dict, Any, cast
 import sys
 import curses
 import curses.textpad
+from abc import ABC, abstractmethod
 
 from simple_curses.widget_base    import is_editable, is_focusable, WidgetBase, FocusableWidgetBase, EditableWidgetBase
-from simple_curses.layout         import Rectangle, allocate_multiple_columns, TopmenuLayout
+from simple_curses.layout         import Rectangle, allocate_multiple_columns, TopmenuLayout, layout_viewmenu
 from simple_curses.validator      import *
 from simple_curses.kurses_ex      import make_subwin
 import simple_curses.window       as     Window
@@ -34,7 +35,58 @@ def flatten(list_of_lists):
         return flatten(list_of_lists[0]) + flatten(list_of_lists[1:])
     return list_of_lists[:1] + flatten(list_of_lists[1:])
 
-class BannerView:
+class ViewTrait(ABC):
+    """To implement a display only(no values) view these methods must be implemented"""
+    def get_height(self):
+        """Returns the min height that would allow display of this view"""
+        return self.height
+    
+    def get_width(self):
+        """Return the min width that would allow display of this view"""
+        return self.width
+
+    @abstractmethod
+    def set_enclosing_window(self, curses_win):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def show(self):
+        """
+        Enable this view to be rendered and sets up its sub windows freeing previous
+        windows if necessary
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def hide(self):
+        """Prevent this view from being displayed and clears its sub windows"""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def render(self):
+        """Paints the view content on the screen"""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def handle_input(self, key):
+        """Handles input keys passed from an object higher up in the widget/display hierachy"""
+        raise NotImplementedError()
+
+class ViewWithValuesTrait(ViewTrait):
+    """
+    Additional methods required to make a view into one that allows data entry
+    Currently DataEntryView is the only view derived from this trait
+    """
+    @abstractmethod
+    def get_values(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def set_values(self, values):
+        raise NotImplementedError()
+
+
+class BannerView(ViewTrait):
     """A class that implements a view that dispays a single banner or info widget in the middle of the Form body. """
 
     def __init__(self, app, ident: str, label: str, stdscr, widget: WidgetBase):
@@ -104,6 +156,8 @@ class HelpView(BannerView):
 
     
 class TopmenuView:
+    """NOTE: dont yet have a trait to describe menu views - a custom type of view
+    for displaying the top menu area"""
     def __init__(self, app, figlet_widget: FigletWidget, menu_widgets: List[TopMenuWidget]):
         self.app = app
         self.icon = figlet_widget
@@ -146,7 +200,7 @@ class TopmenuView:
         return False
 
     def focus_accept(self):
-        selfhas_focus = True
+        self.has_focus = True
 
     def focus_release(self):
         self.has_focus = False
@@ -158,36 +212,38 @@ class TopmenuView:
         for w in self.widgets:
             w.render()
 
-def menu_layout_and_enclose(menu_win, menu_items: List[MenuItem]):
-    """
-    Computes layout position of menus, makes subwindows for each menu item, and set_enclosing_window
-    for each menu item
+# def xxlayout_viewmenu(menu_win, menu_items: List[MenuItem]) -> Dict[MenuItem, Rectangle]:
+#     """
+#     Computes layout position of menus, makes subwindows for each menu item, and set_enclosing_window
+#     for each menu item
 
-    NOTE: updates menu items
-    """
-    height, width = menu_win.getmaxyx()
-    ybeg, xbeg = menu_win.getbegyx()
-    max_item_width = 0
-    total_width = 0
-    item_width = None
-    for m in menu_items:
-        max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
-        total_width += m.get_width() + 4
-    if (max_item_width + 2) * len(menu_items) < width:
-        item_width = max_item_width + 2
-    else:
-        raise ValueError("cannot fit the menu items in a single line  with nice spacing")
-    xpos = xbeg + width - item_width
-    rectangles = []
-    for m in reversed(menu_items):
-        r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
-        rectangles.append(r)
-        xpos += -item_width
-        tmp_win = menu_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
-        m.set_enclosing_window(tmp_win)
-        m.has_focus = False
+#     NOTE: updates menu items
+#     NOTE: move to layout.py - modify to return something and perform set_enclosing_win in View
+#     """
+#     height, width = menu_win.getmaxyx()
+#     ybeg, xbeg = menu_win.getbegyx()
+#     max_item_width = 0
+#     total_width = 0
+#     item_width = None
+#     for m in menu_items:
+#         max_item_width = m.get_width() if max_item_width < m.get_width() else max_item_width
+#         total_width += m.get_width() + 4
+#     if (max_item_width + 2) * len(menu_items) < width:
+#         item_width = max_item_width + 2
+#     else:
+#         raise ValueError("cannot fit the menu items in a single line  with nice spacing")
+#     xpos = xbeg + width - item_width
+#     rectangles = {}
+#     for m in reversed(menu_items):
+#         r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
+#         rectangles[m] = r
+#         xpos += -item_width
+#         # tmp_win = menu_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
+#         # m.set_enclosing_window(tmp_win)
+#         # m.has_focus = False
+#     return rectangles
 
-class DataEntryView:
+class DataEntryView(ViewWithValuesTrait):
 
     """A class that implements the detailed layout and function of a data entry view body body. A single app typically has a number of views
     that are swapped by the top menu or keyboard short cuts. This class represents the type of view that has data entry fields
@@ -216,7 +272,7 @@ class DataEntryView:
         self.menu_items = menu_items
         self.function_keys = FunctionKeys()
         for m in self.menu_items:
-            self.function_keys.add_accelerator(m.accelerator_key, m)
+            self.function_keys.add_fkey(m.get_fkey(), m)
 
         self.title = title
         self.title_widget = None
@@ -237,7 +293,7 @@ class DataEntryView:
         #data_entry_height is height of the widgets without title or menus
         self.widgets_height = self.widget_allocation.get_height()
         self.flattened_widgets = flatten(widgets)
-        # self.focus_widgets = [w for w in (self.flattened_widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
+        self.focus_widgets = [w for w in (self.flattened_widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
         self.focus_index = 0
         self.focus_widgets = list(filter(lambda w: is_editable(w), self.flattened_widgets))
 
@@ -294,8 +350,20 @@ class DataEntryView:
                 sw = make_subwin(self.widgets_win, w.get_height(), w.get_width(), wlo.y_begin, wlo.x_begin)
                 w.set_enclosing_window(sw)
 
-        menu_layout_and_enclose(self.menu_win, self.menu_items)
+        rectangles = layout_viewmenu(self.menu_win, self.menu_items)
+        for m in reversed(self.menu_items):
+            # r = Rectangle(3, item_width - 2, ybeg + 1, xpos)  # leave a space between the menu items
+            # rectangles.append(r)
+            # xpos += -item_width
+            r = rectangles[m]
+            tmp_win = self.menu_win.subwin(r.nbr_rows, r.nbr_cols, r.y_begin, r.x_begin)
+            m.set_enclosing_window(tmp_win)
+            m.has_focus = False
+
         self.set_values(self.app.state)
+        if len(self.focus_widgets) > 0:
+            self.shift_focus_to(self.focus_index)
+
 
     def get_values(self) -> Dict[str, Any]:
         """
@@ -339,7 +407,7 @@ class DataEntryView:
         self.outter_win.clear()
 
     def get_focus_widgets(self):
-        widgets = self.focus_widgets if len(self.focus_widgets) != 0 else self.widgets + self.menu_items
+        widgets = self.focus_widgets
         return widgets
         return self.widgets + self.menu_items
 
@@ -348,10 +416,10 @@ class DataEntryView:
 
     def handle_input(self, key):
         did_handle = True
-        if is_next_control(key):
+        if is_next_control(key) and len(self.focus_widgets) > 0:
             w_index = (self.focus_index + 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
             self.shift_focus_to(w_index)
-        elif is_prev_control(key):
+        elif is_prev_control(key) and len(self.focus_widgets) > 0:
             w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
             self.shift_focus_to(w_index)
         elif self.function_keys.is_function_key(key):
@@ -359,7 +427,8 @@ class DataEntryView:
             if m is not None:
                 m.invoke()
         else: 
-            did_handle = self.flattened_widgets[self.focus_index].handle_input(key)
+            if len(self.focus_widgets) > 0:
+                did_handle = self.focus_widgets[self.focus_index].handle_input(key)
         return did_handle
 
     def render(self):

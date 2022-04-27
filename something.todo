@@ -1,3 +1,8 @@
+☐ build a composite widget for order type
+☐ have each view in demo run a command
+☐ rename the demo to "Demo"
+☐ Figlet the app name at the start of the top menu bar
+☐ bug in blocktextwidget - chops off last character
 ☐ repeatable unit tests and cleanup of same
 ☐ code cleanup - particularly view.py
 ☐ dropdown widget needs to be implemented

@@ -170,7 +170,7 @@ class AppBase:
     def check_function_keys(self):
         for v in self.views:
             for m in v.menu_items:
-                self.function_keys.test_duplicate_error(m.accelerator_key)
+                self.function_keys.test_duplicate_error(m.get_fkey())
 
     def check_topmenu_views(self):
         """

@@ -22,7 +22,7 @@ class TextWidget(EditableWidgetBase):
         self.has_focus = False
         self.data = data
         self.label = label + ": "
-        self.width = width
+        self.width = width #+ 2 + len(self.label)
         self.height = 1
         self.start_row = 0
         self.start_col = 0
@@ -41,9 +41,6 @@ class TextWidget(EditableWidgetBase):
 
     def get_width(self) -> int:
         return len(self.label) + self.width + 2
-
-    def get_height(self) -> int:
-        return 1
 
     def clear(self):
         self.string_buffer.clear()
@@ -86,14 +83,6 @@ class TextWidget(EditableWidgetBase):
 
         # self.win.noutrefresh()
 
-    def focus_accept(self) -> None:
-        """called by the app instance to give this control focus"""
-        self.has_focus = True
-        self.position_cursor()
-
-    def focus_release(self) -> None:
-        self.has_focus = False
-
     def get_key(self):
         return self.id
 
@@ -130,7 +119,7 @@ class TextWidget(EditableWidgetBase):
         else:
             did_handle_ch = False
 
-        self.position_cursor()
+        # self.position_cursor()
         return did_handle_ch
 
 

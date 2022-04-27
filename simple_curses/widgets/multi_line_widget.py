@@ -6,29 +6,7 @@ from simple_curses.keyboard import *
 from simple_curses.widget_base import WidgetBase, EditableWidgetBase
 from simple_curses.kurses_ex import make_subwin
 from simple_curses.theme import Theme
-
 from simple_curses.widgets.multi_line_buffer import MultiLineBuffer
-
-# xlines = [
-#     "0  01-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "1  02-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "2  03-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "3  04-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "4  05-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "5  06-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "6  07-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "7  08-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "8  09-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "9  10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "A  0A-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "B  0B-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "C  0C-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "D  0D-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "E  0E-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "F  0F-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "10 10-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-#     "11 11-1lkjhasdfhlakjsfhlajhflakdhjfldask",
-# ]
 
 class MultiLineWidget(EditableWidgetBase):
     """
@@ -49,8 +27,6 @@ class MultiLineWidget(EditableWidgetBase):
         self.line_number_win = None
         self.id: str = key
         self.has_focus: bool = False
-        # self.row: int = row
-        # self.col: int = col
         self.data = data
         self.label: str = label
         self.content_width = content_width
@@ -64,9 +40,7 @@ class MultiLineWidget(EditableWidgetBase):
         self.start_row: int = 0
         self.start_col: int = 0
         self.paste_mode: bool = False
-        # self.validator = validator.ArrayOf(validator.Text())
 
-        # self.attributes = attributes
         self.app = app
         self.mu_lines_buffer: MultiLineBuffer = MultiLineBuffer([], self.content_height, self.content_width - self.line_number_width - 2)
         self.lines_view = None
@@ -79,25 +53,8 @@ class MultiLineWidget(EditableWidgetBase):
         self.content_win = make_subwin(self.outter_win, self.content_height, self.content_width - self.line_number_width, 1, self.line_number_width)
         self.info_win = make_subwin(self.outter_win, self.info_area_height, self.content_width, self.content_height + 1, 1)
 
-    # def set_app(self, app: app):
-    #     self.app = app
-
     def add_line(self, line: str):
         self.mu_lines_buffer.append_line(line)
-
-    def focus_accept(self):
-        self.has_focus = True
-        # self.position_cursor()
-
-    def focus_release(self):
-        self.has_focus = False
-        pass
-
-    def get_height(self):
-        return self.height
-
-    def get_width(self):
-        return self.width
 
     def clear(self):
         self.mu_lines_buffer.clear()
@@ -110,14 +67,6 @@ class MultiLineWidget(EditableWidgetBase):
         values = self.mu_lines_buffer.get_value()
         str_result = [] if len(values) == 1 and values[0] == "" else values
         return str_result
-        # failed = False
-        # # list_of_values = validator.WidgetListOfValues()
-        # list_of_values = self.validator.validate(str_result)
-        # # for v in str_result:
-        # #     widget_single_value = self.validator.validate(v)
-        # #     list_of_values.append(widget_single_value)
-
-        # return list_of_values
 
     def set_value(self, value: List[str]):
         """Sets the values in the widget - expects a List of strings"""
@@ -180,68 +129,31 @@ class MultiLineWidget(EditableWidgetBase):
         did_handle = True
         if is_addline(ch):
             self.mu_lines_buffer.handle_add_line()
-        elif is_cntrl_p(ch):
-            self.toggle_paste_mode()
         elif is_edit_back(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_backspace()
         elif is_printable(ch) and (not is_newline(ch)):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_character(chr(ch))
         elif is_edit_del(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_delete()
         elif is_delete_line(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_delete_line()
         elif is_move_down(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_down()
         elif is_move_left(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_left()
         elif is_move_right(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_right()
         elif is_move_up(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_up()
         elif is_newline(ch):
-            self.set_paste_mode_off()
             self.mu_lines_buffer.handle_newline()
         else:
             did_handle = False
 
-        # self.position_cursor()
         return did_handle
 
     def paste_mode_handle_input(self):
         pass
-
-    ############################################################################################################
-    # paste mode
-    ############################################################################################################
-    def toggle_paste_mode(self):
-        before = self.paste_mode
-        after = not self.paste_mode
-        self.set_paste_mode(after)
-        self.app.msg_info("toggle_paste_mode from:{} to:{}".format(before, after))
-
-    def set_paste_mode(self, on_off):
-        if on_off:
-            self.set_paste_mode_on()
-        else:
-            self.set_paste_mode_off()
-
-    def set_paste_mode_off(self):
-        self.paste_mode = False
-
-    def set_paste_mode_on(self):
-        self.paste_mode = True
-        self.mu_lines_buffer.cursor_set_at_end()
-        self.mu_lines_buffer.handle_newline()
-        self.paste_mode = True
-
 
 class IPNetworkCIDR(MultiLineWidget):
     def __init__(self, app, key:str, label:str, content_width:int, content_height:int, data:Any):

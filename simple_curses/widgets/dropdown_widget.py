@@ -39,13 +39,13 @@ class DropdownWidget(EditableWidgetBase):
         # self.col: int = col
         self.data = data
         self.label: str = label + ": "
-        self.width: int = calc_width(selections)
+        self.help_message = "Up/Down arrow keys for selection"
+        self.width: int = calc_width(selections) +len(self.label) + 2 + len(self.help_message)
         self.selections = selections
         self.current_selection_index = 0
         self.height: int = height
         self.start_row: int = 0
         self.start_col: int = 0
-        self.help_message = "Up/Down arrow keys for selection"
 
         self.app = app
         self.win = None
@@ -53,18 +53,14 @@ class DropdownWidget(EditableWidgetBase):
     def set_enclosing_window(self, win):
         self.win = win
 
-    def focus_accept(self):
-        self.has_focus = True
+    # def focus_accept(self):
+    #     self.has_focus = True
 
-    def focus_release(self):
-        self.has_focus = False
-        pass
+    # def focus_release(self):
+    #     self.has_focus = False
 
-    def get_height(self):
-        return self.height
-
-    def get_width(self):
-        return self.width + len(self.label) + 2 + len(self.help_message)
+    # def get_width(self):
+    #     return self.width + len(self.label) + 2 + len(self.help_message)
 
     def get_key(self):
         return self.id

@@ -11,7 +11,7 @@ class TitleWidget(WidgetBase):
 
     def __init__(self, app, key, label, width, height, data):
         self.id = key
-        self.has_focus = False
+        # self.has_focus = False
         self.data = data
         self.title = label
         self.width = len(label) + 2
@@ -30,18 +30,12 @@ class TitleWidget(WidgetBase):
     def set_form(self, form):
         self.form = form
 
-    def focus_accept(self):
-        self.has_focus = True
-        self.position_cursor()
+    # def focus_accept(self):
+    #     self.has_focus = True
+    #     # self.position_cursor()
 
-    def focus_release(self):
-        self.has_focus = False
-
-    def get_height(self):
-        return self.height
-
-    def get_width(self):
-        return self.width
+    # def focus_release(self):
+    #     self.has_focus = False
 
     def render(self):
         return
