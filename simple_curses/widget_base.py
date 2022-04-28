@@ -67,15 +67,30 @@ class FocusableWidgetBase(WidgetBase):
     """
 
     def focus_accept(self) -> None:
+        raise NotImplementedError("focus_accept is obsolete")
         """This function is called by a 'higher' object to indicate that the focus is being passed to
         this widget. the widget shold probably remember this fact if it is required to 
         display the fact that it has the focus"""
         self.has_focus = True
 
     def focus_release(self) -> None:
+        raise NotImplementedError("focus_release is obsolete")
         """called by a 'higher' object to indicate that the focus is moving away from this widget"""
         self.has_focus = False
 
+    def focus_shift(self, next_flag):
+        """
+        Called by parent widget to offer this widget the opportunity to take the focus
+        Should return True if this widgets takes the focus
+        Should return False if this widget does not take or relinquishes the focus
+
+        For bottom level widgets a default implementation is provided - only take
+        focus if you dont have it and if you have it release it
+
+        Container widgets must provide a more complex algoritm - see DataEntryView for a example
+        """
+        self.has_focus = not self.has_focus
+        return self.has_focus    
 
 class EditableWidgetBase(FocusableWidgetBase):
     """A widget that contains a key or id and a value"""

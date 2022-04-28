@@ -296,6 +296,7 @@ class DataEntryView(ViewWithValuesTrait):
         self.focus_widgets = [w for w in (self.flattened_widgets + cast("List[WidgetBase]", self.menu_items)) if is_focusable(w) ]
         self.focus_index = 0
         self.focus_widgets = list(filter(lambda w: is_editable(w), self.flattened_widgets))
+        self.is_setup = False
 
     def get_height(self):
         return self.height
@@ -307,6 +308,9 @@ class DataEntryView(ViewWithValuesTrait):
         self.outter_win = win
 
     def setup(self):
+        if self.is_setup:
+            return
+        self.is_setup = True
         mark_territory = False
 
         # TODO - allocate excess height and width
@@ -321,8 +325,6 @@ class DataEntryView(ViewWithValuesTrait):
         #     excess_after_widgets = 1 + excess_height // 2
 
 
-        # self.menu_win = curses.newwin(self.menu_height, self.width, self.outter_y_begin + self.data_entry_height, 0)
-        # self.widgets_win = curses.newwin(self.widgets_height, self.width, self.outter_y_begin + 1, 0)
         self.title_win   = Window.newwin_inside(self.outter_win, 1, self.width, 0, 0)
         if mark_territory:
             self.title_win.bkgd("*")
@@ -362,7 +364,7 @@ class DataEntryView(ViewWithValuesTrait):
 
         self.set_values(self.app.state)
         if len(self.focus_widgets) > 0:
-            self.shift_focus_to(self.focus_index)
+            self.shift_focus(True)
 
 
     def get_values(self) -> Dict[str, Any]:
@@ -393,12 +395,48 @@ class DataEntryView(ViewWithValuesTrait):
                 v = getattr(vals, k)
                 w.set_value(v)
 
-    def shift_focus_to(self, w_index):
-        old_focus_widget = self.focus_widgets[self.focus_index]
+    def shift_focus(self, next_flag):
+        """
+        Shift the focus forward(next) backwards(prev)
+
+        parameters
+        -   next_flag  If true focus_next else focus_prev
+
+        First try giving the focus to the already in focus widget. This
+        is the appropriate action for a container widget
+        
+        If the currently in focus widget does not take the focus 
+        then compute the next/prev widget and try to give the focus to that
+        widget.
+        
+        Remember that the list self.focus_widgets only hold widgets that can take
+        the focus so a widget that does not already have the focus should
+        never refuse the focus
+        """
+        current_focus_widget = self.focus_widgets[self.focus_index]
+        if current_focus_widget.focus_shift(next_flag):
+            return
+        if next_flag:
+            w_index = (self.focus_index + 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
+        else:
+            w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
         self.focus_index = w_index
-        old_focus_widget.focus_release()
-        focus_widget = self.focus_widgets[self.focus_index]
-        focus_widget.focus_accept()
+        if not self.focus_widgets[w_index].focus_shift(next_flag):
+            raise ValueError("widget refused focus - not permitted")
+
+    # def shift_focus_prev(self):
+    #     current_focus_widget = self.focus_widgets[self.focus_index]
+    #     if current_focus_widget.focus_prev():
+    #         return
+    #     w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
+    #     self.shift_focus_to(w_index)
+
+    # def shift_focus_to(self, w_index):
+    #     old_focus_widget = self.focus_widgets[self.focus_index]
+    #     self.focus_index = w_index
+    #     old_focus_widget.focus_release()
+    #     focus_widget = self.focus_widgets[self.focus_index]
+    #     focus_widget.focus_accept()
 
     def show(self):
         self.setup()
@@ -417,11 +455,13 @@ class DataEntryView(ViewWithValuesTrait):
     def handle_input(self, key):
         did_handle = True
         if is_next_control(key) and len(self.focus_widgets) > 0:
-            w_index = (self.focus_index + 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
-            self.shift_focus_to(w_index)
+            self.shift_focus(True)
+            # w_index = (self.focus_index + 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
+            # self.shift_focus_to(w_index)
         elif is_prev_control(key) and len(self.focus_widgets) > 0:
-            w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
-            self.shift_focus_to(w_index)
+            self.shift_focus(False)
+            # w_index = (self.focus_index - 1 + len(self.focus_widgets)) % (len(self.focus_widgets))
+            # self.shift_focus_to(w_index)
         elif self.function_keys.is_function_key(key):
             m = self.function_keys.get_menu(key)
             if m is not None:

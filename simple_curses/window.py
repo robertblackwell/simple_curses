@@ -1,4 +1,5 @@
 import curses
+from simple_curses.kurses_ex import *
 
 def newwin_inside(hostwin, h, w, y, x):
     """
@@ -50,3 +51,35 @@ def draw_hline(win):
     as wide as win
     """
     win.border(0, 0, curses.ACS_HLINE, curses.ACS_HLINE, curses.ACS_LTEE, curses.ACS_RTEE, curses.ACS_LTEE, curses.ACS_RTEE)
+
+class Window:
+    @staticmethod
+    def mainwin():
+        pass
+    def newwin(nbr_rows, nbr_cols, ybeg_abs, xbeg_abs):
+        ymax, xmax = curses.stdscr.getbegyx()
+        if nbr_rows > ymax or nbr_cols > xmax:
+            raise ValueError("Window is bigger than stdscr")
+        cwin = curses.newwin(nbr_rows, nbr_cols, ybeg_abs, xbeg_abs)
+        w = Window(cwin)
+        w.parent = curses.stdscr
+        return w
+
+    """Wrapper for curses.win in order to provide more diagnostics and a single bug fix"""
+    def __init__(self, cwin, nbr_rows, nbr_cols, ybeg_abs, xbeg_abs):
+        ymax, xmax = curses.stdscr.getbegyx()
+        if nbr_rows > ymax or nbr_cols > xmax:
+            raise ValueError("Window is bigger than stdscr")
+        self.xbeg = xbeg_abs
+        self.ybeg = ybeg_abs
+        self.ymax = nbr_rows
+        self.xmax = nbr_cols
+        self.parent = None
+        self.children = []
+        self.cwin = cwin
+
+    def subwin(self, nbr_lines, nbr_cols, ybeg_rel, xbeg_rel):
+        neww = make_subwin(self.cwin, nbr_lines, nbr_cols, ybeg_rel, xbeg_rel)
+        csubwin = Window(csubwin, nbr_lines, nbr_cols, ybeg_rel, xbeg_rel)
+        csubwin.parent = self
+        return csubwin

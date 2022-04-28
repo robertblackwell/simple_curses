@@ -43,8 +43,23 @@ def make_subwin(win, nbr_rows: int, nbr_cols: int, y_begin_relative: int, x_begi
     sw = win.subwin(nbr_rows, nbr_cols, y_begin_abs, x_begin_abs)
     return sw
 
-def win_addstr(win, row, col, astring, attr):
+def win_addstr(win, y, x, astring, attr=0):
     """
-    A wrapper for curses addstr that provides more diagnostic info for running off the edge of a window
+    A wrapper for curses addstr that provides more diagnostic info for running off the edge of a window.
+    and to fix the bug in the curses module that will not let the provided addstr with the bottom right
+    hand character to a curses.win or curses.win.subwin
     """
-    pass
+    ybeg, xbeg = win.getbegyx()
+    ymax, xmax = win.getmaxyx()
+    length = len(astring)
+    if y > ymax - 1 or x + length > xmax:
+        raise ValueError("string {} (length={}) is too big to fit in window of size ({}x{}) at position({},{}))".format(s, len(s), ymax, xmax ,y ,x))
+    
+    bottom_right_position_flag = y == ymax - 1 and x + length == xmax
+    if bottom_right_position_flag:
+        try:
+            win.addstr(y, x, astring)
+        except curses.error:
+            pass
+    else:
+        win.addstr(y, x, astring)

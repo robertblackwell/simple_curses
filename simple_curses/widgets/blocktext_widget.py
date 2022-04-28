@@ -2,7 +2,7 @@ import curses
 from typing import List, Union, Any
 
 from simple_curses.widget_base import WidgetBase, FocusableWidgetBase
-from simple_curses.kurses_ex import make_subwin
+from simple_curses.kurses_ex import make_subwin, win_addstr
 from simple_curses.theme import Theme
 import simple_curses.version as V
 
@@ -66,8 +66,15 @@ class BlockTextWidget(WidgetBase):
         for line in self.text_block:
             ln = len(line)
             ym, xm = self.banner_win.getmaxyx()
-            # TODO bug this next line chops off the last character - but without that it crashes why?
-            self.banner_win.addstr(r, 0, line[0:xm-1], Theme.instance().label_attr(self.has_focus))
+
+            # NOTE:Hack to fix a bug in curses module 
+            # the curses.win.addstr function will not allow writing the very last position in a win
+            # the fix is in kurses_ex.win_addstr
+            if True:
+                win_addstr(self.banner_win, r, 0, line, Theme.instance().label_attr(self.has_focus))
+            else:
+                self.banner_win.addstr(r, 0, line[0:xm-1], Theme.instance().label_attr(self.has_focus))
+
             r += 1
 
         self.banner_win.noutrefresh()
